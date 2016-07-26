@@ -1,7 +1,7 @@
 # A Module for Sparse Grid Discretization using Discontinuous Galerkin Bases
 
-[![Build Status](https://travis-ci.org/AlexAtanasov14/GalerkinSparseGrids.jl.svg?branch=master)](https://travis-ci.org/AlexAtanasov14/GalerkinSparseGrids.jl)
-[![codecov](https://codecov.io/gh/AlexAtanasov14/GalerkinSparseGrids.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/AlexAtanasov14/GalerkinSparseGrids.jl)
+[![Build Status](https://travis-ci.org/ABAtanasov/GalerkinSparseGrids.jl.svg?branch=master)](https://travis-ci.org/ABAtanasov/GalerkinSparseGrids.jl)
+[![codecov](https://codecov.io/gh/ABAtanasov/GalerkinSparseGrids.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/ABAtanasov/GalerkinSparseGrids.jl)
 
 This Julia Language Package is intended for accurately and efficiently sovling hyperbolic partial differential equations in higher dimensions, where the curse of dimensionality restricts the computational feasibility of discretization using regular grids. Instead, we employ the sparse grid construction as in Bungartz & Griebel:
 http://wissrech.ins.uni-bonn.de/research/pub/griebel/sparsegrids.pdf
