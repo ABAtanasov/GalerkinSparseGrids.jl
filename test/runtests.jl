@@ -1,5 +1,6 @@
 using GalerkinSparseGrids
 using Base.Test
+using Cubature
 
 @test 1 == 1
 
