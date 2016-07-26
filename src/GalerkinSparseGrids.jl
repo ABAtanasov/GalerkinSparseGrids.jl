@@ -12,8 +12,34 @@ include("DG_Derivative_Matrix.jl") # Precomputing derivative matrix for coeff ve
 include("Position_Basis_DG.jl") # Constructing ideal derivative matrix in position space
 include("PDEs.jl") # Solving the 1-D wave equation with periodic inital conditions 
 
-export total_value
 
+#make naming scheme more systematic 
+export standardCoefficients
+export standardReconstruct
+export hier_coefficients
+export sparse_coefficients
+export reconstruct 
+
+export hier_coefficients_DG
+export sparse_coefficients_DG
+export reconstruct_DG
+
+export Full_V2D
+export Sparse_V2D
+export Full_D2V
+export Sparse_D2V
+export total_value
+export full_referenceD2V
+export full_referenceV2D
+export sparse_referenceD2V
+export sparse_referenceV2D
+export vhier_coefficients_DG
+export vsparse_coefficients_DG
+export sD_matrix
+
+export wave_equation
+export norm_squared
+export pos_energy_func
 
 
 function total_value(n::Int)

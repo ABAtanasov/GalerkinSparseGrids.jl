@@ -270,58 +270,54 @@ function vsparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int)
 end
 
 
-function sD_matrix(k::Int, n::Int, D::Int)
-	size = sparse_size(k,n,d)
-	sp
-end
 
-#NOT WORKING: 
-function vfull_reconstruct_DG{D,T<:Real}(k::Int, coeffs::Array{T}, ls::NTuple{D,Int}, x::Array{T})
-	value = 0.0
-	f_numbers= ntuple(i-> k ,D)
-	j=1
-	for level in CartesianRange(ls)	
-	    lvl = ntuple(i->level[i]-1,D)	
-	    place = CartesianIndex{D}(ntuple(i->hat_index(x[i],level[i]),D))
-		skip = 1
-		for i in 1:D
-			skip *= level[i]
-		end
-		j += skip * k^D
-	    for f_number in CartesianRange(f_numbers)
-	    	value += coeffs[j]*V(k,lvl,place,f_number,x)
-			j+=1
-		end 
-		
-	end
-	return value
-end
-
-function vsparse_reconstruct_DG{T<:Real}(k::Int, coeffs::Array{T},
-		 					n::Int, D::Int, x::Array{T})
-	
-	value = 0.0
-	f_numbers= ntuple(i-> k ,D)
-	ls = ntuple(i-> n+1 , D)
-	j=1
-	for level in CartesianRange(ls)	
-        diag_level=0;
-        for q in 1:D
-            diag_level+=level[q]
-        end
-        if diag_level > n + D #If we're past the levels we care about, don't compute coeffs
-            continue
-        end  
-	    lvl = ntuple(i->level[i]-1,D)	
-	    place = CartesianIndex{D}(ntuple(i->hat_index(x[i],level[i]),D))
-	    for f_number in CartesianRange(f_numbers)
-	    	value += coeffs[j]*V(k,lvl,place,f_number,x)
-			j+=1
-		end 
-	end
-	return value	
-
-end
+#NOT WORKING: #
+# function vfull_reconstruct_DG{D,T<:Real}(k::Int, coeffs::Array{T}, ls::NTuple{D,Int}, x::Array{T})
+# 	value = 0.0
+# 	f_numbers= ntuple(i-> k ,D)
+# 	j=1
+# 	for level in CartesianRange(ls)
+# 	    lvl = ntuple(i->level[i]-1,D)
+# 	    place = CartesianIndex{D}(ntuple(i->hat_index(x[i],level[i]),D))
+# 		skip = 1
+# 		for i in 1:D
+# 			skip *= level[i]
+# 		end
+# 		j += skip * k^D
+# 	    for f_number in CartesianRange(f_numbers)
+# 	    	value += coeffs[j]*V(k,lvl,place,f_number,x)
+# 			j+=1
+# 		end
+#
+# 	end
+# 	return value
+# end
+#
+# function vsparse_reconstruct_DG{T<:Real}(k::Int, coeffs::Array{T},
+# 		 					n::Int, D::Int, x::Array{T})
+#
+# 	value = 0.0
+# 	f_numbers= ntuple(i-> k ,D)
+# 	ls = ntuple(i-> n+1 , D)
+# 	j=1
+# 	for level in CartesianRange(ls)
+#         diag_level=0;
+#         for q in 1:D
+#             diag_level+=level[q]
+#         end
+#         if diag_level > n + D #If we're past the levels we care about, don't compute coeffs
+#             continue
+#         end
+# 	    lvl = ntuple(i->level[i]-1,D)
+# 	    place = CartesianIndex{D}(ntuple(i->hat_index(x[i],level[i]),D))
+# 	    for f_number in CartesianRange(f_numbers)
+# 	    	value += coeffs[j]*V(k,lvl,place,f_number,x)
+# 			j+=1
+# 		end
+# 	end
+# 	return value
+#
+# end
 
 #------------------------------------------------------
 # And now here's the point of doing all of this:
