@@ -1,7 +1,6 @@
 include("DG_Functions.jl")
 include("Specific_DG_Functions.jl")
 include("DG_Methods.jl")
-include("Differentiation.jl")
 include("DG_Derivative.jl")
 
 #------------------------------------------------------
