@@ -2,11 +2,11 @@
 # Defining the DG Functions
 #------------------------------------------------------
 
-# TODO: rname this
+# TODO: rename this
 # I don't even think I need it
-@fastmath function f(j::Int,x::Real)
-	flipsign(x^j, x)
-end
+# @fastmath function f(j::Int,x::Real)
+# 	flipsign(x^j, x)
+# end
 
 
 #------------------------------------------------------

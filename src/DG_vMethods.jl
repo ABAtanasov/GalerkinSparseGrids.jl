@@ -1,6 +1,3 @@
-include("DG_Methods.jl")
-include("DG_Derivative_Matrix.jl")
-
 using Cubature
 #------------------------------------------------------
 # It is sometimes advantageous to have the coeffs as

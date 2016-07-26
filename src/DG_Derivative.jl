@@ -1,7 +1,3 @@
-include("DG_Functions.jl")
-include("Specific_DG_Functions.jl")
-include("DG_Methods.jl")
-#include("Differentiation.jl")
 
 #------------------------------------------------------
 # 1-D Derivatives

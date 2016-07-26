@@ -1,4 +1,3 @@
-include("DG_Functions.jl")
 
 const K_max = 10;
 
