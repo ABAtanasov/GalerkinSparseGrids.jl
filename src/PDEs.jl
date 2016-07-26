@@ -1,5 +1,5 @@
-using ODE
-using Plots
+#using ODE
+#using Plots
 
 function plotfunc1D(f::Function, a::Real, b::Real)
     xs=linspace(a,b,300)
