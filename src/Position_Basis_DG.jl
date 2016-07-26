@@ -1,6 +1,6 @@
-include("../Specific_DG_Functions.jl")
-include("../DG_Derivative.jl")
-include("../DG_Methods.jl")
+include("Specific_DG_Functions.jl")
+include("DG_Derivative.jl")
+include("DG_Methods.jl")
 
 function leg(f_number::Int, x::Real)
     return sqrt(2.0)*LegendreP(f_number-1, 2*x-1) 
