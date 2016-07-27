@@ -37,6 +37,15 @@ export vhier_coefficients_DG
 export vsparse_coefficients_DG
 export sD_matrix
 
+export get_coeffs
+export get_vcoeffs
+export reconstruct_coeffs
+export reconstruct_vcoeffs
+export pos_DLF_Matrix
+export periodic_pos_DLF_Matrix
+export hier_DLF_Matrix
+export periodic_hier_DLF_Matrix
+
 export pos_wave_equation4
 export pos_wave_equation45
 export hier_wave_equation

@@ -1,4 +1,3 @@
-
 function leg(f_number::Int, x::Real)
     return sqrt(2.0)*LegendreP(f_number-1, 2*x-1) 
 end

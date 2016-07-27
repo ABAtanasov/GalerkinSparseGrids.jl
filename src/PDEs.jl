@@ -34,9 +34,9 @@ function pos_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, time
 	return soln
 end
 
-function hier_wave_equation(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
-    f0coeffs=vhier_coefficients_DG(k, f0, (level,))
-    v0coeffs=vhier_coefficients_DG(k,v0, (level,))
+function hier_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
+    f0coeffs=vhier_coefficients_DG(k, f0, (level+1,))
+    v0coeffs=vhier_coefficients_DG(k,v0, (level+1,))
 	len = length(f0coeffs)
     D_op = periodic_hier_DLF_Matrix(0,k,level)
     laplac= *(D_op,D_op)
@@ -48,7 +48,7 @@ function hier_wave_equation(f0::Function, v0::Function, k::Int,level::Int, time0
 	    end
 	end
     y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-    soln=ode4((t,x)->*(RHS,x), y0, time0:1/(30*1<<level):time1;)
+    soln=ode45((t,x)->*(RHS,x), y0, [time0,time1])
 	return soln
 end
 
