@@ -48,7 +48,7 @@ export periodic_hier_DLF_Matrix
 
 export pos_wave_equation4
 export pos_wave_equation45
-export hier_wave_equation
+export hier_wave_equation45
 export norm_squared
 export pos_energy_func
 export hier_energy_func
