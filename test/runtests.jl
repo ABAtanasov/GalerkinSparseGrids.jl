@@ -67,7 +67,7 @@ for i in 1:length(energy_soln[2])
     @test abs(sqrt(energy_soln[2][i])-2*pi)<=1.0e-7
 end
 
-pos_soln=hier_wave_equation45(x->sin(2*pi*x),x->2*pi*cos(2*pi*x), 4,4,0,1);
+pos_soln=hier_wave_equation45(x->sin(2*pi*x[1]),x->2*pi*cos(2*pi*x[1]), 4,4,0,1);
 energy_soln=hier_energy_func(4,4,pos_soln)
 for i in 1:length(energy_soln[2])
     @test abs(sqrt(energy_soln[2][i])-2*pi)<=1.0e-7
