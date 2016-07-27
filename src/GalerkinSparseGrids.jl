@@ -14,8 +14,8 @@ include("PDEs.jl") # Solving the 1-D wave equation with periodic inital conditio
 
 
 #make naming scheme more systematic 
-export standardCoefficients
-export standardReconstruct
+export standard_coefficients
+export standard_reconstruct
 export hier_coefficients
 export sparse_coefficients
 export reconstruct 
@@ -40,14 +40,5 @@ export sD_matrix
 export wave_equation
 export norm_squared
 export pos_energy_func
-
-
-function total_value(n::Int)
-	value = 0
-	for i in 1:n
-		value += 1
-	end
-	value
-end
 
 end # module
