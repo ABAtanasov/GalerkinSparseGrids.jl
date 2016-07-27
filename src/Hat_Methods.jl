@@ -68,7 +68,7 @@ end
 #------------------------------------------------------
 # Lagrange Basis
 #------------------------------------------------------
-function standardCoefficients{D}(f::Function, ls::NTuple{D,Int})
+function standard_coefficients{D}(f::Function, ls::NTuple{D,Int})
     positions = ntuple(i -> (1<<ls[i])+1,D)
     coeffs = zeros(Float64, positions)
     for place in CartesianRange(positions)
@@ -78,7 +78,7 @@ function standardCoefficients{D}(f::Function, ls::NTuple{D,Int})
     return coeffs
 end
 
-function standardReconstruct{D,T<:Real}(coefficients::AbstractArray, ls::NTuple{D,Int}, xs::NTuple{D,T})
+function standard_reconstruct{D,T<:Real}(coefficients::AbstractArray, ls::NTuple{D,Int}, xs::NTuple{D,T})
     positions = ntuple(i -> (1<<ls[i])+1,D)
     value=0.0
     for place in CartesianRange(positions)

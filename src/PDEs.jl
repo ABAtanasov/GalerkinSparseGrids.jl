@@ -1,21 +1,5 @@
-#using ODE
-#using Plots
 
-function plotfunc1D(f::Function, a::Real, b::Real)
-    xs=linspace(a,b,300)
-    # y = [f((x,)) for x in xs]
-    ys=[f((x,)) for x in xs]
-    surf=plot(xs,ys)
-
-end
-
-# include("../DG_vMethods.jl")
-# include("../Specific_DG_Functions.jl")
-# include("../DG_Derivative.jl")
-# include("../DG_Methods.jl")
-# include("Position_Basis_DG.jl")
-#
-function wave_equation(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
+function pos_wave_equation4(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
 	f0coeffs=get_vcoeffs(k,level, f0)
 	v0coeffs=get_vcoeffs(k,level, v0)
 	len = length(f0coeffs)
@@ -28,7 +12,42 @@ function wave_equation(f0::Function, v0::Function, k::Int,level::Int, time0::Rea
 	    end
 	end
     y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-	soln=ode23((t,x)->*(RHS,x), y0, [time0, time1])
+    soln=ODE.ode4((t,x)->*(RHS,x), y0, time0:1/10:time1)
+	return soln
+end
+
+function pos_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
+	f0coeffs=get_vcoeffs(k,level, f0)
+	v0coeffs=get_vcoeffs(k,level, v0)
+	len = length(f0coeffs)
+    laplac= *(periodic_pos_DLF_Matrix(0,k,level),periodic_pos_DLF_Matrix(0,k,level))
+	RHS = spzeros(2*len, 2*len)
+	for i in len+1:2*len
+	    for j in 1:len
+	        RHS[i,j] = laplac[i-len,j]
+	        RHS[j,j+len] = 1.0
+	    end
+	end
+    y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
+	soln=ode45((t,x)->*(RHS,x), y0, [time0, time1])
+	return soln
+end
+
+function hier_wave_equation(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
+    f0coeffs=vhier_coefficients_DG(k, f0, (level,))
+    v0coeffs=vhier_coefficients_DG(k,v0, (level,))
+	len = length(f0coeffs)
+    D_op = periodic_hier_DLF_Matrix(0,k,level)
+    laplac= *(D_op,D_op)
+	RHS = spzeros(2*len, 2*len)
+	for i in len+1:2*len
+	    for j in 1:len
+	        RHS[i,j] = laplac[i-len,j]
+	        RHS[j,j+len] = 1.0
+	    end
+	end
+    y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
+    soln=ode4((t,x)->*(RHS,x), y0, time0:1/(30*1<<level):time1;)
 	return soln
 end
 
@@ -48,6 +67,24 @@ function pos_energy_func(k, level, soln::Tuple{Array{Float64,1},Array{Array{Floa
     energies = Array(Float64,len)
     
     D_op = periodic_pos_DLF_Matrix(0,k,level)
+
+    for i in 1:len
+        ux   = *(D_op,soln[2][i][1:num_coeffs])
+        udot = soln[2][i][num_coeffs+1:end]
+        energies[i] = norm_squared(ux)+norm_squared(udot)
+
+    end
+    return (times, energies)
+end
+
+function hier_energy_func(k, level, soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}})
+    len = length(soln[1])
+    num_coeffs = Int(round(length(soln[2][1])/2))
+    
+    times = copy(soln[1])
+    energies = Array(Float64,len)
+    
+    D_op = periodic_hier_DLF_Matrix(0,k,level)
 
     for i in 1:len
         ux   = *(D_op,soln[2][i][1:num_coeffs])
