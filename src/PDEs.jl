@@ -35,7 +35,7 @@ function pos_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, time
 end
 
 function hier_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
-    f0coeffs=vhier_coefficients_DG(k, f0, (level+1,))
+    f0coeffs=vhier_coefficients_DG(k,f0, (level+1,))
     v0coeffs=vhier_coefficients_DG(k,v0, (level+1,))
 	len = length(f0coeffs)
     D_op = periodic_hier_DLF_Matrix(0,k,level)

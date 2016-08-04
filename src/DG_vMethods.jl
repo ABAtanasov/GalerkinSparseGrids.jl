@@ -268,79 +268,33 @@ end
 
 
 
-#NOT WORKING: #
-# function vfull_reconstruct_DG{D,T<:Real}(k::Int, coeffs::Array{T}, ls::NTuple{D,Int}, x::Array{T})
-# 	value = 0.0
-# 	f_numbers= ntuple(i-> k ,D)
-# 	j=1
-# 	for level in CartesianRange(ls)
-# 	    lvl = ntuple(i->level[i]-1,D)
-# 	    place = CartesianIndex{D}(ntuple(i->hat_index(x[i],level[i]),D))
-# 		skip = 1
-# 		for i in 1:D
-# 			skip *= level[i]
-# 		end
-# 		j += skip * k^D
-# 	    for f_number in CartesianRange(f_numbers)
-# 	    	value += coeffs[j]*V(k,lvl,place,f_number,x)
-# 			j+=1
-# 		end
-#
-# 	end
-# 	return value
-# end
-#
-# function vsparse_reconstruct_DG{T<:Real}(k::Int, coeffs::Array{T},
-# 		 					n::Int, D::Int, x::Array{T})
-#
-# 	value = 0.0
-# 	f_numbers= ntuple(i-> k ,D)
-# 	ls = ntuple(i-> n+1 , D)
-# 	j=1
-# 	for level in CartesianRange(ls)
-#         diag_level=0;
-#         for q in 1:D
-#             diag_level+=level[q]
-#         end
-#         if diag_level > n + D #If we're past the levels we care about, don't compute coeffs
-#             continue
-#         end
-# 	    lvl = ntuple(i->level[i]-1,D)
-# 	    place = CartesianIndex{D}(ntuple(i->hat_index(x[i],level[i]),D))
-# 	    for f_number in CartesianRange(f_numbers)
-# 	    	value += coeffs[j]*V(k,lvl,place,f_number,x)
-# 			j+=1
-# 		end
-# 	end
-# 	return value
-#
-# end
+# You may want to implement fullreconstruct and sparsereconstruct
 
 #------------------------------------------------------
 # And now here's the point of doing all of this:
 # efficiently computing a size P log P matrix
 # to represent the derivative operator
 #------------------------------------------------------
-
-function sD_matrix{D}(i::Int, k::Int,
-    srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
-    len = length(srefVD[:,1])
-    sMat= spzeros(len,len)
-	f_numbers= ntuple(i-> k, D)
-    for c1 in 1:len
-        lpf = slice(srefVD,c1,:)
-        p = lpf[2][i]
-        for level in (lpf[1][i]):-1:1
-            level2= CartesianIndex{D}(ntuple(j-> j==i?level:(lpf[1][j]) , D))
-            place2= CartesianIndex{D}(ntuple(j-> j==i?p:(lpf[2][j]) ,D))
-            for f_n in 1:k
-                f_number2= CartesianIndex{D}(ntuple(j-> j==i?f_n:lpf[3][j] ,D))
-                c2 = srefDV[[level2,place2,f_number2]]
-                sMat[c2,c1] += precomputed_diffs[(k,lpf[1][i]-1,lpf[2][i],lpf[3][i])][level,f_n]
-            end
-            p = Int(ceil(p/2))
-        end
-    end
-    return sMat
-end
+#
+# function sD_matrix{D}(i::Int, k::Int,
+#     srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
+#     len = length(srefVD[:,1])
+#     sMat= spzeros(len,len)
+# 	f_numbers= ntuple(i-> k, D)
+#     for c1 in 1:len
+#         lpf = slice(srefVD,c1,:)
+#         p = lpf[2][i]
+#         for level in (lpf[1][i]):-1:1
+#             level2= CartesianIndex{D}(ntuple(j-> j==i?level:(lpf[1][j]) , D))
+#             place2= CartesianIndex{D}(ntuple(j-> j==i?p:(lpf[2][j]) ,D))
+#             for f_n in 1:k
+#                 f_number2= CartesianIndex{D}(ntuple(j-> j==i?f_n:lpf[3][j] ,D))
+#                 c2 = srefDV[[level2,place2,f_number2]]
+#                 sMat[c2,c1] += precomputed_diffs[(k,lpf[1][i]-1,lpf[2][i],lpf[3][i])][level,f_n]
+#             end
+#             p = Int(ceil(p/2))
+#         end
+#     end
+#     return sMat
+# end
 

@@ -1,7 +1,9 @@
 #using PyPlot
 using Cubature
 
-
+const ABS_TOL = 1.0e-10
+const MAX_EVALS = 1000
+const REL_TOL = 1.0e-8
 #------------------------------------------------------
 # In this julia script, we have all our methods for
 # taking a function and returning an appropriate list
@@ -110,7 +112,7 @@ function inner_product{D}(f::Function, g::Function, lvl::NTuple{D,Int}, place::C
     xmin = ntuple(i-> (place[i]-1)/(1<<(pos(lvl[i]-1))), D)
 	xmax = ntuple(i-> (place[i])/(1<<(pos(lvl[i]-1))), D)
 	h = (x-> f(x)*g(x))
-    (val, err) = hcubature(h, xmin, xmax; reltol=1e-8, abstol=1e-10, maxevals=250)
+    (val, err) = hcubature(h, xmin, xmax; reltol=REL_TOL, abstol=ABS_TOL, maxevals=MAX_EVALS)
 	return val 
 end
 
