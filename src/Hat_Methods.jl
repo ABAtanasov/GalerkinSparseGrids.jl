@@ -46,24 +46,6 @@ function ψ{D,T<:Real}(ls::NTuple{D,Int}, is::NTuple{D,Int}, xs::NTuple{D,T})
     return ans
 end
 
-#------------------------------------------------------
-# Quick plotting methods for 1-D and 2-D
-#------------------------------------------------------
-
-function plotfunc1D(f::Function)
-    xs=linspace(0,1,300)
-    # y = [f((x,)) for x in xs]
-    ys=[f((x,)) for x in xs]
-    surf=plot(xs,ys)
-end
-
-function plotfunc2D(f::Function)
-    xs=linspace(0,1,250)'
-    ys=linspace(0,1,250)
-    zs=[f((x,y)) for x in xs, y in ys]
-    surf=plot_surface(xs,ys,zs)
-end
-
 
 #------------------------------------------------------
 # Lagrange Basis

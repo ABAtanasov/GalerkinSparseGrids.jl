@@ -11,6 +11,7 @@ include("DG_vMethods.jl") # Going between a dictionary & a vector of coeffs
 include("DG_Derivative_Matrix.jl") # Precomputing derivative matrix for coeff vect
 include("Position_Basis_DG.jl") # Constructing ideal derivative matrix in position space
 include("PDEs.jl") # Solving the 1-D wave equation with periodic inital conditions 
+include("Multidim_Derivative.jl") # Multidimensional DG Derivatives in the full & sparse bases
 
 
 #make naming scheme more systematic 
@@ -52,5 +53,8 @@ export hier_wave_equation45
 export norm_squared
 export pos_energy_func
 export hier_energy_func
+
+export full_D_matrix
+export sparse_D_matrix
 
 end # module

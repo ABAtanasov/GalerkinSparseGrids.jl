@@ -153,61 +153,64 @@ function diff_basis_DG(k::Int, level::Int, place::Int, f_number::Int)
 end
 
 
+# The following code is not efficient for PDEsteps 
+# and is replaced in the vMethods by appropriate sparse matrices
 
-#------------------------------------------------------
-# Modifying a coefficient set to get derivative coeffs 
-# Asscociated with a specific basis function V
-#------------------------------------------------------
-
-function dchange{D,T<:Real}(k::Int,i::Int,dcoeffs::Dict{CartesianIndex{D}, Array{Array{Float64},D}},c::T,
-    lvl::NTuple{D,Int}, place::CartesianIndex{D}, f_number::CartesianIndex{D})
-    p = place[i]
-    for l in lvl[i]:-1:0
-        lvl1= ntuple(j-> j==i?l+1:(lvl[j]+1) ,D)
-        place1=ntuple(j-> j==i?p:place[j] ,D)
-        for f_n in 1:k
-            f_number1=ntuple(j-> j==i?f_n:f_number[j] ,D)
-            dcoeffs[CartesianIndex{D}(lvl1)][CartesianIndex{D}(place1)][CartesianIndex{D}(f_number1)] += c*precomputed_diffs[(k,lvl[i],place[i],f_number[i])][l+1,f_n]
-
-        end
-        p = Int(ceil(p/2))
-    end
-end
-
-#------------------------------------------------------
-# Finally, getting derivative coeffs from a coeff set
-#------------------------------------------------------
-
-function diff_coefficients_DG{D}(i::Int, k::Int,
-                        coeffs::Dict{CartesianIndex{D}, Array{Array{Float64},D}})
-    
-    dcoeffs=deepcopy(coeffs)
-    f_numbers= ntuple(i-> k, D)
-    
-    for key in keys(coeffs)
-        ks = ntuple(i -> 1<<pos(key[i]-2), D) 
-        for place in CartesianRange(ks)
-            for f_number in CartesianRange(f_numbers)
-                dcoeffs[key][place][f_number]=0
-            end
-        end
-    end
-	
-    for key in keys(coeffs)
-        level = ntuple(i-> key[i]-1,D)
-        ks = ntuple(i -> 1<<pos(level[i]-1), D) 
-        for place in CartesianRange(ks)
-            for f_number in CartesianRange(f_numbers)
-                c=coeffs[key][place][f_number]
-                dchange(k,i,dcoeffs,c,level,place,f_number)
-            end
-        end
-    end
-    return dcoeffs
-end
-
-
-
-
-
-
+#
+# #------------------------------------------------------
+# # Modifying a coefficient set to get derivative coeffs
+# # Asscociated with a specific basis function V
+# #------------------------------------------------------
+#
+# function dchange{D,T<:Real}(k::Int,i::Int,dcoeffs::Dict{CartesianIndex{D}, Array{Array{Float64},D}},c::T,
+#     lvl::NTuple{D,Int}, place::CartesianIndex{D}, f_number::CartesianIndex{D})
+#     p = place[i]
+#     for l in lvl[i]:-1:0
+#         lvl1= ntuple(j-> j==i?l+1:(lvl[j]+1) ,D)
+#         place1=ntuple(j-> j==i?p:place[j] ,D)
+#         for f_n in 1:k
+#             f_number1=ntuple(j-> j==i?f_n:f_number[j] ,D)
+#             dcoeffs[CartesianIndex{D}(lvl1)][CartesianIndex{D}(place1)][CartesianIndex{D}(f_number1)] += c*precomputed_diffs[(k,lvl[i],place[i],f_number[i])][l+1,f_n]
+#
+#         end
+#         p = Int(ceil(p/2))
+#     end
+# end
+#
+# #------------------------------------------------------
+# # Finally, getting derivative coeffs from a coeff set
+# #------------------------------------------------------
+#
+# function diff_coefficients_DG{D}(i::Int, k::Int,
+#                         coeffs::Dict{CartesianIndex{D}, Array{Array{Float64},D}})
+#
+#     dcoeffs=deepcopy(coeffs)
+#     f_numbers= ntuple(i-> k, D)
+#
+#     for key in keys(coeffs)
+#         ks = ntuple(i -> 1<<pos(key[i]-2), D)
+#         for place in CartesianRange(ks)
+#             for f_number in CartesianRange(f_numbers)
+#                 dcoeffs[key][place][f_number]=0
+#             end
+#         end
+#     end
+#
+#     for key in keys(coeffs)
+#         level = ntuple(i-> key[i]-1,D)
+#         ks = ntuple(i -> 1<<pos(level[i]-1), D)
+#         for place in CartesianRange(ks)
+#             for f_number in CartesianRange(f_numbers)
+#                 c=coeffs[key][place][f_number]
+#                 dchange(k,i,dcoeffs,c,level,place,f_number)
+#             end
+#         end
+#     end
+#     return dcoeffs
+# end
+#
+#
+#
+#
+#
+#

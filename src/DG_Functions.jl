@@ -107,19 +107,19 @@ end
 # Making a function have the first k moments vanish
 #------------------------------------------------------
 
-# For just one function, v:
-function orthogonalize_1{T<:Real}(v::Array{T})     #modifier of v
-    n= length(v)
-    k= Int(round(n/2))
-    legendre_polys=legendre(k-1)
-	#We need an orthogonal basis spanning the first k polys: x^0 to x^(k-1)
-    for j in 1:k
-        v[j]-= inner_product(v,legendre_polys[j])/product_matrix(j-1,j-1,n) 
-		#project out v by each element of this orthogonal basis
-    end
-    return v
-end
-#working 
+# # For just one function, v:
+# function orthogonalize_1{T<:Real}(v::Array{T})     #modifier of v
+#     n= length(v)
+#     k= Int(round(n/2))
+#     legendre_polys=legendre(k-1)
+# 	#We need an orthogonal basis spanning the first k polys: x^0 to x^(k-1)
+#     for j in 1:k
+#         v[j]-= inner_product(v,legendre_polys[j])/product_matrix(j-1,j-1,n)
+# 		#project out v by each element of this orthogonal basis
+#     end
+#     return v
+# end
+# #working
 
 # For a basis of functions:
 function orthogonalize_1{T<:Real}(Q_initial::Array{Array{T,1},1})
