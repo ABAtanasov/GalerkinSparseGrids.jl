@@ -8,21 +8,42 @@ using ODE
 #--------------------------------------
 
 #position:
+print("Testing position hat basis reconstruction 1-D... ")
+
 for l in 1:7
     @test hquadrature(x->(standard_reconstruct(standard_coefficients(x->sin(4*x[1]),(l,)), (l,), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1]<1/(1<<(l))
 end
 
+println("Test Passed.")
+
 #hierarchical:
+
+print("Testing hierarchical hat basis reconstruction 1-D... ")
+
 for l in 3:9
     @test hquadrature(x->(reconstruct(hier_coefficients(x->sin(4*x[1]),(l,)), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1]<1/(1<<(l))
 end
 
+println("Test Passed.")
 
 #hierarchical and position basis should yield the same results for hat functions:
+
+print("Testing that both reconstructions are equivalent... ")
+
 for l in 1:7
     @test abs(hquadrature(x->(standard_reconstruct(standard_coefficients(x->sin(4*x[1]),(l,)), (l,), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1]-
 			hquadrature(x->(reconstruct(hier_coefficients(x->sin(4*x[1]),(l+2,)), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1])<1.0e-14
 end
+
+println("Test Passed.")
+
+# import pos
+# for i in -10:0
+# 	@test pos(i)==0
+# end
+# for i in 0:10
+# 	@test pos(i)==i
+# end
 
 #multidimensional hat reconstruction: 
 
@@ -30,6 +51,8 @@ end
 #---------------------------------------
 # Testing regular hier DG reconstruction 
 #---------------------------------------
+
+print("Testing hierarchical discontinuous Galerkin (DG) basis reconstruction 1-D... ")
 
 for k in 1:5
     for l in 1:6
@@ -45,7 +68,11 @@ for k in 1:5
     end
 end
 
+println("Test Passed.")
+
 # testing sparse DG reconstruction in multidimensional space
+
+print("Testing sparse DG basis reconstruction 2-D... ")
 
 for k in 1:5
     for l in 1:6
@@ -54,7 +81,11 @@ for k in 1:5
     end
 end
 
+println("Test Passed.")
+
 # testing vector reconstruction 
+
+print("Testing hierarchical DG basis reconstruction 1-D with vector coefficients... ")
 
 for k in 1:5
     for l in 1:6
@@ -64,9 +95,13 @@ for k in 1:5
     end
 end
 
+println("Test Passed.")
+
 #--------------------------------------
 # testing differentiation 
 #--------------------------------------
+
+print("Testing differentiation 1-D DG basis... ")
 
 for k in 1:5
     for l in 1:6
@@ -80,6 +115,8 @@ for k in 1:5
     end
 end
 
+println("Test Passed.")
+
 #--------------------------------------
 # testing PDE solvers
 #--------------------------------------
@@ -87,16 +124,23 @@ end
 #a wave equation, testing conservation of energy
 
 #in position basis
+print("Testing wave equation solver 1-D position DG basis... ")
+
 pos_soln=pos_wave_equation45(x->sin(2*pi*x),x->2*pi*cos(2*pi*x), 4,4,0,1);
 energy_soln=pos_energy_func(4,4,pos_soln)
 for i in 1:length(energy_soln[2])
     @test abs(sqrt(energy_soln[2][i])-2*pi)<=1.0e-7
 end
 
+println("Test Passed.")
+
 #in hierarchical basis
+print("Testing wave equation solver 1-D hierarchical DG basis... ")
+
 pos_soln=hier_wave_equation45(x->sin(2*pi*x[1]),x->2*pi*cos(2*pi*x[1]), 4,4,0,1);
 energy_soln=hier_energy_func(4,4,pos_soln)
 for i in 1:length(energy_soln[2])
     @test abs(sqrt(energy_soln[2][i])-2*pi)<=1.0e-7
 end
 
+println("Test Passed.")
