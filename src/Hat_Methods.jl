@@ -77,26 +77,29 @@ end
 # This function is just for special boundary cases to make sure
 # that the number of coefficients for the constant & linear functions
 # doesn't become non-positive
-function pos(x::Int)
-    if x >= 0
-        return x
-    else
-        return 0
-    end
-end
-
-# Given a 1-D position and level, this tells us which place 
-# that position belongs to, at that level resolution
-function hat_index(x::Float64,l::Int)
-    if l<= 1
-        return 1
-    end
-    if x>= 1
-        return 2^(l-1)
-    else
-        return 1 + floor(Int, 2^(l-1) * x)
-    end
-end
+#
+# Commented out because its defined again in DG_Methods.jl
+#
+# function pos(x::Int)
+#     if x >= 0
+#         return x
+#     else
+#         return 0
+#     end
+# end
+#
+# # Given a 1-D position and level, this tells us which place
+# # that position belongs to, at that level resolution
+# function hat_index(x::Float64,l::Int)
+#     if l<= 1
+#         return 1
+#     end
+#     if x>= 1
+#         return 2^(l-1)
+#     else
+#         return 1 + floor(Int, 2^(l-1) * x)
+#     end
+# end
 
 
 # Conversely, given a level and place, this gets the position in the center
