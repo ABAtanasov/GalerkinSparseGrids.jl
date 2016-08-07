@@ -1,22 +1,5 @@
 using ODE
 
-function pos_wave_equation4(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
-	f0coeffs=get_vcoeffs(k,level, f0)
-	v0coeffs=get_vcoeffs(k,level, v0)
-	len = length(f0coeffs)
-    laplac= *(periodic_pos_DLF_Matrix(0,k,level),periodic_pos_DLF_Matrix(0,k,level))
-	RHS = spzeros(2*len, 2*len)
-	for i in len+1:2*len
-	    for j in 1:len
-	        RHS[i,j] = laplac[i-len,j]
-	        RHS[j,j+len] = 1.0
-	    end
-	end
-    y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-    soln=ODE.ode4((t,x)->*(RHS,x), y0, time0:1/10:time1)
-	return soln
-end
-
 function pos_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
 	f0coeffs=get_vcoeffs(k,level, f0)
 	v0coeffs=get_vcoeffs(k,level, v0)
