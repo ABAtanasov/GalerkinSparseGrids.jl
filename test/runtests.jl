@@ -53,7 +53,8 @@ println("Tests Passed.")
 print("Testing position hat basis reconstruction 1-D... ")
 
 for l in 1:7
-    @test hquadrature(x->(standard_reconstruct(standard_coefficients(x->sin(4*x[1]),(l,)), (l,), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1]<1/(1<<(l))
+    pos_coeffs = standard_coefficients(x->sin(4*x[1]),(l,))
+    @test hquadrature(x->(standard_reconstruct(pos_coeffs, (l,), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1]<1/(1<<(l))
 end
 
 println("Test Passed.")
@@ -63,7 +64,8 @@ println("Test Passed.")
 print("Testing hierarchical hat basis reconstruction 1-D... ")
 
 for l in 3:9
-    @test hquadrature(x->(reconstruct(hier_coefficients(x->sin(4*x[1]),(l,)), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1]<1/(1<<(l))
+    hier_coeffs = hier_coefficients(x->sin(4*x[1]),(l,))
+    @test hquadrature(x->(reconstruct(hier_coeffs, (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1]<1/(1<<(l))
 end
 
 println("Test Passed.")
@@ -73,15 +75,43 @@ println("Test Passed.")
 print("Testing that both reconstructions are equivalent... ")
 
 for l in 1:7
-    @test abs(hquadrature(x->(standard_reconstruct(standard_coefficients(x->sin(4*x[1]),(l,)), (l,), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1]-
-			hquadrature(x->(reconstruct(hier_coefficients(x->sin(4*x[1]),(l+2,)), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1])<1.0e-14
+    pos_coeffs=standard_coefficients(x->sin(4*x[1]),(l,))
+    hier_coeffs = hier_coefficients(x->sin(4*x[1]),(l+2,))
+    @test abs(hquadrature(x->(standard_reconstruct(pos_coeffs, (l,), (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1]-
+            hquadrature(x->(reconstruct(hier_coeffs, (x,))-sin(4*x))^2,0,1;abstol=1.0e-9)[1])<1.0e-14
 end
 
 println("Test Passed.")
 
-
-
 #multidimensional hat reconstruction: 
+
+print("Testing position hat basis reconstruction 2-D... ")
+
+for l in 1:5
+
+    hier_coeffs = standard_coefficients(x->sin(4*x[1]+x[2]),(l,l))
+    @test hcubature(x->(standard_reconstruct(hier_coeffs, (l,l), (x[1],x[2]))-sin(4*x[1]+x[2]))^2,[0,0],[1,1];abstol=1.0e-9, maxevals=500)[1]<1/(1<<(l))
+end
+
+println("Test Passed.")
+
+print("Testing hierarchical hat basis reconstruction 2-D... ")
+
+for l in 3:7
+    hier_coeffs = hier_coefficients(x->sin(4*x[1]+x[2]),(l,l))
+    @test hcubature(x->(reconstruct(hier_coeffs, (x[1],x[2]))-sin(4*x[1]+x[2]))^2,[0,0],[1,1];abstol=1.0e-9)[1]<1/(1<<(l))
+end
+
+println("Test Passed.")
+
+print("Testing sparse hat basis reconstruction 2-D... ")
+
+for l in 1:5
+    sparse_coeffs = sparse_coefficients(x->sin(4*x[1]+x[2]),l,2)
+    @test hcubature(x->(reconstruct(sparse_coeffs, (x[1],x[2]))-sin(4*x[1]+x[2]))^2,[0,0],[1,1];abstol=1.0e-9)[1]<1/(1<<(l))
+end
+
+println("Test Passed.")
 
 
 #---------------------------------------
