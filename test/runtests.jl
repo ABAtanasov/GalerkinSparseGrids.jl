@@ -163,6 +163,52 @@ end
 
 println("Test Passed.")
 
+#testing D2V and V2D
+
+#full case
+
+print("Testing D2V and V2D Full Case 2D... ")
+
+for k in 1:5
+    for l in 1:5
+        dict = hier_coefficients_DG(k,x->sin(4*x[1]+x[2]),(l,l))
+        vect = Full_D2V(k,dict,(l,l))
+        @test Full_V2D(k,vect,(l,l))==dict
+    end
+end
+
+for k in 1:5
+    for l in 1:5
+        vect = vhier_coefficients_DG(k,x->sin(4*x[1]+x[2]),(l,l))
+        dict = Full_V2D(k,vect,(l,l))
+        @test Full_D2V(k,dict,(l,l))==vect
+    end
+end
+
+println("Test Passed.")
+
+#sparse case
+
+print("Testing D2V and V2D Sparse Case 2D... ")
+
+for k in 1:5
+    for l in 1:5
+        dict = sparse_coefficients_DG(k,x->sin(4*x[1]+x[2]),l,2)
+        vect = Sparse_D2V(k,dict,l)
+        @test Sparse_V2D(k,vect,l,2)==dict
+    end
+end
+
+for k in 1:5
+    for l in 1:5
+        vect = vsparse_coefficients_DG(k,x->sin(4*x[1]+x[2]),l,2)
+        dict= Sparse_V2D(k,vect,l,2)
+        @test Sparse_D2V(k,dict,l)==vect
+    end
+end
+
+println("Test Passed.")
+
 #--------------------------------------
 # testing Differentiation 
 #--------------------------------------
@@ -179,6 +225,23 @@ for k in 1:5
 	    dict=Full_V2D(3,dvect,(5,))
 	    @test hquadrature(x->(reconstruct_DG(3,dict,[x[1]])-4*cos(4*x[1]))^2,0,1; abstol=1.0e-10)[1] < 1/(1<<((l+k-2)))
     end
+end
+
+println("Test Passed.")
+
+print("Testing differentiation 2-D full DG basis... ")
+
+k=3
+for l in 2:5
+    srefVD = full_referenceV2D(k, (l+1,l+1));
+    srefDV = full_referenceD2V(k, (l+1,l+1));
+    D_op = full_D_matrix(1,k,l,srefVD, srefDV)
+    vcoeffs=vhier_coefficients_DG(k, x->cos(2*pi*x[1])*cos(2*pi*x[2]),(l+1,l+1))
+    dvcoeffs = *(D_op,vcoeffs)
+    dict= Full_V2D(k,vcoeffs,(l+1,l+1))
+    ddict= Full_V2D(k,dvcoeffs,(l+1,l+1))
+    err= hcubature(x->(reconstruct_DG(k,ddict,[x[1],x[2]])+2*pi*sin(2*pi*x[1])*cos(2*pi*x[2]))^2,[0,0],[1,1],abstol=1.0e-10,maxevals=500)[1]#< 1/(1<<(l+k-2))
+    @test err<1/(1<<(k+l-2))
 end
 
 println("Test Passed.")
