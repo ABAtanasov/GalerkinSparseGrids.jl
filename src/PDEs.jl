@@ -105,6 +105,31 @@ function sparse_wave_equation45(f0::Function, v0::Function, k::Int,n::Int, D::In
 	return soln
 end
 
+function sparse_wave_equation78(f0::Function, v0::Function, k::Int,n::Int, D::Int, time0::Real, time1::Real)
+    f0coeffs=vsparse_coefficients_DG(k,f0,n,D)
+    v0coeffs=vsparse_coefficients_DG(k,v0,n,D)
+    srefVD = sparse_referenceV2D(k, n, D);
+    srefDV = sparse_referenceD2V(k, n, D);
+    
+	len = length(f0coeffs)
+    laplac=spzeros(len, len)
+    for i in 1:D
+        D_op = sparse_D_matrix(i,k,n,srefVD, srefDV)
+        laplac += *(D_op,D_op)
+    end
+	RHS = spzeros(2*len, 2*len)
+    
+	for i in len+1:2*len
+	    for j in 1:len
+	        RHS[i,j] = laplac[i-len,j]
+	        RHS[j,j+len] = 1.0
+	    end
+	end
+    y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
+    soln=ode78((t,x)->*(RHS,x), y0, [time0,time1])
+	return soln
+end
+
 
 function sparse_energy_func(k::Int, n::Int, D::Int, soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}})
     len = length(soln[1])
@@ -121,7 +146,7 @@ function sparse_energy_func(k::Int, n::Int, D::Int, soln::Tuple{Array{Float64,1}
     for i in 1:len
         ux   = [*(D_op[j],soln[2][i][1:num_coeffs]) for j in 1:D]
         udot = soln[2][i][num_coeffs+1:end]
-        energies[i] = sum([norm_squared(ux[j]) for j in 1:D])#+norm_squared(udot)
+        energies[i] = sum([norm_squared(ux[j]) for j in 1:D])+norm_squared(udot)
 
     end
     return (times, energies)

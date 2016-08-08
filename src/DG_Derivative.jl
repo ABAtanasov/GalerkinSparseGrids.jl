@@ -8,20 +8,12 @@ function dLegendreP(k,x)
     return array2poly(symbolic_diff(Leg_coeffs[k+1]),x)
 end
 
-function dLegendreP(k)
-    k<=K_max || throw(DomainError())
-    return array2poly(symbolic_diff(Leg_coeffs[k+1]))
-end
 
 function dh(k,f_number,x)
     f_number<=k || throw(DomainError())
     return array2poly(symbolic_diff((DG_coeffs[k])[f_number]),x)
 end
 
-function dh(k,f_number)
-    f_number<=k || throw(DomainError())
-    return array2poly(symbolic_diff((DG_coeffs[k])[f_number]))
-end
 
 #------------------------------------------------------
 # Shifted and scaled derivatives: v
@@ -42,38 +34,17 @@ function dv(k::Int, level::Int, place::Int, f_number::Int)
     return (xs::Real -> dv(k,level,place,f_number,xs))
 end
 
-#------------------------------------------------------
-# Multidimensional derivatives
-#------------------------------------------------------
-
-function dV{D,T<:Real}(i::Int, k::Int, level::NTuple{D,Int}, 
-    place::CartesianIndex{D}, f_number::CartesianIndex{D}, xs::AbstractArray{T})
-
-    ans = one(eltype(xs))
-    for j = 1:D
-        if j == i
-            ans *= dv(k, level[j], place[j], f_number[j], xs[j])
-        else
-            ans *= v(k, level[j], place[j], f_number[j], xs[j])
-        end
-    end
-    return ans
-end
-
-function dV{D}(i, k, level::NTuple{D,Int}, 
-                place::CartesianIndex{D}, f_number::CartesianIndex{D})
-    return (xs::AbstractArray{Real} -> dV(i, k, level, place, f_number, xs))
-end
 
 #------------------------------------------------------
 # Numerical Inner Product
 #------------------------------------------------------
 
-function inner_product1D(f::Function, g::Function, lvl::Int, place::Int)
+function inner_product1D(f::Function, g::Function, lvl::Int, place::Int; 
+								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
     xmin = (place-1)/(1<<(pos(lvl-1)))
 	xmax = (place)/(1<<(pos(lvl-1)))
 	h = (x-> f(x)*g(x))
-    (val, err) = hquadrature(h, xmin, xmax; reltol=1e-8, abstol=1e-8, maxevals=0)
+    (val, err) = hquadrature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)
 	return val 
 end
 #There may be a way to do this all symbolically, with no use for numerics
@@ -112,7 +83,8 @@ function hDh(k::Int, f_number1::Int, f_number2::Int)
 	return inner_product(DG_coeffs[k][f_number1], symbolic_diff(DG_coeffs[k][f_number2]))
 end
 
-function vDv(k::Int, lvl1::Int, place1::Int, f_number1::Int, lvl2::Int, place2::Int, f_number2::Int)
+function vDv(k::Int, lvl1::Int, place1::Int, f_number1::Int, lvl2::Int, place2::Int, f_number2::Int;
+					rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
 	if lvl1 == lvl2
 		if lvl1 == 0
 			return 2*legendreDlegendre(f_number1, f_number2)
@@ -124,11 +96,13 @@ function vDv(k::Int, lvl1::Int, place1::Int, f_number1::Int, lvl2::Int, place2::
 	end
 	if lvl1 < lvl2
 		if lvl1 == 0
-            return inner_product1D(v(k,0,1,f_number1), dv(k,lvl2,place2,f_number2), lvl2, place2)
+            return inner_product1D(v(k,0,1,f_number1), dv(k,lvl2,place2,f_number2), lvl2, place2;
+									rel_tol = rel_tol, abs_tol = abs_tol, max_evals=max_evals)
 		end
 		if (1<<(lvl2-lvl1))*place1 >= place2 && (1<<(lvl2-lvl1))*(place1-1) < place2
             #@show (lvl1, place1, lvl2, place2)
-            return inner_product1D(v(k,lvl1,place1,f_number1), dv(k,lvl2,place2,f_number2), lvl2, place2)
+            return inner_product1D(v(k,lvl1,place1,f_number1), dv(k,lvl2,place2,f_number2), lvl2, place2;
+									rel_tol = rel_tol, abs_tol = abs_tol, max_evals=max_evals)
 		end
 		return 0.0
     end

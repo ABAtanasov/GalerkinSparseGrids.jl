@@ -25,7 +25,7 @@ end
 
 #precompute Legendre
 
-const Leg_coeffs=legendre(K_max)
+Leg_coeffs=legendre(K_max)
 
 function LegendreP(k,x)
     k<=K_max || throw(DomainError())
@@ -39,7 +39,7 @@ end
 
 #precompute DG functions
 
-const DG_coeffs=Array(Array{Array{Float64,1},1}, K_max)
+DG_coeffs=Array(Array{Array{Float64,1},1}, K_max)
 #TODO Make this a 2D array 
 for i in 1:K_max
     DG_coeffs[i] = DG_Basis(i)

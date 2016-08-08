@@ -134,7 +134,7 @@ end
 println("Test Passed.")
 
 #--------------------------------------
-# testing differentiation 
+# testing Differentiation 
 #--------------------------------------
 
 print("Testing differentiation 1-D DG basis... ")
@@ -160,6 +160,9 @@ println("Test Passed.")
 #a wave equation, testing conservation of energy
 
 #in position basis
+
+import GalerkinSparseGrids.pos_energy_func
+
 print("Testing wave equation solver 1-D position DG basis... ")
 
 pos_soln=pos_wave_equation45(x->sin(2*pi*x),x->2*pi*cos(2*pi*x), 4,4,0,1);
@@ -173,10 +176,37 @@ println("Test Passed.")
 #in hierarchical basis
 print("Testing wave equation solver 1-D hierarchical DG basis... ")
 
-pos_soln=hier_wave_equation45(x->sin(2*pi*x[1]),x->2*pi*cos(2*pi*x[1]), 4,4,0,1);
-energy_soln=hier_energy_func(4,4,pos_soln)
+import GalerkinSparseGrids.hier_energy_func
+
+hier_soln=hier_wave_equation45(x->sin(2*pi*x[1]),x->2*pi*cos(2*pi*x[1]), 4,4,0,1);
+energy_soln=hier_energy_func(4,4,hier_soln)
 for i in 1:length(energy_soln[2])
     @test abs(sqrt(energy_soln[2][i])-2*pi)<=1.0e-7
+end
+
+println("Test Passed.")
+
+
+import GalerkinSparseGrids.sparse_energy_func
+
+print("Testing wave equation solver on 2-D sparse DG basis... ")
+
+sparse_soln=sparse_wave_equation78(x->sin(2*pi*x[1])*sin(2*pi*x[2]),x->0,3,5,2,0,1);
+senergy=sparse_energy_func(3,5,2,sparse_soln)
+@test senergy[2][1]-senergy[2][end]>0
+@test abs(senergy[2][1]-senergy[2][end])<1.0e-8
+
+for i in 1:length(senergy[1])
+    @test abs(sqrt(senergy[2][i])-sqrt(2)*pi)<=1.0e-4
+end
+
+soln=sparse_wave_equation45(x->sin(2*pi*x[1])*sin(2*pi*x[2]),x->0,3,5,2,0,1);
+senergy=sparse_energy_func(3,5,2,soln)
+@test senergy[2][1]-senergy[2][end]>0
+@test abs(senergy[2][1]-senergy[2][end])<1.0e-8
+
+for i in 1:length(senergy[1])
+    @test abs(sqrt(senergy[2][i])-sqrt(2)*pi)<=1.0e-4
 end
 
 println("Test Passed.")
