@@ -1,11 +1,9 @@
-
-#The derivative in the hierarchical basis 
 function full_D_matrix{D}(i::Int, k::Int, n::Int,
     srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
     
-    V2D_1D = full_referenceV2D(k,(n,))
-    D2V_1D = full_referenceD2V(k,(n,))
-    Dmat_1D = periodic_hier_DLF_Matrix(0, k, n-1)
+    V2D_1D = full_referenceV2D(k,(n+1,))
+    D2V_1D = full_referenceD2V(k,(n+1,))
+    Dmat_1D = periodic_hier_DLF_Matrix(0, k, n)
 
     len = length(srefVD[:,1])
     sMat= spzeros(len,len)
@@ -37,12 +35,11 @@ function full_D_matrix{D}(i::Int, k::Int, n::Int,
     return sMat
 end
 
-#The derivative in the sparse basis
 function sparse_D_matrix{D}(i::Int, k::Int, n::Int,
     srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
-    V2D_1D = full_referenceV2D(k,(n,))
-    D2V_1D = full_referenceD2V(k,(n,))
-    Dmat_1D = periodic_hier_DLF_Matrix(0, k, n-1)
+    V2D_1D = full_referenceV2D(k,(n+1,))
+    D2V_1D = full_referenceD2V(k,(n+1,))
+    Dmat_1D = periodic_hier_DLF_Matrix(0, k, n)
     
     len = length(srefVD[:,1])
     sMat= spzeros(len,len)

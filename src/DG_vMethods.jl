@@ -244,8 +244,8 @@ end
 
 function vsparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int;
 								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
- 	l = sparse_size(k,n,D)
-    coeffs = Array(Float64, l)
+ 	len = sparse_size(k,n,D)
+    coeffs = Array(Float64, len)
 	f_numbers= ntuple(i-> k, D)
 	ls = ntuple(i-> (n+1),D)
 	j=1
