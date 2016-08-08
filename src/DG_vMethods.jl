@@ -220,7 +220,8 @@ end
 # and return vectors
 #------------------------------------------------------
 
-function vhier_coefficients_DG{D}(k::Int, f::Function, ls::NTuple{D,Int})
+function vhier_coefficients_DG{D}(k::Int, f::Function, ls::NTuple{D,Int};
+							rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
  	l = k^D * 2^(sum(ls)-D)
     coeffs = Array(Float64, l)
 	f_numbers= ntuple(i-> k, D)
@@ -230,7 +231,8 @@ function vhier_coefficients_DG{D}(k::Int, f::Function, ls::NTuple{D,Int})
 		lvl = ntuple(i -> level[i]-1,D)
         for place in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-                coeffs[j]=get_coefficient_DG(k,f,lvl,place,f_number)
+                coeffs[j]=get_coefficient_DG(k,f,lvl,place,f_number;
+									rel_tol = rel_tol, abs_tol=abs_tol, max_evals=max_evals)
 				j+=1          
             end
         end
@@ -240,7 +242,8 @@ end
 
 
 
-function vsparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int)
+function vsparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int;
+								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
  	l = sparse_size(k,n,D)
     coeffs = Array(Float64, l)
 	f_numbers= ntuple(i-> k, D)
@@ -258,7 +261,8 @@ function vsparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int)
 		lvl = ntuple(i -> level[i]-1,D)
         for place in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-                coeffs[j]=get_coefficient_DG(k,f,lvl,place,f_number)
+                coeffs[j]=get_coefficient_DG(k,f,lvl,place,f_number;
+									rel_tol = rel_tol, abs_tol=abs_tol, max_evals=max_evals)
 				j+=1          
             end
         end

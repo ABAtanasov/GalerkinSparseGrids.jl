@@ -24,24 +24,14 @@ end
 
 
 
-function get_coeffs(k::Int, level::Int, f::Function)
-    coeffs = Array(Float64,(1<<level, k))
-    for place in 1:(1<<level)
-        for f_number in 1:k
-            coeffs[place,f_number] = hquadrature(x->(basis(level,place,f_number,x)*f(x)),
-            (place-1)/(1<<level), place/(1<<level), abstol=1.0e-10)[1]
-        end
-    end
-    return coeffs
-end
 
-function get_vcoeffs(k::Int, level::Int, f::Function)
+function get_vcoeffs(k::Int, level::Int, f::Function; rel_tol = REL_TOL, abs_tol=ABS_TOL, max_evals=MAX_EVALS)
     vcoeffs = Array(Float64,(1<<level)*(k))
     i=1
     for place in 1:(1<<level)
         for f_number in 1:k
             vcoeffs[i] = hquadrature(x->(basis(level,place,f_number,x)*f(x)),
-                            (place-1)/(1<<level), place/(1<<level), abstol=1.0e-10)[1]
+                            (place-1)/(1<<level), place/(1<<level), abstol=abs_tol)[1]
             i+=1
         end
     end
@@ -49,18 +39,6 @@ function get_vcoeffs(k::Int, level::Int, f::Function)
 end
 
 
-
-function reconstruct_coeffs(coeffs::Array{Float64,2}, x::Real)
-    value = 0.0;
-    level = Int(round(log2(length(coeffs[:,1]))))
-    k = length(coeffs[1,:])
-    for place in 1:(1<<level)
-        for f_number in 1:k
-            value += coeffs[place,f_number]*basis(level,place,f_number,x)
-        end
-    end
-    return value
-end
 
 function reconstruct_vcoeffs(k::Int, level::Int, vcoeffs::Array{Float64,1}, x::Real)
     value = 0.0
@@ -75,10 +53,10 @@ function reconstruct_vcoeffs(k::Int, level::Int, vcoeffs::Array{Float64,1}, x::R
 end
 
 
-function legvDv(level, place1, f_number1, place2, f_number2)
+function legvDv(level, place1, f_number1, place2, f_number2; rel_tol = REL_TOL, abs_tol=ABS_TOL, max_evals=MAX_EVALS)
     if place1 == place2
         return hquadrature(x->(basis(level,place1,f_number1,x)*dbasis(level,place2,f_number2,x)),
-            (place1-1)/(1<<level), place1/(1<<level), abstol=1.0e-10)[1]
+            (place1-1)/(1<<level), place1/(1<<level); abstol=abs_tol)[1]
     end
     return 0.0
 end
@@ -346,13 +324,13 @@ end
 #------------------------------------------------------
 
 
-function hier2pos(k::Int, max_level::Int)
+function hier2pos(k::Int, max_level::Int; abs_tol = ABS_TOL)
     mat = spzeros((1<<max_level)*(k), (1<<max_level)*(k))
     j=1
     for level in 0:max_level
         for place in 1:(1<<pos(level-1))
             for f_number in 1:k
-                ans = get_vcoeffs(k,max_level,x->v(k,level,place,f_number,x))
+                ans = get_vcoeffs(k,max_level,x->v(k,level,place,f_number,x); abs_tol = abs_tol)
                 for i in 1:length(ans)
                     if abs(ans[i])<1.0e-15
                         continue

@@ -1,9 +1,10 @@
 #using PyPlot
 using Cubature
 
+const REL_TOL = 1.0e-8
 const ABS_TOL = 1.0e-10
 const MAX_EVALS = 1000
-const REL_TOL = 1.0e-8
+
 #------------------------------------------------------
 # In this julia script, we have all our methods for
 # taking a function and returning an appropriate list
@@ -108,19 +109,21 @@ end
 # This takes an inner product, but since for higher levels our inner product
 # is only concerned with a specific region in the grid, we restrict to that
 # appropriately, depending on the level
-function inner_product{D}(f::Function, g::Function, lvl::NTuple{D,Int}, place::CartesianIndex{D})
+function inner_product{D}(f::Function, g::Function, lvl::NTuple{D,Int}, place::CartesianIndex{D}; 
+								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
     xmin = ntuple(i-> (place[i]-1)/(1<<(pos(lvl[i]-1))), D)
 	xmax = ntuple(i-> (place[i])/(1<<(pos(lvl[i]-1))), D)
 	h = (x-> f(x)*g(x))
-    (val, err) = hcubature(h, xmin, xmax; reltol=REL_TOL, abstol=ABS_TOL, maxevals=MAX_EVALS)
+    (val, err) = hcubature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)
 	return val 
 end
 
 # We obtain coefficients simply by doing inner products, it's easy :) 
 # Only hard part is inner product integrations can be slower than we wante :(
 function get_coefficient_DG{D}(k::Int, 
-				f::Function, lvl::NTuple{D,Int}, place::CartesianIndex{D}, f_number::CartesianIndex{D})
-    return inner_product(f, V(k,lvl,place,f_number),lvl,place)
+				f::Function, lvl::NTuple{D,Int}, place::CartesianIndex{D}, f_number::CartesianIndex{D};
+				rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
+    return inner_product(f, V(k,lvl,place,f_number),lvl,place; rel_tol = rel_tol, abs_tol = abs_tol, max_evals=max_evals)
 end 
 
 #------------------------------------------------------
