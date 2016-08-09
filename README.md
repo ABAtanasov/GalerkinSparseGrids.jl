@@ -29,16 +29,16 @@ To interpolate a multivariate function in the multiresolution (aka hierarchical)
 
 Similarly, we can interpolate in a sparse basis (equivalent to the multiresolution basis in 1D) using `sparse_coefficients(f::Function, n::Int, D::Int)` where `n` is the max 1-norm of the multi-level and `D` is the dimension of the space. For example in 2-D:
 
-    sparse_coeffs = sparse_coefficients(x->sin(4*x[1]+x[2]),5,2)
+    scoeffs = sparse_coefficients(x->sin(4*x[1]+x[2]),5,2)
 
 
 For either the hierarchical and sparse basis coefficients, we can reconstruct the interpolation at a point xs using the `reconstruct(coefficients::Dict{CartesianIndex{D},Array{Float64,D}}, x::NTuple{D,T})` function. For example we could take the prior result and evaluate at the point (.4,.6) by
 
-    reconstruct(sparse_coeffs, (.4,.6))
+    reconstruct(scoeffs, (.4,.6))
 
 ### DG Basis
 
-The DG position basis in consists of Legendre polynomials supported on subintervals of the form `(i 2^-l, (i+1) 2^-l )`. By construction, this gives an orthonormal basis.  
+The DG position basis in consists of `k` Legendre polynomials (from degree 0 to `k-1`) supported on subintervals of the form `(i 2^-level, (i+1) 2^-level)`. By construction, this gives an orthonormal basis. For this standard 1-D DG basis, the method `get_vcoeffs(k::Int, level::Int, f::Function)` gives an appropriate array of coefficients that can be reconstructed at a point `x` using `reconstruct_vcoeffs(k,level,coefficients,x)`. 
 
 The corresponding multiresolution basis formed by a series of orthogonalizations implemented in `DG_Functions.jl`. This basis spans the same space as the position basis, but makes use of discontinuous basis (c.f. `Specific_DG_Functions.jl`) to achieve the hierarchical structure.
 
@@ -46,9 +46,9 @@ We can interpolate multi-dimensional functions using the DG basis by using the m
 
 ### Coefficient Vectors
 
-It is best to work directly with vectors of coefficients rather than dictionary or tree-like structures, as this way the differentiation operators are sparse matrices that can multiply the vectors with very good performance. 
+It is best to work directly with vectors of coefficients rather than dictionary or tree-like structures when defining differentiation operators. This way, derivatives are represented by sparse matrices that can act on the coefficient vectors with very fast performance. This is ideal for time evolution.
 
-For this reason we have `vhier_coefficients_DG` and `vsparse_coefficients_DG` methods that work exactly the same as their non-vector relatives, but return a coefficient vector instead of a dictionary. 
+For this reason we have the `vhier_coefficients_DG` and `vsparse_coefficients_DG` methods that work exactly the same as their non-vector relatives, but return a coefficient vector instead of a dictionary. 
 
 We can convert between vectors and appropriate dictionaries as follows (for k = 3, l = (5,5) or n=5):
 
@@ -61,8 +61,6 @@ We can convert between vectors and appropriate dictionaries as follows (for k = 
     # Note this also means sparse_vcoeffs = Sparse_D2V(3,sparse_dict,5) 
 
 In addition, we can generate a lookup by using the `full_referenceD2V`/`V2D` and `sparse_referenceD2V`/`V2D` that takes us from a dictionary-like level-place-fnumber scheme to a specific place in a coefficient vector and vice versa. 
-    
-    
 
 ### Differentiation Schemes
 
@@ -72,7 +70,7 @@ For now, we assume periodic boundary conditions. It is not too difficult to gene
 
 The derivative matrix for the position basis is `periodic_pos_DLF_Matrix(alpha::Real, k::Int, max_level::Int)` while the matrix for the hierarchical basis is obtained from this by conjugation and can be called by `periodic_hier_DLF_Matrix(alpha::Real, k::Int, max_level::Int)`. Here DLF stands for Derivative with Lax-Friedrichs flux. 
 
-It is advised, for now, to have alpha = 0 (so no true Lax-Friedrichs flux is involved).
+It is advised, for now, to have alpha = 0 (so no Lax-Friedrichs flux is involved).
 
 ### Solving Hyperbolic PDEs
 
@@ -84,11 +82,9 @@ For example, a standing wave solution from 0 to 1 seconds with k=3, l=5 is given
 
 The same syntax applies to solving the problem in the hierarchical 1-D basis using `hier_wave_equation45`. This is equivalent to the position basis solution. 
 
-For higher dimensions, we use sparse grids to yield the methods `sparse_wave_equation45` and `sparse_wave_equation78`. For example, to solve a standing wave in 2-D from 0 to 1 seconds at k=4, l = 6 we can use
+For higher dimensions, we use sparse grids to yield the methods `sparse_wave_equation45` and `sparse_wave_equation78`. For example, to solve a standing wave in 2-D from 0 to 1 seconds at k=4, n = 6 we can use
 
-    sparse_soln = sparse_wave_equation78(x->sin(2*pi*x[1])*sin(2*pi*x[2]), x-> 0, 4, 6, 2, 0, 1)
-
-
+    sparse_soln = sparse_wave_equation45(x->sin(2*pi*x[1])*sin(2*pi*x[2]), x-> 0, 4, 6, 2, 0, 1)
 
 ## Future updates
 
