@@ -13,7 +13,7 @@ This technique in particular allows for an efficient numerical solution of Einst
 Within Julia, use the package manager to write
 `Pkg.add("GalerkinSparseGrids")` to locally install this package. 
 
-The latest version is available from <https://github.com/AlexAtanasov14/GalerkinSparseGrids.jl>. You can access it by running `git pull https://github.com/AlexAtanasov14/GalerkinSparseGrids.jl master` from the appropriate package directory.
+The latest version is available to be pulled from <https://github.com/ABAtanasov/GalerkinSparseGrids.jl>. You can access it by running `git pull https://github.com/ABAtanasov/GalerkinSparseGrids.jl master` from the appropriate package directory.
 
 ## Functionality
 
@@ -76,15 +76,15 @@ It is advised, for now, to have alpha = 0 (so no Lax-Friedrichs flux is involved
 
 All solvers can be found in the `PDEs.jl` script. The simplest one solves the wave equation in 1-D using the DG position basis `pos_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)`. The returned value is the same as that returned by `ode45` in `ODE.jl`
     
-For example, a standing wave solution from 0 to 1 seconds with k=3, l=5 is given by:
+For example, for a standing wave solution from t_0 to t_1 seconds at k polynomials on each division & hierarchical level n:
 
-    pos_soln = pos_wave_equation45(x->sin(2*pi*x[1]), x->0, 3, 5, 0, 1)
+    pos_soln = pos_wave_equation45(x->sin(2*pi*x[1]), x->0, k, l, t_0, t_1)
 
 The same syntax applies to solving the problem in the hierarchical 1-D basis using `hier_wave_equation45`. This is equivalent to the position basis solution. 
 
-For higher dimensions, we use sparse grids to yield the methods `sparse_wave_equation45` and `sparse_wave_equation78`. For example, to solve a standing wave in 2-D from 0 to 1 seconds at k=4, n = 6 we can use
+For higher dimensions, we use sparse grids to yield the methods `sparse_wave_equation45` and `sparse_wave_equation78`. For example, to solve a standing wave in 2-D from t_0 to t_1 seconds at k polynomials on each division & sparse depth n:
 
-    sparse_soln = sparse_wave_equation45(x->sin(2*pi*x[1])*sin(2*pi*x[2]), x-> 0, 4, 6, 2, 0, 1)
+    sparse_soln = sparse_wave_equation45(x->sin(2*pi*x[1])*sin(2*pi*x[2]), x-> 0, k, n, 2, t_0, t_1)
 
 ## Future updates
 
