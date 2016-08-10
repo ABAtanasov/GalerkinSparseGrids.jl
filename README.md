@@ -42,7 +42,7 @@ The DG position basis in consists of `k` Legendre polynomials (from degree 0 to 
 
 The corresponding multiresolution basis formed by a series of orthogonalizations implemented in `DG_Functions.jl`. This basis spans the same space as the position basis, but makes use of discontinuous basis (c.f. `Specific_DG_Functions.jl`) to achieve the hierarchical structure.
 
-We can interpolate multi-dimensional functions using the DG basis by using the methods `hier_coefficients_DG(k::Int, f::Function, ls::NTuple{D,Int})` and `hier_coefficients_DG(k::Int, f::Function, n::Int, D::Int)` with the same syntax as the corresponding non-DG methods. Similarly, to reconstruct a function at a point `xs` from a coefficient dictionary we use `reconstruct_DG(k,coefficients,xs)`.
+We can interpolate multi-dimensional functions using the DG basis by using the methods `pos_coefficients_DG(k::Int, f::Function, ls::NTuple{D,Int})` and `hier_coefficients_DG(k::Int, f::Function, n::Int, D::Int)` with the same syntax as the corresponding non-DG methods. Similarly, to reconstruct a function at a point `xs` from a coefficient dictionary we use `reconstruct_DG(k,coefficients,xs)`.
 
 ### Coefficient Vectors
 
@@ -68,9 +68,18 @@ In the discontinuous Galerkin method, it is customary to formulate the derivativ
 
 For now, we assume periodic boundary conditions. It is not too difficult to generalize away from a periodic boundary. 
 
-The derivative matrix for the position basis is `periodic_pos_DLF_Matrix(alpha::Real, k::Int, max_level::Int)` while the matrix for the hierarchical basis is obtained from this by conjugation and can be called by `periodic_hier_DLF_Matrix(alpha::Real, k::Int, max_level::Int)`. Here DLF stands for Derivative with Lax-Friedrichs flux. 
+The derivative matrix for the DG position basis in 1-D is `periodic_pos_DLF_Matrix(alpha::Real, k::Int, max_level::Int)` while the matrix for the DG hierarchical basis in 1-D is obtained from this by conjugation and can be called by `periodic_hier_DLF_Matrix(alpha::Real, k::Int, max_level::Int)`. Here DLF stands for Derivative with Lax-Friedrichs flux. 
 
 It is advised, for now, to have alpha = 0 (so no Lax-Friedrichs flux is involved).
+
+Higher dimensional hierarchical and sparse derivative operators are implemented in `Multidim_Derivative.jl`. They take as arguments the coordinate number `i` that we are taking the derivative of, the k polynomials on each division & the sparse depth n, along with the appropriate vector-to-dict dict-to vector lookups. 
+
+    full_D_matrix{D}(i::Int, k::Int, n::Int, 
+        srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
+
+    sparse_D_matrix{D}(i::Int, k::Int, n::Int,
+        srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
+
 
 ### Solving Hyperbolic PDEs
 
