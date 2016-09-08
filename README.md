@@ -3,10 +3,12 @@
 [![Build Status](https://travis-ci.org/ABAtanasov/GalerkinSparseGrids.jl.svg?branch=master)](https://travis-ci.org/ABAtanasov/GalerkinSparseGrids.jl)
 [![codecov](https://codecov.io/gh/ABAtanasov/GalerkinSparseGrids.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/ABAtanasov/GalerkinSparseGrids.jl)
 
-This Julia Language Package is intended for accurately and efficiently sovling hyperbolic partial differential equations in higher dimensions, where the curse of dimensionality restricts the computational feasibility of discretization using regular grids. Instead, we employ the sparse grid construction as in Bungartz & Griebel:
-http://wissrech.ins.uni-bonn.de/research/pub/griebel/sparsegrids.pdf
+This Julia Language Package is intended for accurately and efficiently solving hyperbolic partial differential equations in higher dimensions, where the curse of dimensionality restricts the computational feasibility of discretization of space using regular grids. Instead, we employ the sparse grid construction as in Bungartz & Griebel:
+http://wissrech.ins.uni-bonn.de/research/pub/griebel/sparsegrids.pdf. 
 
 This technique in particular allows for an efficient numerical solution of Einstein's equations in full 3+1 dimensional space, as well as for tackling other systems in high-dimensional condensed matter calculations. 
+
+The sparse grid methods of this package can be extended beyond numerical relativity to many areas in high-dimensional data science and dynamics.
 
 ## Installing
 
