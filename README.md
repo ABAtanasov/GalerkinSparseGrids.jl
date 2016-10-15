@@ -12,6 +12,13 @@ The sparse grid methods of this package can be extended beyond numerical relativ
 
 ## Installing
 
+Prerequisites for using this package are:
+
+    ODE.jl
+    Cubature.jl (working to remove this prerequisite)
+
+They can be pulled from <https://github.com/JuliaLang/ODE.jl> and <https://github.com/stevengj/Cubature.jl>, respectively. 
+
 Within Julia, use the package manager to write
 `Pkg.add("GalerkinSparseGrids")` to locally install this package. 
 
