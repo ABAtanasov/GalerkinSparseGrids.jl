@@ -12,7 +12,7 @@ const K_max = 10;
 	s = zero(T)
 	xi = one(T)
 	@inbounds for i in k:-1:1
-		# TODO: use Horner's method (Done)
+		# Using Horner's method 
 		s *= x
 		s += v[i] + flipsign(v[i+k],x)
 	end
@@ -37,10 +37,11 @@ function LegendreP(k)
     return array2poly(Leg_coeffs[k+1])
 end
 
-#precompute DG functions
+#precomputing the DG functions
 
 DG_coeffs=Array(Array{Array{Float64,1},1}, K_max)
 #TODO Make this a 2D array 
+
 for i in 1:K_max
     DG_coeffs[i] = DG_Basis(i)
 end
@@ -54,5 +55,3 @@ function h(k,f_number)
     f_number<=k || throw(DomainError())
     return array2poly((DG_coeffs[k])[f_number])
 end
-
-# Need to ask Erik some questions about precomputation

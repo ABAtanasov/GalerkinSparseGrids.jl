@@ -39,7 +39,8 @@ function get_vcoeffs(k::Int, level::Int, f::Function; rel_tol = REL_TOL, abs_tol
 end
 
 
-
+# Not the most efficient way of doing this
+# Dictionary lookup would be better
 function reconstruct_vcoeffs(k::Int, level::Int, vcoeffs::Array{Float64,1}, x::Real)
     value = 0.0
     i=1
@@ -70,11 +71,9 @@ function D_matrix(k::Int, level::Int)
             for place2 in 1:(1<<level)
                 for f_number2 in 1:k
                     ans = legvDv(level, place1, f_number1, place2, f_number2)
-                    if abs(ans)<1.0e-15
-                        j+=1
-                        continue
-                    end
-                    mat[i,j]=ans
+                    if abs(ans) > 1.0e-15
+						mat[i,j] = ans
+					end
                     j+=1
                 end
             end
@@ -206,12 +205,16 @@ function hier2pos(k::Int, max_level::Int; abs_tol = ABS_TOL)
     for level in 0:max_level
         for place in 1:(1<<pos(level-1))
             for f_number in 1:k
+				# Issue is right here:
                 ans = get_vcoeffs(k,max_level,x->v(k,level,place,f_number,x); abs_tol = abs_tol)
-                for i in 1:length(ans)
-                    if abs(ans[i])<1.0e-15
-                        continue
-                    end
-                    mat[i,j]=ans[i]
+				
+				
+				for i in 1:length(ans)
+                    if abs(ans[i]) > 1e-15
+						mat[i,j]=ans[i]
+					else
+						mat[i,j]=0
+					end
                 end
                 j+=1
             end
@@ -232,6 +235,8 @@ end
 #
 # end
 
+
+# By default, use alpha = 0
 function periodic_pos_DLF_Matrix(alpha::Real, k::Int, max_level::Int)
 	A = -D_matrix(k,max_level) + periodic_LF_matrix(alpha, k,max_level)
 	return A'

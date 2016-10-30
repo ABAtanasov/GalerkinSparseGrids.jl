@@ -18,9 +18,6 @@ const MAX_EVALS = 1000
 
 
 
-# include("DG_Functions.jl")
-# include("Specific_DG_Functions.jl")
-
 #------------------------------------------------------
 # 1-D Basis
 #------------------------------------------------------
@@ -111,10 +108,17 @@ end
 # appropriately, depending on the level
 function inner_product{D}(f::Function, g::Function, lvl::NTuple{D,Int}, place::CartesianIndex{D}; 
 								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
-    xmin = ntuple(i-> (place[i]-1)/(1<<(pos(lvl[i]-1))), D)
-	xmax = ntuple(i-> (place[i])/(1<<(pos(lvl[i]-1))), D)
-	h = (x-> f(x)*g(x))
-    (val, err) = hcubature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)
+	if D < 2
+		xmin = (place[1]-1)/(1<<(pos(lvl[1]-1)))
+		xmax = (place[1])/(1<<(pos(lvl[1]-1)))
+		h = (x-> f([x])*g([x]))
+		val = hquadrature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
+	else
+		xmin = ntuple(i-> (place[i]-1)/(1<<(pos(lvl[i]-1))), D)
+		xmax = ntuple(i-> (place[i])/(1<<(pos(lvl[i]-1))), D)
+		h = (x-> f(x)*g(x))
+	    val = hcubature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
+	end
 	return val 
 end
 
@@ -123,7 +127,8 @@ end
 function get_coefficient_DG{D}(k::Int, 
 				f::Function, lvl::NTuple{D,Int}, place::CartesianIndex{D}, f_number::CartesianIndex{D};
 				rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
-    return inner_product(f, V(k,lvl,place,f_number),lvl,place; rel_tol = rel_tol, abs_tol = abs_tol, max_evals=max_evals)
+    return inner_product(f, V(k,lvl,place,f_number),lvl,place; 
+							rel_tol = rel_tol, abs_tol = abs_tol, max_evals=max_evals)
 end 
 
 #------------------------------------------------------
@@ -168,11 +173,16 @@ function sparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int)
         for i in 1:D
             diag_level+=level[i]
         end
-        if diag_level > n + D #If we're past the levels we care about, don't compute coeffs
+		#If we're past the levels we care about, don't:
+        if diag_level > n + D  #compute coeffs
             continue
-        end  #Otherwise we'll go ahead and DO IT. The same code follows as before.
-	    ks = ntuple(i -> 1<<pos(level[i]-2), D)  #This sets up a specific k+1 vector
-        level_coeffs = Array(Array{Float64},ks)	 #all the coefficients at this level
+        end  
+		#Otherwise we'll go ahead and DO IT. The same code follows as before.
+		
+		#This sets up a specific k+1 vector:
+	    ks = ntuple(i -> 1<<pos(level[i]-2), D) 
+		#all the coefficients at this level
+        level_coeffs = Array(Array{Float64},ks)	 
         lvl = ntuple(i -> level[i]-1,D)
 	    for place in CartesianRange(ks)
             level_coeffs[place]=Array(Float64,f_numbers)
@@ -188,20 +198,20 @@ function sparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int)
 end
 
 
-#------------------------------------------------------
-# Reconstruction (full and sparse) in n-D
-#------------------------------------------------------
-function reconstruct_DG{D,T<:Real}(k::Int,coefficients::Dict{CartesianIndex{D}, Array{Array{Float64},D}}, x::Array{T})
+#------------------------------------------------------------
+# Reconstruction (full and sparse) in n-D from a Dict of
+# coefficients
+#------------------------------------------------------------
+function reconstruct_DG{D,T<:Real}(k::Int,coefficients::Dict{CartesianIndex{D}, Array{Array{Float64},D}}, xs::Array{T})
     value = 0.0
     f_numbers= ntuple(i-> k ,D)
-    for key in keys(coefficients)	#For every level that has coefficients
-        level = ntuple(i->key[i]-1,D)	# Get the actual level corresponding to that CartesianIndex
-        place = CartesianIndex{D}(ntuple(i->hat_index(x[i],level[i]),D))
-        # Get the relevant place for our position x
+    for key in keys(coefficients)	
+        level = ntuple(i->key[i]-1,D)	
+        place = CartesianIndex{D}(ntuple(i->hat_index(xs[i],level[i]),D))
 		for f_number in CartesianRange(f_numbers)
-        	value += (coefficients[key])[CartesianIndex{D}(place)][f_number]*V(k,level,place,f_number,x)
+        	value += (coefficients[key])[CartesianIndex{D}(place)][f_number]*V(k,level,place,f_number,xs)
 		end 
-		#get the appropriate coefficient and evaluate the appropriate ϕ at x
     end
-    return value	#return the sum of all the relevant hat functions at that place x
+	#return the sum of all the relevant hat functions at that place x
+    return value	
 end

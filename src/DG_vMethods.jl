@@ -1,8 +1,32 @@
 using Cubature
-#------------------------------------------------------
+#-------------------------------------------------------------------
 # It is sometimes advantageous to have the coeffs as
-# one single vector
-#------------------------------------------------------
+# one single vector, especially for making use of BLAS
+# and related libraries when defining operators on 
+# our space of functions
+#
+# In this script, we "vectorize" our functions,
+# not in the regular meaning of the word, but in the
+# sense that dictionaries will all be replaced by vectors
+#
+# The main difficulty with this is that, unlike with dictionaries
+# there is no easy way to go from (level, place, fnumber) to a
+# corresponding index in a 1-D vector. 
+#
+# For this, we have the reference functions:
+# Full/Sparse Reference V2D/D2V 
+# D2V generates a dict that, upon input of a level, place, number
+# gives the corresponding index in a vector
+# V2D generates a vector, with row i having the three numbers
+# level, place, f_number corresponding to index i in the vector
+# 
+# These methods work in all dimensions, and there are ones for both
+# full and sparse grids. 
+#
+# The entire script culminates in an end result: a matrix 
+# representation of the derivative operator 
+# (both in full and sparse bases)
+#-------------------------------------------------------------------
 
 function sparse_size(k,n,D)
     size=0
