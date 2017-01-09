@@ -4,6 +4,8 @@ using Cubature
 using ODE
 
 
+print("Beginning Tests of GalerkinSparseGrids.jl--------------------------------------")
+
 #--------------------------------------
 # Elementary Tests
 #--------------------------------------
@@ -156,7 +158,7 @@ print("Testing hierarchical DG basis reconstruction 1-D with vector coefficients
 for k in 1:5
     for l in 1:6
         vect = vhier_coefficients_DG(k, x->sin(4*x[1]), (l,))
-        dict = Full_V2D(k,vect,(l,))
+        dict = full_V2D(k,vect,(l,))
         @test hquadrature(x-> (reconstruct_DG(k,dict,[x[1]])-sin(4*x[1]))^2,0,1; reltol=1.0e-9, abstol=1.0e-12)[1] < 1/(1<<((l+k-1)))
     end
 end
@@ -172,16 +174,16 @@ print("Testing D2V and V2D Full Case 2D... ")
 for k in 1:5
     for l in 1:5
         dict = hier_coefficients_DG(k,x->sin(4*x[1]+x[2]),(l,l))
-        vect = Full_D2V(k,dict,(l,l))
-        @test Full_V2D(k,vect,(l,l))==dict
+        vect = full_D2V(k,dict,(l,l))
+        @test full_V2D(k,vect,(l,l))==dict
     end
 end
 
 for k in 1:5
     for l in 1:5
         vect = vhier_coefficients_DG(k,x->sin(4*x[1]+x[2]),(l,l))
-        dict = Full_V2D(k,vect,(l,l))
-        @test Full_D2V(k,dict,(l,l))==vect
+        dict = full_V2D(k,vect,(l,l))
+        @test full_D2V(k,dict,(l,l))==vect
     end
 end
 
@@ -222,7 +224,7 @@ for k in 1:5
 	    refDV=full_referenceD2V(3,(5,));
 	    sD = sD_matrix(1,3, refVD, refDV)
 	    dvect = *(sD, vect)
-	    dict=Full_V2D(3,dvect,(5,))
+	    dict=full_V2D(3,dvect,(5,))
 	    @test hquadrature(x->(reconstruct_DG(3,dict,[x[1]])-4*cos(4*x[1]))^2,0,1; abstol=1.0e-10)[1] < 1/(1<<((l+k-2)))
     end
 end
@@ -238,8 +240,8 @@ for l in 2:5
     D_op = full_D_matrix(1,k,l,srefVD, srefDV)
     vcoeffs=vhier_coefficients_DG(k, x->cos(2*pi*x[1])*cos(2*pi*x[2]),(l+1,l+1))
     dvcoeffs = *(D_op,vcoeffs)
-    dict= Full_V2D(k,vcoeffs,(l+1,l+1))
-    ddict= Full_V2D(k,dvcoeffs,(l+1,l+1))
+    dict= full_V2D(k,vcoeffs,(l+1,l+1))
+    ddict= full_V2D(k,dvcoeffs,(l+1,l+1))
     err= hcubature(x->(reconstruct_DG(k,ddict,[x[1],x[2]])+2*pi*sin(2*pi*x[1])*cos(2*pi*x[2]))^2,[0,0],[1,1],abstol=1.0e-10,maxevals=500)[1]#< 1/(1<<(l+k-2))
     @test err<1/(1<<(k+l-2))
 end
@@ -303,3 +305,6 @@ for i in 1:length(senergy[1])
 end
 
 println("Test Passed.")
+
+
+print("Finished Tests of GalerkinSparseGrids.jl---------------------------------------")
