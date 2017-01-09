@@ -4,6 +4,7 @@ module GalerkinSparseGrids
 
 include("Hat_Methods.jl")  # Using non-galerkin elementary 'hat' basis functions
 include("DG_Basis.jl") # Gram-Schmidt procedure for DG basis functions in 1-D
+include("SQuadrature.jl") # Gram-Schmidt procedure for DG basis functions in 1-D
 include("1D_DG_Functions.jl") # Explicitly building the 1-D Basis
 include("DG_Methods.jl") # Multidimensional hierarchical & sparse coefficients
 include("DG_Derivative.jl") # 1-D symbolic piecewise derivative 
