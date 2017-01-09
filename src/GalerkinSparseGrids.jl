@@ -3,14 +3,14 @@ module GalerkinSparseGrids
 # package code goes here
 
 include("Hat_Methods.jl")  # Using non-galerkin elementary 'hat' basis functions
-include("DG_Functions.jl") # Gram-Schmidt procedure for DG basis functions in 1-D
-include("Specific_DG_Functions.jl") # Explicitly building the 1-D Basis
+include("DG_Basis.jl") # Gram-Schmidt procedure for DG basis functions in 1-D
+include("1D_DG_Functions.jl") # Explicitly building the 1-D Basis
 include("DG_Methods.jl") # Multidimensional hierarchical & sparse coefficients
 include("DG_Derivative.jl") # 1-D symbolic piecewise derivative 
+include("DG_Derivative_Precompute.jl") # Precomputing derivative matrix for coeff vect
 include("DG_vMethods.jl") # Going between a dictionary & a vector of coeffs
-include("DG_Derivative_Matrix.jl") # Precomputing derivative matrix for coeff vect
-include("Position_Basis_DG.jl") # Constructing ideal derivative matrix in position space
 include("Multidim_Derivative.jl") # Multidimensional DG Derivatives in the full & sparse bases
+include("DG_Timestep_Matrices.jl") # Constructing ideal derivative matrix in position space
 include("PDEs.jl") # Solving the 1-D and n-D wave equation with periodic boundary conditions
 
 
@@ -26,10 +26,10 @@ export hier_coefficients_DG
 export sparse_coefficients_DG
 export reconstruct_DG
 
-export Full_V2D
-export Sparse_V2D
-export Full_D2V
-export Sparse_D2V
+export full_V2D
+export sparse_V2D
+export full_D2V
+export sparse_D2V
 export total_value
 export full_referenceD2V
 export full_referenceV2D

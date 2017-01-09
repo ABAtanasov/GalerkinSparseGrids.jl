@@ -1,4 +1,11 @@
-#using PyPlot
+#------------------------------------------------------------
+#
+# Methods for DG interpolation using readable
+# dictionary-style structs
+#
+#------------------------------------------------------------
+
+
 using Cubature
 
 const REL_TOL = 1.0e-8
@@ -6,17 +13,13 @@ const ABS_TOL = 1.0e-10
 const MAX_EVALS = 1000
 
 #------------------------------------------------------
-# In this julia script, we have all our methods for
+# Here we have all our methods for
 # taking a function and returning an appropriate list
 # of DG coefficients.
-# 
-# 
-#
-#
 #
 #------------------------------------------------------
 
-
+# Efficiency criticality: HIGH
 
 #------------------------------------------------------
 # 1-D Basis
@@ -58,23 +61,6 @@ function V{D}(k, level::NTuple{D,Int},
     return (xs-> V(k, level, place, f_number, xs))
 end
 
-#------------------------------------------------------
-# Quick plotting methods for 1-D and 2-D, requires PyPlot
-#------------------------------------------------------
-
-# function plotfunc1D(f::Function)
-#     xs=linspace(0,1,300)
-#     # y = [f((x,)) for x in xs]
-#     ys=[f((x,)) for x in xs]
-#     surf=plot(xs,ys)
-# end
-#
-# function plotfunc2D(f::Function)
-#     xs=linspace(0,1,250)'
-#     ys=linspace(0,1,250)
-#     zs=[f((x,y)) for x in xs, y in ys]
-#     surf=plot_surface(xs,ys,zs)
-# end
 
 #------------------------------------------------------
 # Methods for obtaining the coefficients
@@ -123,7 +109,7 @@ function inner_product{D}(f::Function, g::Function, lvl::NTuple{D,Int}, place::C
 end
 
 # We obtain coefficients simply by doing inner products, it's easy :) 
-# Only hard part is inner product integrations can be slower than we wante :(
+# Only hard part is inner product integrations can be slower than we want :(
 function get_coefficient_DG{D}(k::Int, 
 				f::Function, lvl::NTuple{D,Int}, place::CartesianIndex{D}, f_number::CartesianIndex{D};
 				rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
@@ -173,14 +159,16 @@ function sparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int)
         for i in 1:D
             diag_level+=level[i]
         end
-		#If we're past the levels we care about, don't:
-        if diag_level > n + D  #compute coeffs
-            continue
-        end  
-		#Otherwise we'll go ahead and DO IT. The same code follows as before.
 		
+        if diag_level > n + D  	# If we're past the relevant levels
+            continue			# Don't compute coeffs
+        end  
+		# Otherwise we'll go ahead and do it. 
+		# The same code follows as before.
+
 		#This sets up a specific k+1 vector:
-	    ks = ntuple(i -> 1<<pos(level[i]-2), D) 
+	    
+		ks = ntuple(i -> 1<<pos(level[i]-2), D) 
 		#all the coefficients at this level
         level_coeffs = Array(Array{Float64},ks)	 
         lvl = ntuple(i -> level[i]-1,D)
@@ -212,6 +200,6 @@ function reconstruct_DG{D,T<:Real}(k::Int,coefficients::Dict{CartesianIndex{D}, 
         	value += (coefficients[key])[CartesianIndex{D}(place)][f_number]*V(k,level,place,f_number,xs)
 		end 
     end
-	#return the sum of all the relevant hat functions at that place x
+	#return the sum of all the relevant DG functions at that place x
     return value	
 end

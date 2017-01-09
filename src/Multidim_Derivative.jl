@@ -1,3 +1,15 @@
+#------------------------------------------------------------
+#
+# Construction of multidimensional DG derivative matrices
+#
+#------------------------------------------------------------
+
+# Efficiency criticality: LOW
+# Computations only performed once
+
+# Accuracy criticality: HIGH
+# Critical for accurate PDE evolution
+
 function full_D_matrix{D}(i::Int, k::Int, n::Int,
     srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
     
@@ -50,7 +62,6 @@ function sparse_D_matrix{D}(i::Int, k::Int, n::Int,
         f = lpf[3][i]
         vc1 = D2V_1D[[CartesianIndex((l,)),CartesianIndex((p,)),CartesianIndex((f,))]]
         dvc1s = slice(Dmat_1D,:, vc1)
-        #we'd have to cut something off here in the sparse case
         
         for j in 1:length(dvc1s)
             if abs(dvc1s[j])<=1.0e-15

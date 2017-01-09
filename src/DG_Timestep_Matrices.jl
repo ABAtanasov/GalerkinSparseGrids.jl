@@ -1,3 +1,20 @@
+#------------------------------------------------------------
+#
+# Using boundary terms and integration (summation) by parts
+# to construct more accurate derivative matrices for time
+# evolution using Lax-Friedricks-type fluxes
+#
+# All derivatives are computed here in pos basis first
+# Then conjugated into hier basis
+#
+#------------------------------------------------------------
+
+# Efficiency criticality: LOW
+# Computations only performed once
+
+# Accuracy criticality: HIGH
+# Critical for accurate PDE evolution
+
 function leg(f_number::Int, x::Real)
     return sqrt(2.0)*LegendreP(f_number-1, 2*x-1) 
 end
@@ -116,59 +133,7 @@ function periodic_legvLFv(alpha::Real, level::Int, place1::Int, f_number1::Int, 
     return LF2 * val2 - LF1 * val1
 end
 
-# # Non-periodic boundary:
-#
-# function legvLFv(alpha::Real, level::Int, place1::Int, f_number1::Int, place2::Int, f_number2::Int)
-#     point1 = (place2-1)/(1<<level)
-#     point2 = (place2)/(1<<level)
-#
-#     LF1 = 0.5* (basis(level,place1,f_number1,point1-5.0e-16)+basis(level,place1,f_number1,point1+5.0e-16)) +
-# 		   alpha *  (basis(level,place1,f_number1,point1+5.0e-16)-basis(level,place1,f_number1,point1-5.0e-16))
-#     LF2 = 0.5* (basis(level,place1,f_number1,point2-5.0e-16)+basis(level,place1,f_number1,point2+5.0e-16)) +
-# 		   alpha *  (basis(level,place1,f_number1,point2+5.0e-16)-basis(level,place1,f_number1,point2-5.0e-16))
-#
-#     if place2==(1<<level)
-#         LF2 = basis(level,place1,f_number1,point2-5.0e-16)
-#     end
-#     if place2==1
-#         LF1 = basis(level,place1,f_number1,point1+5.0e-16)
-#     end
-#
-#     val1 = basis(level,place2,f_number2,point1+5.0e-16)
-#     val2 = basis(level,place2,f_number2,point2-5.0e-16)
-#
-#     return LF2 * val2 - LF1 * val1
-# end
 
-#------------------------------------------------------
-# We can precompute the full matrix for this 
-# boundary term
-#------------------------------------------------------
-
-
-
-# function LF_matrix(alpha::Real, k::Int, level::Int)
-#     mat = spzeros((1<<level)*(k), (1<<level)*(k))
-#     i=1
-#     for place1 in 1:(1<<level)
-#         for f_number1 in 1:k
-#             j=1
-#             for place2 in 1:(1<<level)
-#                 for f_number2 in 1:k
-#                     ans = legvLFv(alpha, level, place1, f_number1, place2, f_number2)
-#                     if abs(ans)<1.0e-15
-#                         j+=1
-#                         continue
-#                     end
-#                     mat[i,j]=ans
-#                     j+=1
-#                 end
-#             end
-#             i+=1
-#         end
-#     end
-#     return mat
-# end
 
 function periodic_LF_matrix(alpha::Real, k::Int, level::Int)
     mat = spzeros((1<<level)*(k), (1<<level)*(k))
@@ -223,18 +188,6 @@ function hier2pos(k::Int, max_level::Int; abs_tol = ABS_TOL)
     return mat
 end
 
-# function pos_Derivative_Matrix(k::Int, max_level::Int)
-# 	A = -D_matrix(k,max_level) + Delta_matrix(k,max_level)
-# 	return A'
-#
-# end
-#
-# function pos_DLF_Matrix(alpha::Real, k::Int, max_level::Int)
-# 	A = -D_matrix(k,max_level) + LF_matrix(alpha, k,max_level)
-# 	return A'
-#
-# end
-
 
 # By default, use alpha = 0
 function periodic_pos_DLF_Matrix(alpha::Real, k::Int, max_level::Int)
@@ -243,13 +196,6 @@ function periodic_pos_DLF_Matrix(alpha::Real, k::Int, max_level::Int)
 	
 end
 
-
-# function hier_Derivative_Matrix(k::Int, max_level::Int)
-# 	Q = hier2pos(k,max_level)
-# 	A = -D_matrix(k,max_level) + Delta_matrix(k,max_level)
-# 	return *(Q', *(A', Q))
-#
-# end
 
 function periodic_hier_DLF_Matrix(alpha::Real, k::Int, max_level::Int)
 	Q = hier2pos(k,max_level)

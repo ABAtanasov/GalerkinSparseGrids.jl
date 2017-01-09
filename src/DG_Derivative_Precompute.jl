@@ -2,6 +2,9 @@
 # Precompute relevant 1-D basis elements
 #------------------------------------------------------
 
+# Efficiency criticality: MED
+# Computation done once, but is done upon import
+# This could be improved
 
 precomputed_diffs = Dict{NTuple{4,Int},Array{Float64,2}}()
 

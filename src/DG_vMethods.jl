@@ -45,7 +45,7 @@ function sparse_size(k,n,D)
     return size
 end
 
-function Full_D2V{D,T<:Real}(k::Int, coefficients::Dict{CartesianIndex{D}, Array{Array{T},D}}, ls::NTuple{D,Int})
+function full_D2V{D,T<:Real}(k::Int, coefficients::Dict{CartesianIndex{D}, Array{Array{T},D}}, ls::NTuple{D,Int})
 	j=1
 	size=0
 	f_numbers= ntuple(q-> k, D)
@@ -66,7 +66,7 @@ function Full_D2V{D,T<:Real}(k::Int, coefficients::Dict{CartesianIndex{D}, Array
 	return vect
 end
 
-function Sparse_D2V{D,T<:Real}(k::Int, coefficients::Dict{CartesianIndex{D}, Array{Array{T},D}}, n::Int)
+function sparse_D2V{D,T<:Real}(k::Int, coefficients::Dict{CartesianIndex{D}, Array{Array{T},D}}, n::Int)
 	j=1
 	size = sparse_size(k,n,D)
 	f_numbers= ntuple(i-> k, D)
@@ -93,7 +93,7 @@ end
 
 
 
-function Full_V2D{D,T<:Real}(k::Int, vect::Array{T}, ls::NTuple{D,Int})
+function full_V2D{D,T<:Real}(k::Int, vect::Array{T}, ls::NTuple{D,Int})
     coeffs = Dict{CartesianIndex{D}, Array{Array{Float64},D}}()
 	f_numbers= ntuple(q-> k, D)
 	j=1
@@ -112,7 +112,7 @@ function Full_V2D{D,T<:Real}(k::Int, vect::Array{T}, ls::NTuple{D,Int})
 	return coeffs
 end
 
-function Sparse_V2D{T<:Real}(k::Int, vect::Array{T}, n::Int, D::Int)
+function sparse_V2D{T<:Real}(k::Int, vect::Array{T}, n::Int, D::Int)
     coeffs = Dict{CartesianIndex{D}, Array{Array{Float64},D}}()
 	f_numbers= ntuple(q-> k, D)
     ls = ntuple(i->(n+1),D)

@@ -1,17 +1,22 @@
-#------------------------------------------------------
-# Defining the DG Functions
-#------------------------------------------------------
+#------------------------------------------------------------
+#
+# Constructing the Hierarchical Discontinuous Galerkin Basis
+#
+#------------------------------------------------------------
 
-# TODO: rename this
-# I don't even think I need it
-# @fastmath function f(j::Int,x::Real)
-# 	flipsign(x^j, x)
-# end
+# Efficiency criticality: LOW
+# Computations only performed once
 
 
 #------------------------------------------------------
 # Defining the Inner Product
 #------------------------------------------------------
+
+
+
+# The coordinate convention here is to have vectors of length n even
+# The first half has component i is the respective coefficient of x^i 
+# THe second half has component n/2 + i is the coefficient of sgn(x)*x^i
 
 function product_matrix(i::Int, j::Int, n::Int) 
     # This is the inner product of <x^i, x^j> when i,j < n/2 
@@ -157,7 +162,7 @@ function orthogonalize_2{T<:Real}(Q_initial::Array{Array{T,1},1})
 end
 
 
-# standard gram-schmidt process, starting at the end 
+# Standard gram-schmidt process, starting at the end 
 # (this is important, because the last function is orthogonal to a lot of higher 
 # polynomials, and we don't want to do anything other than normalize it, 
 # with similar reasoning for the penultimate, etc. functions) 
@@ -183,7 +188,7 @@ end
 #------------------------------------------------------
 # All together:
 #------------------------------------------------------
-function DG_Basis(k::Int)
+function dg_basis(k::Int)
     Q = [[j==(i-k)?1.0:0.0 for i in 1:2*k] for j in 1:k]
     Q = orthogonalize_1(Q)
     Q = orthogonalize_2(Q) 

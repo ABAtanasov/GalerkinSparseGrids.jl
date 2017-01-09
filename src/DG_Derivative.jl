@@ -1,3 +1,15 @@
+#------------------------------------------------------------
+#
+# Constructing the Derivatives in 1-D DG Basis
+#
+#------------------------------------------------------------
+
+# Efficiency criticality: LOW
+# Computations only performed once
+
+# Accuracy criticality: HIGH
+# Critical for accurate PDE evolution
+
 
 #------------------------------------------------------
 # 1-D Derivatives
@@ -5,13 +17,13 @@
 
 function dLegendreP(k,x)
     k<=K_max || throw(DomainError())
-    return array2poly(symbolic_diff(Leg_coeffs[k+1]),x)
+    return array2poly(symbolic_diff(leg_coeffs[k+1]),x)
 end
 
 
 function dh(k,f_number,x)
     f_number<=k || throw(DomainError())
-    return array2poly(symbolic_diff((DG_coeffs[k])[f_number]),x)
+    return array2poly(symbolic_diff((dg_coeffs[k])[f_number]),x)
 end
 
 
@@ -75,12 +87,12 @@ end
 #------------------------------------------------------
 
 function legendreDlegendre(f_number1::Int, f_number2::Int)
-	return inner_product(Leg_coeffs[f_number1],symbolic_diff(Leg_coeffs[f_number2]))
+	return inner_product(leg_coeffs[f_number1],symbolic_diff(leg_coeffs[f_number2]))
 end 
 
 
 function hDh(k::Int, f_number1::Int, f_number2::Int)
-	return inner_product(DG_coeffs[k][f_number1], symbolic_diff(DG_coeffs[k][f_number2]))
+	return inner_product(dg_coeffs[k][f_number1], symbolic_diff(dg_coeffs[k][f_number2]))
 end
 
 function vDv(k::Int, lvl1::Int, place1::Int, f_number1::Int, lvl2::Int, place2::Int, f_number2::Int;
@@ -126,65 +138,3 @@ function diff_basis_DG(k::Int, level::Int, place::Int, f_number::Int)
     return dcoeffs
 end
 
-
-# The following code is not efficient for PDEsteps 
-# and is replaced in the vMethods by appropriate sparse matrices
-
-#
-# #------------------------------------------------------
-# # Modifying a coefficient set to get derivative coeffs
-# # Asscociated with a specific basis function V
-# #------------------------------------------------------
-#
-# function dchange{D,T<:Real}(k::Int,i::Int,dcoeffs::Dict{CartesianIndex{D}, Array{Array{Float64},D}},c::T,
-#     lvl::NTuple{D,Int}, place::CartesianIndex{D}, f_number::CartesianIndex{D})
-#     p = place[i]
-#     for l in lvl[i]:-1:0
-#         lvl1= ntuple(j-> j==i?l+1:(lvl[j]+1) ,D)
-#         place1=ntuple(j-> j==i?p:place[j] ,D)
-#         for f_n in 1:k
-#             f_number1=ntuple(j-> j==i?f_n:f_number[j] ,D)
-#             dcoeffs[CartesianIndex{D}(lvl1)][CartesianIndex{D}(place1)][CartesianIndex{D}(f_number1)] += c*precomputed_diffs[(k,lvl[i],place[i],f_number[i])][l+1,f_n]
-#
-#         end
-#         p = Int(ceil(p/2))
-#     end
-# end
-#
-# #------------------------------------------------------
-# # Finally, getting derivative coeffs from a coeff set
-# #------------------------------------------------------
-#
-# function diff_coefficients_DG{D}(i::Int, k::Int,
-#                         coeffs::Dict{CartesianIndex{D}, Array{Array{Float64},D}})
-#
-#     dcoeffs=deepcopy(coeffs)
-#     f_numbers= ntuple(i-> k, D)
-#
-#     for key in keys(coeffs)
-#         ks = ntuple(i -> 1<<pos(key[i]-2), D)
-#         for place in CartesianRange(ks)
-#             for f_number in CartesianRange(f_numbers)
-#                 dcoeffs[key][place][f_number]=0
-#             end
-#         end
-#     end
-#
-#     for key in keys(coeffs)
-#         level = ntuple(i-> key[i]-1,D)
-#         ks = ntuple(i -> 1<<pos(level[i]-1), D)
-#         for place in CartesianRange(ks)
-#             for f_number in CartesianRange(f_numbers)
-#                 c=coeffs[key][place][f_number]
-#                 dchange(k,i,dcoeffs,c,level,place,f_number)
-#             end
-#         end
-#     end
-#     return dcoeffs
-# end
-#
-#
-#
-#
-#
-#

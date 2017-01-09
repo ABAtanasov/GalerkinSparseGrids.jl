@@ -1,9 +1,23 @@
 #------------------------------------------------------
+#
+# All methods involving the naive non-galerkin hat basis
+# of Griebel et al. 
+#
+#------------------------------------------------------
+
+# Efficiency criticality: MEDIUM
+# Important for calculating error for testing package
+# Not critical for user
+# Potential use to replace multidimensional integration 
+# from hcubature with more efficient method
+
+
+#------------------------------------------------------
 # Defining the Hat Functions
 #------------------------------------------------------
 
 #Our original function which we will shift and scale
-function ϕ(x::Real)
+function hat(x::Real)
     b=abs(x)
     if b>1
         return zero(x)
@@ -12,36 +26,36 @@ function ϕ(x::Real)
 end
 
 #Our 1-D basis
-function ϕ(l::Int,i::Int,x::Real)
+function hat(l::Int,i::Int,x::Real)
     if l==-1				#The constant function (doesn't vanish on boundary)
         return one(x)		
     end
     if l==0					#The linear function (vanishes on only one boundary)
         return x
     end
-    return ϕ((1<<l)*x - (2i - 1)) #Shifts and scalings of the original hat function
+    return hat((1<<l)*x - (2i - 1)) #Shifts and scalings of the original hat function
 end
 
 #Tensor product construction: our d-D basis
-function ϕ{D,T<:Real}(ls::NTuple{D,Int},is::NTuple{D,Int},xs::NTuple{D,T}) 
+function hat{D,T<:Real}(ls::NTuple{D,Int},is::NTuple{D,Int},xs::NTuple{D,T}) 
     ans=one(eltype(xs))
     for k = 1:length(ls)
-        ans *= ϕ(ls[k],is[k],xs[k])
+        ans *= hat(ls[k],is[k],xs[k])
     end
     return ans
 end
 
 #Lagrange function that spikes up only at a point
-function ψ(l::Int,i::Int,x::Float64)
-    return ϕ((1<<l) * x - i)
+function delta(l::Int,i::Int,x::Float64)
+    return hat((1<<l) * x - i)
 end
 
 # ψ{D}(ls::NTuple{D,Int}, is::NTuple{D,Int}, ....)
 #Tensor product construction of Lagrange basis
-function ψ{D,T<:Real}(ls::NTuple{D,Int}, is::NTuple{D,Int}, xs::NTuple{D,T})
+function delta{D,T<:Real}(ls::NTuple{D,Int}, is::NTuple{D,Int}, xs::NTuple{D,T})
     ans=one(eltype(xs))
     for k = 1:length(ls)
-        ans *= ψ(ls[k],is[k],xs[k])
+        ans *= delta(ls[k],is[k],xs[k])
     end
     return ans
 end
@@ -65,71 +79,51 @@ function standard_reconstruct{D,T<:Real}(coefficients::AbstractArray, ls::NTuple
     value=0.0
     for place in CartesianRange(positions)
         is = ntuple(i->place[i]-1,D)
-        value += coefficients[place]*ψ(ls, is, xs)
+        value += coefficients[place]*delta(ls, is, xs)
     end
     return value
 end
 
 
 #------------------------------------------------------
-# Methods for obtaining the coefficients
+# Methods for obtaining position (lagrange basis) 
+# coefficients
 #------------------------------------------------------
-# This function is just for special boundary cases to make sure
-# that the number of coefficients for the constant & linear functions
-# doesn't become non-positive
-#
-# Commented out because its defined again in DG_Methods.jl
-#
-# function pos(x::Int)
-#     if x >= 0
-#         return x
-#     else
-#         return 0
-#     end
-# end
-#
-# # Given a 1-D position and level, this tells us which place
-# # that position belongs to, at that level resolution
-# function hat_index(x::Float64,l::Int)
-#     if l<= 1
-#         return 1
-#     end
-#     if x>= 1
-#         return 2^(l-1)
-#     else
-#         return 1 + floor(Int, 2^(l-1) * x)
-#     end
-# end
 
-
-# Conversely, given a level and place, this gets the position in the center
-# of that place. This is important for obtaining the coefficient 
-# corresponding to that level and place. Note this is multi-dimensional
+# Given a level and place describing a sub-interval 
+# gives the x-coordinate for the center of that sub-interval. 
+# This is used for obtaining the coefficient corresponding to 
+# a specific level and place in a position (lagrange basis).
+# This function's implementation is multi-dimensional
 function get_position{D}(level::CartesianIndex{D},place::CartesianIndex{D})
-    x = [(0.5)^pos(level[i]-2) *(2*place[i]-1) for i in 1:D]
-    return x
+    xs = [(0.5)^pos(level[i]-2) *(2*place[i]-1) for i in 1:D]
+    return xs
 end
 
-# This takes an array x of length n and makes an n+1 length array
-# obtained from joining j to the beginning of array x
-# (I wonder if there's a more efficient method to do this already implemented
-# in Julia.. I know that push! or similar variants actually alter x, which is bad)
-function form_array{T<:Real}(j::Real,x::Array{T})
-    return [i==1?j:x[i-1] for i in 1:(length(x)+1)]
+# Takes an array xs of length n and makes a new n+1 length array
+# obtained from joining j to the beginning of array xs
+# without altering xs
+function form_array{T<:Real}(j::Real,xs::Array{T})
+    return [i==1?j:xs[i-1] for i in 1:(length(xs)+1)]
 end
 
-# This takes a function f of an n-D vector, and returns a function f' of an (n-1)-D
+# Takes a function f of an n-D vector, and returns a function f' of an (n-1)-D
 # vector x', so that f'(x') = f( [j, x']). That is, the first coordinate of x has been
 # fixed to equal j
 function project_function(f::Function, coordinate::Real)
-    return (x-> f(form_array(coordinate,x)))
+    return (x -> f(form_array(coordinate,x)))
 end
 
-# This is how we get the coefficients. I think the recursive implementation is 
-# the only one that is easily done. There is no easy way, even with multi-indices
-# to get it directly. 
-function get_coefficient{D,T<:Real}(f::Function, level::NTuple{D,Int}, x::Array{T}) #I think it's working
-    if D==1					#This is the base case, on the interval [0,1]
+# This is how we get the coefficients. 
+# This recursive implementation is the easiest way to write it. 
+# 
+# TODO work on efficiency improvements here. This will be the basis for sparse integration
+#
+function get_coefficient{D,T<:Real}(f::Function, 
+									level::NTuple{D,Int}, 
+									x::Array{T}) 
+									
+    if D==1					#This is the base case for 1D on the interval [0,1]
         if level[1]==1
             return f([0])
         elseif level[1]==2
@@ -170,9 +164,9 @@ function hier_coefficients{D}(f::Function, ls::NTuple{D,Int})
     coeffs = Dict{CartesianIndex{D}, Array{Float64,D}}()
 	# We will make a dictionary, that given a level (represented by a cartesian index), 
 	# will lead to a list of coefficients representing the places at that level
-    for level in CartesianRange(ls)     # This really goes from -1 to l_i for each i,
-										# but is shifted up by 2
-        ks = ntuple(i -> 1<<pos(level[i]-3), D)  #This sets up a specific k+2 vector
+    for level in CartesianRange(ls)     			# We go from from -1 to l_i for each i,
+													# This gives a shift by 2
+        ks = ntuple(i -> 1<<pos(level[i]-3), D) 	# Dimension of the ks
         level_coeffs = zeros(ks)		#the coefficients for all the places at this level
         for place in CartesianRange(ks)
             x = get_position(level, place)  # This is the position array corresponding to a place.
@@ -190,15 +184,15 @@ end
 #------------------------------------------------------
 function sparse_coefficients(f::Function, n::Int, D::Int)
     coeffs = Dict{CartesianIndex{D}, Array{Float64,D}}()
-    ls = ntuple(i->(n+2),D)
-    for level in CartesianRange(ls) #This really goes from -1 to l_i for each i
-        diag_level=0;
+    ls = ntuple(i -> (n+2), D)			# n + 2 because we go From -1 to l_i for each i
+    for level in CartesianRange(ls) 	
+        diag_level = 0;
         for i in 1:D
-            diag_level+=level[i]
+            diag_level += level[i]
         end
-        if diag_level > n + 2*D #If we're past the levels we care about, don't compute coeffs
-            continue
-        else  #Otherwise we'll go ahead and DO IT. The same code follows as before.
+        if diag_level > n + 2*D 		# If we're past the relevant levels
+            continue					# don't compute coeffs
+        else  							#Otherwise we'll go ahead and compute them
             ks = ntuple(i -> 1<<pos(level[i]-3), D)  
             level_coeffs = zeros(ks)
             for place in CartesianRange(ks)
@@ -222,7 +216,7 @@ function reconstruct{D,T<:Real}(coefficients::Dict{CartesianIndex{D},
     for key in keys(coefficients)	#For every level that has coefficients
         level = ntuple(i->key[i]-2,D)	# Get the actual level corresponding to that CartesianIndex
         place = ntuple(i->hat_index(x[i],level[i]),D)  # Get the relevant place for our position x
-        value += (coefficients[key])[CartesianIndex{D}(place)]*ϕ(level,place,x) 
+        value += (coefficients[key])[CartesianIndex{D}(place)]*hat(level,place,x) 
 		#get the appropriate coefficient and evaluate the appropriate ϕ at x
     end
     return value	#return the sum of all the relevant hat functions at that place x
