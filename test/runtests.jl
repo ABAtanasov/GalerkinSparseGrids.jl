@@ -196,16 +196,16 @@ print("Testing D2V and V2D Sparse Case 2D... ")
 for k in 1:5
     for l in 1:5
         dict = sparse_coefficients_DG(k,x->sin(4*x[1]+x[2]),l,2)
-        vect = Sparse_D2V(k,dict,l)
-        @test Sparse_V2D(k,vect,l,2)==dict
+        vect = sparse_D2V(k,dict,l)
+        @test sparse_V2D(k,vect,l,2)==dict
     end
 end
 
 for k in 1:5
     for l in 1:5
         vect = vsparse_coefficients_DG(k,x->sin(4*x[1]+x[2]),l,2)
-        dict= Sparse_V2D(k,vect,l,2)
-        @test Sparse_D2V(k,dict,l)==vect
+        dict= sparse_V2D(k,vect,l,2)
+        @test sparse_D2V(k,dict,l)==vect
     end
 end
 
