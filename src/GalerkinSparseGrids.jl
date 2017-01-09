@@ -2,6 +2,9 @@ module GalerkinSparseGrids
 
 # package code goes here
 
+using Cubature
+using ODE
+
 include("Hat_Methods.jl")  # Using non-galerkin elementary 'hat' basis functions
 include("DG_Basis.jl") # Gram-Schmidt procedure for DG basis functions in 1-D
 include("SQuadrature.jl") # Gram-Schmidt procedure for DG basis functions in 1-D

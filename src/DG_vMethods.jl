@@ -1,4 +1,4 @@
-using Cubature
+
 #-------------------------------------------------------------------
 # It is sometimes advantageous to have the coeffs as
 # one single vector, especially for making use of BLAS
