@@ -1,19 +1,18 @@
 # Terms Used
 
-"the interval"	 			The unit interval [0, 1]
+"the interval"	 			The unit interval [0,1]
 
-"interval"					A nonzero sub-interval of [0, 1], possibly all of it
+"interval"					A nonzero sub-interval of [0,1], possibly all of it
 ("sub-interval")			Always dyadic in our case, of the form (i/2^n, (i+1)/2^n)
 
 "interval product"			A cartesian product of D sub-intervals in D dimensions
 ("multival")
 
 "resolution"				An interval of the form (i/2^n, (i+1)/2^n) has resolution n
-							When n = 0 this involves functions that can be nonzero on all of [0, 1]
+							When n = 0 this involves functions that can be nonzero on all of [0,1]
 							In order to count hat basis functions that do not vanish on the boundaries 
-							we label them with resolution '-1' for simplicity
-							For the Galerkin basis, the resolution -1 corresponds to the Legendre polynomials
-							form which the remaining basis is obtained by Graham Schmidt
+							we label them with resolution(s) '-1' (and '-2' for hat basis) for simplicity
+							In the Galerkin basis, resolution '-1' corresponds to Legendre polynomials on [0,1]
 							
 
 "level" 					The level of resolution. This is just n above, when n >= 0, and 
