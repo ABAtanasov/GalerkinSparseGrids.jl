@@ -78,7 +78,7 @@ end
 
 # Given a 1-D position and level, this tells us which place 
 # that position belongs to, at that level resolution
-function hat_index(x::Float64,l::Int)
+function hat_index(x::Real,l::Int)
     if l<= 1
         return 1
     end

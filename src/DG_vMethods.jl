@@ -311,7 +311,7 @@ function sD_matrix{D}(i::Int, k::Int,
     sMat= spzeros(len,len)
 	f_numbers= ntuple(i-> k, D)
     for c1 in 1:len
-        lpf = slice(srefVD,c1,:)
+        lpf = view(srefVD,c1,:)
         p = lpf[2][i]
         for level in (lpf[1][i]):-1:1
             level2= CartesianIndex{D}(ntuple(j-> j==i?level:(lpf[1][j]) , D))
