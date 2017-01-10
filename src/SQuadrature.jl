@@ -11,7 +11,7 @@
 # from hcubature with more efficient method
 
 function hypervol{D}(ks::NTuple{D,Int})
-	ans = ones(Float64)
+	ans = one(Float64)
 	for i in 1:D
 		ans *= ks[i]
 	end
@@ -19,9 +19,10 @@ function hypervol{D}(ks::NTuple{D,Int})
 end
 
 function squadrature(f::Function, n::Int, D::Int)
-	coeffs = sparse_vcoeffs(f, n ,D)
-	ans = zeros(Float64)
-	index = 1
+	coeffs = sparse_coefficients(f, n ,D)
+	ans = zero(Float64)
+    ls = ntuple(i -> (n+2), D)
+	
 	for level in CartesianRange(ls)
         diag_level = 0;
         for i in 1:D
@@ -34,7 +35,7 @@ function squadrature(f::Function, n::Int, D::Int)
             ks = ntuple(i -> 1<<pos(level[i]-3), D)
 			block = zeros(Float64)
             for place in CartesianRange(ks)
-                block += coeffs[level][place] 
+                block += 0.5*coeffs[level][place] 
             end
 			block *= hypervol(ks)
 			ans += block

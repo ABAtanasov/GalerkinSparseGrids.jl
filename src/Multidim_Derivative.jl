@@ -21,20 +21,19 @@ function full_D_matrix{D}(i::Int, k::Int, n::Int,
     sMat= spzeros(len,len)
 
     for c1 in 1:len
-        lpf = slice(srefVD,c1,:)
+        lpf = view(srefVD,c1,:)
         l = lpf[1][i]
         p = lpf[2][i]
         f = lpf[3][i]
         vc1 = D2V_1D[[CartesianIndex((l,)),CartesianIndex((p,)),CartesianIndex((f,))]]
-        dvc1s = slice(Dmat_1D,:, vc1)
-        #we'd have to cut something off here in the sparse case
+        dvc1s = view(Dmat_1D,:, vc1)
         
         for j in 1:length(dvc1s)
             if abs(dvc1s[j])<=1.0e-15
                 continue
             end
 
-            lpf2 = slice(V2D_1D,j,:)
+            lpf2 = view(V2D_1D,j,:)
             
             level2 = CartesianIndex{D}(ntuple(j-> j==i?lpf2[1][1]:lpf[1][j] ,D))
             place2 = CartesianIndex{D}(ntuple(j-> j==i?lpf2[2][1]:lpf[2][j] ,D))
@@ -56,18 +55,18 @@ function sparse_D_matrix{D}(i::Int, k::Int, n::Int,
     len = length(srefVD[:,1])
     sMat= spzeros(len,len)
     for c1 in 1:len
-        lpf = slice(srefVD,c1,:)
+        lpf = view(srefVD,c1,:)
         l = lpf[1][i]
         p = lpf[2][i]
         f = lpf[3][i]
         vc1 = D2V_1D[[CartesianIndex((l,)),CartesianIndex((p,)),CartesianIndex((f,))]]
-        dvc1s = slice(Dmat_1D,:, vc1)
+        dvc1s = view(Dmat_1D,:, vc1)
         
         for j in 1:length(dvc1s)
             if abs(dvc1s[j])<=1.0e-15
                 continue
             end
-            lpf2 = slice(V2D_1D,j,:)
+            lpf2 = view(V2D_1D,j,:)
             level2 = CartesianIndex{D}(ntuple(j-> j==i?lpf2[1][1]:lpf[1][j] ,D))
             diag_level=0;
             for q in 1:D

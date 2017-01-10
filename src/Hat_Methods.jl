@@ -125,9 +125,9 @@ function get_coefficient{D,T<:Real}(f::Function,
 									
     if D==1					#This is the base case for 1D on the interval [0,1]
         if level[1]==1
-            return f([0])
+            return f([0.])
         elseif level[1]==2
-            return f([1])-f([0])
+            return f([1.])-f([0.])
         else
             middle = f(x)
             x[1] += (0.5)^(level[1]-2)
