@@ -25,12 +25,12 @@ const MAX_EVALS = 1000
 # 1-D Basis
 #------------------------------------------------------
 
-function v(k::Int, level::Int, place::Int, f_number::Int, x::Real)
+function v{T<:Real}(k::Int, level::Int, place::Int, f_number::Int, x::T)
 	if level==0 # At the base level, we are not discontinuous, and we simply
                 # use Legendre polynomials up to degree k-1 as a basis
 		return LegendreP(f_number-1,2*x-1)*sqrt(2.0)
 	else
-		return h(k, f_number, (1<<level)*x - (2*place-1)) * (2.0)^(level/2)
+		return h(k, f_number, (1<<level)*x - (2*place-1)) * sqrt(one(T)*(1<<level))
         # Otherwise we use an appropriately shifted, scaled, and normalized
 		# DG function
 	end
@@ -46,8 +46,8 @@ end
 
 # Returns the value of the function at x
 function V{D,T<:Real}(k::Int, level::NTuple{D,Int}, 
-    place::CartesianIndex{D}, f_number::CartesianIndex{D}, xs::AbstractArray{T})
-	ans = one(eltype(xs))
+    place::CartesianIndex{D}, f_number::CartesianIndex{D}, xs::Array{T,D})
+	ans = one(T)
     for i = 1:D
         ans *= v(k, level[i], place[i], f_number[i], xs[i])
     end
@@ -130,16 +130,16 @@ function hier_coefficients_DG{D}(k::Int, f::Function, ls::NTuple{D,Int})
         ks = ntuple(i -> 1<<pos(level[i]-2), D)  #This sets up a specific k+1 vector
         level_coeffs = Array(Array{Float64},ks)	 #all the coefficients at this level
 		lvl = ntuple(i -> level[i]-1,D)
-        for place in CartesianRange(ks)
-            level_coeffs[place]=Array(Float64,f_numbers)
-			for f_number in CartesianRange(f_numbers)
-                #@show (lvl,place,f_number)
-                (level_coeffs[place])[f_number]=get_coefficient_DG(k,f,lvl,place,f_number)
+	    for place in CartesianRange(ks)
+			place_coeffs=Array(Float64,f_numbers)
+            for f_number in CartesianRange(f_numbers)
+                place_coeffs[f_number]=get_coefficient_DG(k,f,lvl,place,f_number)
                 # The coefficients of this level at this place 
-				# AND at this specific function are computed
+                # AND at this specific function are computed
             end
+			level_coeffs[place] = place_coeffs
         end
-        coeffs[level] = level_coeffs
+	    coeffs[level] = level_coeffs
     	# We assign to this CartesianIndex{D} in the dictionary the corresponding
 		# Array of Arrays
     end
@@ -173,12 +173,13 @@ function sparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int)
         level_coeffs = Array(Array{Float64},ks)	 
         lvl = ntuple(i -> level[i]-1,D)
 	    for place in CartesianRange(ks)
-            level_coeffs[place]=Array(Float64,f_numbers)
+			place_coeffs=Array(Float64,f_numbers)
             for f_number in CartesianRange(f_numbers)
-                level_coeffs[place][f_number]=get_coefficient_DG(k,f,lvl,place,f_number)
+                place_coeffs[f_number]=get_coefficient_DG(k,f,lvl,place,f_number)
                 # The coefficients of this level at this place 
                 # AND at this specific function are computed
             end
+			level_coeffs[place] = place_coeffs
         end
 	    coeffs[level] = level_coeffs
     end
@@ -191,13 +192,15 @@ end
 # coefficients
 #------------------------------------------------------------
 function reconstruct_DG{D,T<:Real}(k::Int,coefficients::Dict{CartesianIndex{D}, Array{Array{Float64},D}}, xs::Array{T})
-    value = 0.0
+    value = zero(T)
     f_numbers= ntuple(i-> k ,D)
+
     for key in keys(coefficients)	
         level = ntuple(i->key[i]-1,D)	
         place = CartesianIndex{D}(ntuple(i->hat_index(xs[i],level[i]),D))
-		for f_number in CartesianRange(f_numbers)
-        	value += (coefficients[key])[CartesianIndex{D}(place)][f_number]*V(k,level,place,f_number,xs)
+		coeffs = coefficients[key][CartesianIndex{D}(place)]::Array{T,D}
+		@inbounds for f_number in CartesianRange(f_numbers)
+        	value += coeffs[f_number]*V(k,level,place,f_number,xs)
 		end 
     end
 	#return the sum of all the relevant DG functions at that place x
