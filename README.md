@@ -63,11 +63,11 @@ For this reason we have the `vhier_coefficients_DG` and `vsparse_coefficients_DG
 We can convert between vectors and appropriate dictionaries as follows (for k = 3, l = (5,5) or n=5):
 
     full_vcoeffs = vhier_coefficients_DG(3,x->sin(4*x[1]+x[2]),(5,5))
-    full_dict = Full_V2D(3,full_vcoeffs,(5,5))
+    full_dict = full_V2D(3,full_vcoeffs,(5,5))
     # Note this also means full_vcoeffs = Full_D2V(3,full_dict,(5,5)) 
 
     sparse_vcoeffs = vsparse_coefficients_DG(3,x->sin(4*x[1]+x[2]),5,2)
-    sparse_dict = Sparse_V2D(3,sparse_vcoeffs,5,2)
+    sparse_dict = sparse_V2D(3,sparse_vcoeffs,5,2)
     # Note this also means sparse_vcoeffs = Sparse_D2V(3,sparse_dict,5) 
 
 In addition, we can generate a lookup by using the `full_referenceD2V`/`V2D` and `sparse_referenceD2V`/`V2D` that takes us from a dictionary-like level-place-fnumber scheme to a specific place in a coefficient vector and vice versa. 
