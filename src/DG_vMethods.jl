@@ -27,7 +27,7 @@
 # (both in full and sparse bases)
 #-------------------------------------------------------------------
 
-<<<<<<< HEAD
+
 # Calculates the exact dimension of interpolating
 # basis functions in the full grid scheme
 # using the degree k-1 Galerkin polynomials
@@ -47,11 +47,6 @@ end
 # Calculates this same dimension when using
 # the sparse grid scheme
 function sparse_size(k, n, D)
-=======
-# Efficiency criticality: HIGH
-
-function sparse_size(k,n,D)
->>>>>>> f1917fd504d929ddb7446d413da159a3333165b4
     size=0
     ls = ntuple(i-> (n+1),D)
 	
