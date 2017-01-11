@@ -194,7 +194,7 @@ function sparse_coefficients(f::Function, n::Int, D::Int)
             continue					# don't compute coeffs
         else  							#Otherwise we'll go ahead and compute them
             ks = ntuple(i -> 1<<pos(level[i]-3), D)  
-            level_coeffs = zeros(ks)
+            level_coeffs = zeros(Float64, ks)
             for place in CartesianRange(ks)
                 x = get_position(level, place) 
                 level_coeffs[place]=get_coefficient(f,ntuple(i -> level[i], D),x)

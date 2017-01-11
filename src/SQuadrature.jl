@@ -2,13 +2,15 @@
 #
 # Sparse Integration Techniques for Calculating Error
 #
+# Currently poor at estimating error...
+#
 #------------------------------------------------------
 
 # Efficiency criticality: MEDIUM
 # Important for calculating error for testing package
 # Not critical for user
-# Potential use to replace multidimensional integration 
-# from hcubature with more efficient method
+# Potentially can replace multidimensional integration 
+# from hcubature with a more efficient method
 
 function hypervol{D}(ks::NTuple{D,Int})
 	ans = one(Float64)
@@ -33,7 +35,7 @@ function squadrature(f::Function, n::Int, D::Int)
         else  							
 			
             ks = ntuple(i -> 1<<pos(level[i]-3), D)
-			block = zeros(Float64)
+			block = zero(Float64)
             for place in CartesianRange(ks)
                 block += 0.5*coeffs[level][place] 
             end

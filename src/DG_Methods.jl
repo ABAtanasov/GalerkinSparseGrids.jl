@@ -119,29 +119,26 @@ end
 
 #------------------------------------------------------
 # Hierarchical Galerkin Coefficients in n-D
+#
+# We will make a dictionary, that given a level (represented by a cartesian index)
+# will lead to a list of coefficients representing the places at that level
+# and the array f_number telling us which basis element V we are looking at
 #------------------------------------------------------
 function hier_coefficients_DG{D}(k::Int, f::Function, ls::NTuple{D,Int})
-    coeffs = Dict{CartesianIndex{D}, Array{Array{Float64},D}}()
-	# We will make a dictionary, that given a level (represented by a cartesian index)
-	# will lead to a list of coefficients representing the places at that level
-	# and the array f_number telling us which basis element V we are looking at
+    coeffs = Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
 	f_numbers= ntuple(i-> k, D)
-    for level in CartesianRange(ls)     # This really goes from 0 to l_i for each i,
-        ks = ntuple(i -> 1<<pos(level[i]-2), D)  #This sets up a specific k+1 vector
-        level_coeffs = Array(Array{Float64},ks)	 #all the coefficients at this level
+    for level in CartesianRange(ls)     	
+        places = ntuple(i -> 1<<pos(level[i]-2), D)  			
+        level_coeffs = Array(Array{Float64,D},places)	 
 		lvl = ntuple(i -> level[i]-1,D)
-        for place in CartesianRange(ks)
-            level_coeffs[place]=Array(Float64,f_numbers)
+        for place in CartesianRange(places)
+            place_coeffs = Array(Float64,f_numbers)
 			for f_number in CartesianRange(f_numbers)
-                #@show (lvl,place,f_number)
-                (level_coeffs[place])[f_number]=get_coefficient_DG(k,f,lvl,place,f_number)
-                # The coefficients of this level at this place 
-				# AND at this specific function are computed
+                place_coeffs[f_number]=get_coefficient_DG(k,f,lvl,place,f_number)
             end
+			level_coeffs[place]=place_coeffs
         end
         coeffs[level] = level_coeffs
-    	# We assign to this CartesianIndex{D} in the dictionary the corresponding
-		# Array of Arrays
     end
     return coeffs
 end
@@ -151,7 +148,7 @@ end
 # Sparse Galerkin Coefficients in n-D
 #------------------------------------------------------
 function sparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int)
-    coeffs = Dict{CartesianIndex{D}, Array{Array{Float64},D}}()
+    coeffs = Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
 	f_numbers= ntuple(i-> k, D)
     ls = ntuple(i->(n+1),D)
     for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
@@ -159,28 +156,21 @@ function sparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int)
         for i in 1:D
             diag_level+=level[i]
         end
-		
         if diag_level > n + D  	# If we're past the relevant levels
             continue			# Don't compute coeffs
         end  
-		# Otherwise we'll go ahead and do it. 
-		# The same code follows as before.
-
-		#This sets up a specific k+1 vector:
 	    
-		ks = ntuple(i -> 1<<pos(level[i]-2), D) 
-		#all the coefficients at this level
-        level_coeffs = Array(Array{Float64},ks)	 
-        lvl = ntuple(i -> level[i]-1,D)
-	    for place in CartesianRange(ks)
-            level_coeffs[place]=Array(Float64,f_numbers)
-            for f_number in CartesianRange(f_numbers)
-                level_coeffs[place][f_number]=get_coefficient_DG(k,f,lvl,place,f_number)
-                # The coefficients of this level at this place 
-                # AND at this specific function are computed
+        places = ntuple(i -> 1<<pos(level[i]-2), D)  			
+        level_coeffs = Array(Array{Float64,D},places)	 
+		lvl = ntuple(i -> level[i]-1,D)
+        for place in CartesianRange(places)
+            place_coeffs = Array(Float64,f_numbers)
+			for f_number in CartesianRange(f_numbers)
+                place_coeffs[f_number]=get_coefficient_DG(k,f,lvl,place,f_number)
             end
+			level_coeffs[place]=place_coeffs
         end
-	    coeffs[level] = level_coeffs
+        coeffs[level] = level_coeffs
     end
     return coeffs
 end
@@ -190,7 +180,7 @@ end
 # Reconstruction (full and sparse) in n-D from a Dict of
 # coefficients
 #------------------------------------------------------------
-function reconstruct_DG{D,T<:Real}(k::Int,coefficients::Dict{CartesianIndex{D}, Array{Array{Float64},D}}, xs::Array{T})
+function reconstruct_DG{D,T<:Real}(k::Int,coefficients::Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}, xs::Array{T})
     value = 0.0
     f_numbers= ntuple(i-> k ,D)
     for key in keys(coefficients)	
