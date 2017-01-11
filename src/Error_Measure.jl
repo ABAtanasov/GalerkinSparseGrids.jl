@@ -12,9 +12,8 @@
 function monte_carlo(f::Function, D::Int; count = 1000)
     total = 0.0
     for iter in 1:count
-		x0 = rand()
-		y0 = rand()
-        total += f((x0,y0))
+		x = ntuple(i -> rand(), D)
+        total += f(x)
 	end
     total /= count
 end
@@ -26,9 +25,8 @@ function monte_carlo2(f::Function, D::Int; batch = 50, Z = 1.0)
     while true
         points = Float64[]
         for i in 1:batch
-            x0 = rand()
-            y0 = rand()
-            push!(points, f((x0,y0)))
+            x = ntuple(i -> rand(), D)
+            push!(points, f(x))
         end
         if length(means) >1  && (abs(mean(points)-mean(means))/std(means) < Z)
             break

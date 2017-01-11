@@ -17,6 +17,7 @@ include("Multidim_Derivative.jl") # Multidimensional DG Derivatives in the full 
 include("DG_Timestep_Matrices.jl") # Constructing ideal derivative matrix in position space
 include("PDEs.jl") # Solving the 1-D and n-D wave equation with periodic boundary conditions
 
+include("Error_Measure.jl") # Monte Carlo Methods to measure error
 
 
 #make naming scheme more systematic 

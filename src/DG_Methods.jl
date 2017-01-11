@@ -46,7 +46,7 @@ end
 
 # Returns the value of the function at x
 function V{D,T<:Real}(k::Int, level::NTuple{D,Int}, 
-    place::CartesianIndex{D}, f_number::CartesianIndex{D}, xs::Array{T,D})
+    place::CartesianIndex{D}, f_number::CartesianIndex{D}, xs::Array{T,1})
 	ans = one(T)
     for i = 1:D
         ans *= v(k, level[i], place[i], f_number[i], xs[i])
@@ -185,7 +185,7 @@ end
 # coefficients
 #------------------------------------------------------------
 
-function reconstruct_DG{D,T<:Real}(k::Int,coefficients::Dict{CartesianIndex{D}, Array{Array{Float64},D}}, xs::Array{T})
+function reconstruct_DG{D,T<:Real}(k::Int,coefficients::Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}, xs::Array{T,1})
     value = zero(T)
 
     f_numbers= ntuple(i-> k ,D)
