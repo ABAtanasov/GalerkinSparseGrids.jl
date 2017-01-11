@@ -62,4 +62,8 @@ export sparse_D_matrix
 export sparse_wave_equation45
 export sparse_wave_equation78
 
+export squadrature
+export mcerr
+export mcerr2
+
 end # module

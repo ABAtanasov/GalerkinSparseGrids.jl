@@ -1,7 +1,6 @@
-
 #-------------------------------------------------------------------
-# It is sometimes advantageous to have the coeffs as
-# one single vector, especially for making use of BLAS
+# It is advantageous to have the coeffs as
+# one single vector in order to make use of BLAS
 # and related libraries when defining operators on 
 # our space of functions
 #
@@ -14,8 +13,8 @@
 # corresponding index in a 1-D vector. 
 #
 # For this, we have the reference functions:
-# Full/Sparse Reference V2D/D2V 
-# D2V generates a dict that, upon input of a level, place, number
+# full/sparse_referenceV2D/D2V 
+# D2V generates a dict that, upon input of a level, place, f_number
 # gives the corresponding index in a vector
 # V2D generates a vector, with row i having the three numbers
 # level, place, f_number corresponding to index i in the vector
@@ -23,11 +22,12 @@
 # These methods work in all dimensions, and there are ones for both
 # full and sparse grids. 
 #
-# The entire script culminates in an end result: a matrix 
+# The entire script culminates in a final result: a matrix 
 # representation of the derivative operator 
 # (both in full and sparse bases)
 #-------------------------------------------------------------------
 
+<<<<<<< HEAD
 # Calculates the exact dimension of interpolating
 # basis functions in the full grid scheme
 # using the degree k-1 Galerkin polynomials
@@ -47,6 +47,11 @@ end
 # Calculates this same dimension when using
 # the sparse grid scheme
 function sparse_size(k, n, D)
+=======
+# Efficiency criticality: HIGH
+
+function sparse_size(k,n,D)
+>>>>>>> f1917fd504d929ddb7446d413da159a3333165b4
     size=0
     ls = ntuple(i-> (n+1),D)
 	
