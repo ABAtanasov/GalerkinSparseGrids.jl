@@ -156,7 +156,7 @@ function sparse_V2D{T<:Real}(k::Int, vect::Array{T}, n::Int, D::Int)
                 place_coeffs[f_number]=vect[j]
 				j+=1
             end
-			level_coeffs[place]
+			level_coeffs[place]=place_coeffs
         end
 		coeffs[level] = level_coeffs
     end
