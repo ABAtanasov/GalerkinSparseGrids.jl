@@ -101,7 +101,7 @@ function sparse_wave_equation45(f0::Function, v0::Function, k::Int,n::Int, D::In
 	    end
 	end
     y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-    soln=ode45((t,x)->*(RHS,x), y0, [time0,time1])
+    soln = ode45((t,x)->*(RHS,x), y0, [time0,time1])
 	return soln
 end
 

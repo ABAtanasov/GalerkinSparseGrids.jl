@@ -1,23 +1,28 @@
 module GalerkinSparseGrids
 
-# package code goes here
+# The prerequisite packages as of January 2017 are Cubature.jl and ODE.jl
 
 using Cubature
 using ODE
 
-include("Hat_Methods.jl")  # Using non-galerkin elementary 'hat' basis functions
-include("DG_Basis.jl") # Gram-Schmidt procedure for DG basis functions in 1-D
-include("SQuadrature.jl") # Gram-Schmidt procedure for DG basis functions in 1-D
-include("1D_DG_Functions.jl") # Explicitly building the 1-D Basis
-include("DG_Methods.jl") # Multidimensional hierarchical & sparse coefficients
-include("DG_Derivative.jl") # 1-D symbolic piecewise derivative 
-include("DG_Derivative_Precompute.jl") # Precomputing derivative matrix for coeff vect
-include("DG_vMethods.jl") # Going between a dictionary & a vector of coeffs
-include("Multidim_Derivative.jl") # Multidimensional DG Derivatives in the full & sparse bases
-include("DG_Timestep_Matrices.jl") # Constructing ideal derivative matrix in position space
-include("PDEs.jl") # Solving the 1-D and n-D wave equation with periodic boundary conditions
+# The following script files are used
 
-include("Error_Measure.jl") # Monte Carlo Methods to measure error
+include("Hat_Methods.jl") 			   # Using non-galerkin elementary 'hat' basis functions
+include("DG_Basis.jl")	  			   # Gram-Schmidt procedure for DG basis functions in 1-D
+include("SQuadrature.jl")  			   # Gram-Schmidt procedure for DG basis functions in 1-D
+include("1D_DG_Functions.jl") 		   # Explicitly building the 1-D Galerkin Basis
+include("DG_Methods.jl") 			   # Multidimensional hierarchical & sparse coefficients
+include("DG_Derivative.jl") 		   # 1-D symbolic piecewise derivative 
+include("DG_Derivative_Precompute.jl") # Precomputing derivative matrix for coeff vect
+include("DG_vMethods.jl") 			   # Going between a dictionary & a vector of coeffs
+include("Multidim_Derivative.jl") 	   # Multidimensional DG Derivatives in full & sparse bases
+include("DG_Timestep_Matrices.jl") 	   # Constructing ideal derivative matrix using boundary terms
+include("PDEs.jl") 					   # Solving the n-D wave equation with periodic boundary
+
+
+include("Error_Measure.jl") 		   # Monte Carlo Methods to measure error
+include("Tensor_Construct.jl") 		   # Quickly calculates coeffs of `simple tensor' functions
+include("Traveling_Wave_Example.jl")
 
 
 #make naming scheme more systematic 
@@ -66,5 +71,14 @@ export sparse_wave_equation78
 export squadrature
 export mcerr
 export mcerr2
+
+export tensor_construct_full
+export tensor_construct_sparse
+
+export cos_coeffs
+export sin_coeffs
+export travelling_wave_equation45
+export travelling_wave_equation78
+
 
 end # module
