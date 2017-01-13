@@ -11,7 +11,8 @@
 # Critical for accurate PDE evolution
 
 function full_D_matrix{D}(i::Int, k::Int, n::Int,
-    srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
+    					  srefVD::Array{CartesianIndex{D},2}, 
+						  srefDV::Dict{Array{CartesianIndex{D},1},Int})
     
     V2D_1D = full_referenceV2D(k,(n+1,))
     D2V_1D = full_referenceD2V(k,(n+1,))
@@ -47,13 +48,18 @@ function full_D_matrix{D}(i::Int, k::Int, n::Int,
 end
 
 function sparse_D_matrix{D}(i::Int, k::Int, n::Int,
-    srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
+    						srefVD::Array{CartesianIndex{D},2}, 
+							srefDV::Dict{Array{CartesianIndex{D},1},Int})
+	
     V2D_1D = full_referenceV2D(k,(n+1,))
     D2V_1D = full_referenceD2V(k,(n+1,))
     Dmat_1D = periodic_hier_DLF_Matrix(0, k, n)
     
     len = length(srefVD[:,1])
-    sMat= spzeros(len,len)
+	I = Int[]
+	J = Int[]
+	K = Float64[]
+	
     for c1 in 1:len
         lpf = view(srefVD,c1,:)
         l = lpf[1][i]
@@ -79,8 +85,15 @@ function sparse_D_matrix{D}(i::Int, k::Int, n::Int,
             f_number2 = CartesianIndex{D}(ntuple(j-> j==i?lpf2[3][1]:lpf[3][j] ,D))
             
             c2 = srefDV[[level2, place2, f_number2]]
-            sMat[c2,c1] += dvc1s[j]
+			push!(I, c2)
+			push!(J, c1)
+			push!(K, dvc1s[j])
         end
     end
-    return sMat
+	
+	Dfinal = sparse(I, J ,K, len, len, +)
+	# Does not seem helpful for this matrix:
+	# dropzeros!(Dfinal)
+	
+    return Dfinal
 end
