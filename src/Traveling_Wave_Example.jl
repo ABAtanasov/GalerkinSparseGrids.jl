@@ -41,7 +41,7 @@ function sin_coeffs(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
     return cos_coeffs(k, n, m; phase = - pi/2 + phase, A = A)
 end
 
-function travelling_wave(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
+function traveling_wave(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
     wavenumber = 2*pi*m
     frequency = sqrt(vecdot(wavenumber,wavenumber))
     
@@ -57,9 +57,9 @@ function travelling_wave(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
 end
 
 
-function travelling_wave_equation45(k::Int,n::Int, m::Array{Int,1}, time0::Real, time1::Real; phase = 0.0, A = 1.0)
+function traveling_wave_equation45(k::Int,n::Int, m::Array{Int,1}, time0::Real, time1::Real; phase = 0.0, A = 1.0)
     D = length(m)
-    f0coeffs, v0coeffs = travelling_wave(k, n, m; phase = phase, A = A)
+    f0coeffs, v0coeffs = traveling_wave(k, n, m; phase = phase, A = A)
     srefVD = sparse_referenceV2D(k, n, D);
     srefDV = sparse_referenceD2V(k, n, D);
     
@@ -100,9 +100,9 @@ function travelling_wave_equation45(k::Int,n::Int, m::Array{Int,1}, time0::Real,
     
 end
 
-function travelling_wave_equation78(k::Int,n::Int, m::Array{Int,1}, time0::Real, time1::Real; phase = 0.0, A = 1.0)
+function traveling_wave_equation78(k::Int,n::Int, m::Array{Int,1}, time0::Real, time1::Real; phase = 0.0, A = 1.0)
     D = length(m)
-    f0coeffs, v0coeffs = travelling_wave(k, n, m; phase = phase, A = A)
+    f0coeffs, v0coeffs = traveling_wave(k, n, m; phase = phase, A = A)
     srefVD = sparse_referenceV2D(k, n, D);
     srefDV = sparse_referenceD2V(k, n, D);
     

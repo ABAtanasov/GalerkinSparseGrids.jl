@@ -169,14 +169,14 @@ function full_referenceD2V{D}(k::Int, ls::NTuple{D,Int})
 	j=1
 	size=0
 	f_numbers= ntuple(q-> k, D)
-	dict = Dict{Array{CartesianIndex{D},1},Int}()
+	dict = Dict{NTuple{3,CartesianIndex{D}}, Int}()
 	
     for level in CartesianRange(ls)
         ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
         for place in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-                dict[[level,place,f_number]] = j
+                dict[(level,place,f_number)] = j
 				j+=1
             end
         end
@@ -188,16 +188,14 @@ function full_referenceV2D{D}(k::Int, ls::NTuple{D,Int})
 	j=1
 	size=full_size(k, ls)
 	f_numbers= ntuple(q-> k, D)
-	vect = Array(CartesianIndex{D},(size,3))
+	vect = Array(NTuple{3,CartesianIndex{D}}, size)
 	
     for level in CartesianRange(ls)
         ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
         for place in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-                vect[j,1]=level
-				vect[j,2]=place
-				vect[j,3]=f_number
+                vect[j] = (level, place, f_number)
 				j+=1
             end
         end
@@ -210,7 +208,7 @@ function sparse_referenceD2V(k::Int,n::Int,D::Int)
 	f_numbers= ntuple(q-> k, D)
 	size=sparse_size(k,n,D)
 	ls = ntuple(i->(n+1),D)
-	dict = Dict{Array{CartesianIndex{D},1},Int}()
+	dict = Dict{NTuple{3,CartesianIndex{D}}, Int}()
 	
     for level in CartesianRange(ls)
         diag_level=0;
@@ -224,7 +222,7 @@ function sparse_referenceD2V(k::Int,n::Int,D::Int)
 		lvl = ntuple(i -> level[i]-1,D)
         for place in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-                dict[[level,place,f_number]] = j
+                dict[(level,place,f_number)] = j
 				j+=1
             end
         end
@@ -233,11 +231,12 @@ function sparse_referenceD2V(k::Int,n::Int,D::Int)
 end
 
 function sparse_referenceV2D(k::Int,n::Int,D::Int)
-	j=1
 	f_numbers= ntuple(q-> k, D)
 	size=sparse_size(k,n,D)
-	vect = Array(CartesianIndex{D},(size,3))
+	vect = Array(NTuple{3,CartesianIndex{D}}, size)
     ls = ntuple(i->(n+1),D)
+	j=1
+	
     for level in CartesianRange(ls)
         diag_level=0;
         for q in 1:D
@@ -250,9 +249,7 @@ function sparse_referenceV2D(k::Int,n::Int,D::Int)
 		lvl = ntuple(i -> level[i]-1,D)
         for place in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-                vect[j,1]=level
-				vect[j,2]=place
-				vect[j,3]=f_number
+                vect[j] = (level, place, f_number)
 				j+=1
             end
         end

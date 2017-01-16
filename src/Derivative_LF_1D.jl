@@ -56,8 +56,8 @@ function get_vcoeffs(k::Int, level::Int, f::Function; rel_tol = REL_TOL, abs_tol
 end
 
 
-# Not the most efficient way of doing this
-# Dictionary lookup would be better
+# Not an efficient way to reconstrucy
+# Dictionary lookup is better
 function reconstruct_vcoeffs(k::Int, level::Int, vcoeffs::Array{Float64,1}, x::Real)
     value = 0.0
     i=1
@@ -165,28 +165,47 @@ end
 
 
 function hier2pos(k::Int, max_level::Int; abs_tol = ABS_TOL)
-    mat = spzeros((1<<max_level)*(k), (1<<max_level)*(k))
+    # mat = spzeros((1<<max_level)*(k), (1<<max_level)*(k))
     j=1
+	I = Int[]
+	J = Int[]
+	K = Float64[]
+	
     for level in 0:max_level
         for place in 1:(1<<pos(level-1))
             for f_number in 1:k
 				# Issue is right here:
                 ans = get_vcoeffs(k,max_level,x->v(k,level,place,f_number,x); abs_tol = abs_tol)
 				
-				
 				for i in 1:length(ans)
                     if abs(ans[i]) > 1e-15
-						mat[i,j]=ans[i]
-					else
-						mat[i,j]=0
+						push!(I, i)
+						push!(J, j)
+						push!(K, ans[i])
+					# 	mat[i,j]=ans[i]
+					# else
+					# 	mat[i,j]=0
 					end
                 end
                 j+=1
             end
         end
     end  
+	mat = sparse(I, J, K, (1<<max_level)*(k), (1<<max_level)*(k), +)
     return mat
 end
+
+
+#hier2pos = Array(SparseMatrixCSC{Float64,Int64}, (KMAX, LMAX))
+
+
+# # NOTE here this precomputation is done with ABS_TOL default.
+# # Will want to change in the future
+# for k in 1:KMAX
+# 	for level in 1:LMAX
+# 		hier2pos[k, level] = hier2pos_precompute(k, level)
+# 	end
+# end
 
 
 # By default, use alpha = 0
@@ -203,3 +222,4 @@ function periodic_hier_DLF_Matrix(alpha::Real, k::Int, max_level::Int)
 	return *(Q', *(A, Q))
 	
 end
+

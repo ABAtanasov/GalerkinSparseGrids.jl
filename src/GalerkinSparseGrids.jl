@@ -12,11 +12,11 @@ include("DG_Basis.jl")	  			   # Gram-Schmidt procedure for DG basis functions i
 include("SQuadrature.jl")  			   # Gram-Schmidt procedure for DG basis functions in 1-D
 include("1D_DG_Functions.jl") 		   # Explicitly building the 1-D Galerkin Basis
 include("DG_Methods.jl") 			   # Multidimensional hierarchical & sparse coefficients
-include("DG_Derivative.jl") 		   # 1-D symbolic piecewise derivative 
-include("DG_Derivative_Precompute.jl") # Precomputing derivative matrix for coeff vect
 include("DG_vMethods.jl") 			   # Going between a dictionary & a vector of coeffs
+include("DG_Derivative_Matrix_Elements.jl") 		   # 1-D symbolic piecewise derivative 
+include("DG_Derivative_Precompute.jl") # Precomputing derivative matrix for coeff vect
+include("Derivative_LF_1D.jl") 	   	   # Constructing ideal 1D derivative matrix using boundary terms
 include("Multidim_Derivative.jl") 	   # Multidimensional DG Derivatives in full & sparse bases
-include("DG_Timestep_Matrices.jl") 	   # Constructing ideal derivative matrix using boundary terms
 include("PDEs.jl") 					   # Solving the n-D wave equation with periodic boundary
 
 
@@ -77,8 +77,8 @@ export tensor_construct_sparse
 
 export cos_coeffs
 export sin_coeffs
-export travelling_wave_equation45
-export travelling_wave_equation78
+export traveling_wave_equation45
+export traveling_wave_equation78
 
 
 end # module
