@@ -4,7 +4,7 @@ using Cubature
 using ODE
 
 
-print("Beginning Tests of GalerkinSparseGrids.jl--------------------------------------")
+println("Beginning Tests of GalerkinSparseGrids.jl--------------------------------------")
 
 #--------------------------------------
 # Elementary Tests
@@ -311,4 +311,4 @@ end
 println("Test Passed.")
 
 
-print("Finished Tests of GalerkinSparseGrids.jl---------------------------------------")
+println("Finished Tests of GalerkinSparseGrids.jl---------------------------------------")
