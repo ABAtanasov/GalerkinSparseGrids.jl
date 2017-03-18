@@ -325,6 +325,10 @@ dict = sparse_V2D(k_used, soln[2][end], n_used, D)
 
 @test mcerr(x->reconstruct_DG(k_used, dict, [x...]), truesoln, D) < 0.05
 
+soln = traveling_wave_equation78(k_used, n_used, m, 0, 0.54)
+dict = sparse_V2D(k_used, soln[2][end], n_used, D)
+@test mcerr(x->reconstruct_DG(k_used, dict, [x...]), truesoln, D) < 0.05
+
 println("Test passed.")
 
 println("Finished Tests of GalerkinSparseGrids.jl---------------------------------------")
