@@ -48,10 +48,10 @@ print("Testing 3D inner product... ")
 println("Tests Passed.")
 
 #--------------------------------------
-# Testing hat reconstruction 
+# Testing hat reconstruction
 #--------------------------------------
 
-#position:
+# Position:
 print("Testing position hat basis reconstruction 1-D... ")
 
 for l in 1:7
@@ -61,7 +61,7 @@ end
 
 println("Test Passed.")
 
-#hierarchical:
+# Hierarchical:
 
 print("Testing hierarchical hat basis reconstruction 1-D... ")
 
@@ -72,7 +72,7 @@ end
 
 println("Test Passed.")
 
-#hierarchical and position basis should yield the same results for hat functions:
+# Hierarchical and position basis should yield the same results for hat functions:
 
 print("Testing that both reconstructions are equivalent... ")
 
@@ -85,7 +85,7 @@ end
 
 println("Test Passed.")
 
-#multidimensional hat reconstruction: 
+# Multidimensional hat reconstruction:
 
 print("Testing position hat basis reconstruction 2-D... ")
 
@@ -117,7 +117,7 @@ println("Test Passed.")
 
 
 #---------------------------------------
-# Testing regular hier DG reconstruction 
+# Testing regular hier DG reconstruction
 #---------------------------------------
 
 print("Testing hierarchical discontinuous Galerkin (DG) basis reconstruction 1-D... ")
@@ -138,20 +138,20 @@ end
 
 println("Test Passed.")
 
-# testing sparse DG reconstruction in multidimensional space
+# Testing sparse DG reconstruction in multidimensional space:
 
 print("Testing sparse DG basis reconstruction 2-D... ")
 
 for k in 1:5
     for l in 1:6
         dict = sparse_coefficients_DG(k,x->sin(4*x[1]+x[2]),l,2)
-        @test hcubature(x->(reconstruct_DG(k, dict, [x[1],x[2]])-sin(4*x[1]+x[2]))^2, [0,0], [1,1]; abstol=1.0e-10, maxevals=500)[1]< 1/(1<<(l+k-2))     
+        @test hcubature(x->(reconstruct_DG(k, dict, [x[1],x[2]])-sin(4*x[1]+x[2]))^2, [0,0], [1,1]; abstol=1.0e-10, maxevals=500)[1]< 1/(1<<(l+k-2))
     end
 end
 
 println("Test Passed.")
 
-# testing vector reconstruction 
+# Testing vector reconstruction:
 
 print("Testing hierarchical DG basis reconstruction 1-D with vector coefficients... ")
 
@@ -165,9 +165,9 @@ end
 
 println("Test Passed.")
 
-#testing D2V and V2D
+# Testing D2V and V2D
 
-#full case
+# Full case:
 
 print("Testing D2V and V2D Full Case 2D... ")
 
@@ -189,7 +189,7 @@ end
 
 println("Test Passed.")
 
-#sparse case
+# Sparse case:
 
 print("Testing D2V and V2D Sparse Case 2D... ")
 
@@ -212,22 +212,24 @@ end
 println("Test Passed.")
 
 #--------------------------------------
-# testing Differentiation 
+# Testing Differentiation 
 #--------------------------------------
 
-# print("Testing differentiation 1-D DG basis... ")
-#
-# for k in 1:5
-#     for l in 1:6
-# 	    vect = vhier_coefficients_DG(3, x->sin(4*x[1]), (5,))
-# 	    refVD=full_referenceV2D(3,(5,));
-# 	    refDV=full_referenceD2V(3,(5,));
-# 	    sD = sD_matrix(1,3, refVD, refDV)
-# 	    dvect = *(sD, vect)
-# 	    dict=full_V2D(3,dvect,(5,))
-# 	    @test hquadrature(x->(reconstruct_DG(3,dict,[x[1]])-4*cos(4*x[1]))^2,0,1; abstol=1.0e-10)[1] < 1/(1<<((l+k-2)))
-#     end
-# end
+print("Testing differentiation 1-D DG basis... ")
+
+k=3
+for l in 2:5
+	levels = (l+1,)
+    frefVD = full_referenceV2D(k, levels);
+    frefDV = full_referenceD2V(k, levels);
+    D_op = full_D_matrix(1, k, l, frefVD, frefDV)
+    vcoeffs = vhier_coefficients_DG(k, x->cos(2*pi*x[1]), levels)
+    dvcoeffs = *(D_op,vcoeffs)
+    dict= full_V2D(k, vcoeffs, levels)
+    ddict = full_V2D(k, dvcoeffs, levels)
+    err = hquadrature(x->(reconstruct_DG(k,ddict,[x[1]])+2*pi*sin(2*pi*x[1]))^2, 0, 1, abstol=1.0e-10, maxevals=500)[1]
+    @test err<1/(1<<(k+l-2))
+end
 
 println("Test Passed.")
 
@@ -235,26 +237,27 @@ print("Testing differentiation 2-D full DG basis... ")
 
 k=3
 for l in 2:5
-    srefVD = full_referenceV2D(k, (l+1,l+1));
-    srefDV = full_referenceD2V(k, (l+1,l+1));
-    D_op = full_D_matrix(1,k,l,srefVD, srefDV)
-    vcoeffs = vhier_coefficients_DG(k, x->cos(2*pi*x[1])*cos(2*pi*x[2]),(l+1,l+1))
+	levels = (l+1, l+1)
+    frefVD = full_referenceV2D(k, levels);
+    frefDV = full_referenceD2V(k, levels);
+    D_op = full_D_matrix(1, k, l, frefVD, frefDV)
+    vcoeffs = vhier_coefficients_DG(k, x->cos(2*pi*x[1])*cos(2*pi*x[2]), levels)
     dvcoeffs = *(D_op,vcoeffs)
-    dict= full_V2D(k,vcoeffs,(l+1,l+1))
-    ddict = full_V2D(k,dvcoeffs,(l+1,l+1))
-    err = hcubature(x->(reconstruct_DG(k,ddict,[x[1],x[2]])+2*pi*sin(2*pi*x[1])*cos(2*pi*x[2]))^2,[0,0],[1,1],abstol=1.0e-10,maxevals=500)[1]#< 1/(1<<(l+k-2))
+    dict= full_V2D(k,vcoeffs, levels)
+    ddict = full_V2D(k,dvcoeffs, levels)
+    err = hcubature(x->(reconstruct_DG(k,ddict,[x[1],x[2]])+2*pi*sin(2*pi*x[1])*cos(2*pi*x[2]))^2,[0,0],[1,1],abstol=1.0e-10,maxevals=500)[1]
     @test err<1/(1<<(k+l-2))
 end
 
 println("Test Passed.")
 
 #--------------------------------------
-# testing PDE solvers
+# Testing PDE solvers
 #--------------------------------------
 
-#a wave equation, testing conservation of energy
+# The wave equation, testing conservation of energy
 
-#in position basis
+# In the position basis:
 
 import GalerkinSparseGrids.pos_energy_func
 
@@ -268,7 +271,8 @@ end
 
 println("Test Passed.")
 
-#in hierarchical basis
+# In the hierarchical basis:
+
 print("Testing wave equation solver 1-D hierarchical DG basis... ")
 
 import GalerkinSparseGrids.hier_energy_func
