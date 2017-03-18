@@ -335,31 +335,3 @@ end
 
 # You may want to implement fullreconstruct and sparsereconstruct
 
-# ------------------------------------------------------
-# And now here's the point of doing all of this:
-# efficiently computing a size P log P matrix
-# to represent the derivative operator
-# ------------------------------------------------------
-
-function sD_matrix{D}(i::Int, k::Int,
-    srefVD::Array{CartesianIndex{D},2}, srefDV::Dict{Array{CartesianIndex{D},1},Int})
-    len = length(srefVD[:,1])
-    sMat= spzeros(len,len)
-	f_numbers= ntuple(i-> k, D)
-    for c1 in 1:len
-        lpf = view(srefVD,c1,:)
-        p = lpf[2][i]
-        for level in (lpf[1][i]):-1:1
-            level2= CartesianIndex{D}(ntuple(j-> j==i?level:(lpf[1][j]) , D))
-            place2= CartesianIndex{D}(ntuple(j-> j==i?p:(lpf[2][j]) ,D))
-            for f_n in 1:k
-                f_number2= CartesianIndex{D}(ntuple(j-> j==i?f_n:lpf[3][j] ,D))
-                c2 = srefDV[[level2,place2,f_number2]]
-                sMat[c2,c1] += precomputed_diffs[(k,lpf[1][i]-1,lpf[2][i],lpf[3][i])][level,f_n]
-            end
-            p = Int(ceil(p/2))
-        end
-    end
-    return sMat
-end
-
