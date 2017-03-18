@@ -64,8 +64,6 @@ function sparse_size(k, n, D)
     return size
 end
 
-
-
 function full_D2V{D,T<:Real}(k::Int, coefficients::Dict{CartesianIndex{D}, Array{Array{T,D},D}}, ls::NTuple{D,Int})
 	j=1
 	size = full_size(k, ls)
@@ -312,26 +310,3 @@ function vsparse_coefficients_DG(k::Int, f::Function, n::Int, D::Int;
     end
     return coeffs
 end
-
-# function full_eval{D}(k::Int, ls::NTuple{D,Int})
-# 	j = 1
-# 	size = full_size(k, ls)
-# 	f_numbers = ntuple(q-> k, D)
-# 	vect = zeros(T, size)
-# 	lookup = full_referenceV2D(k, ls)
-# 	dict = full_V2D(k, vect, ls)		# dict of 0.0s
-#
-# 	for i in 1:size
-# 		level, place, number = lookup[i]
-# 		dict[level][place][number] = 1.0
-#
-# 		dict[level][place][number] = 0.0
-# 	end
-# end
-#
-# function sparse_eval{D}(k::Int, vect::Array{T}, ls::NTuple{D,Int})
-#
-# end
-
-# You may want to implement fullreconstruct and sparsereconstruct
-

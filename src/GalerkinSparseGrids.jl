@@ -9,7 +9,6 @@ using ODE
 
 include("Hat_Methods.jl") 			   # Using non-galerkin elementary 'hat' basis functions
 include("DG_Basis.jl")	  			   # Gram-Schmidt procedure for DG basis functions in 1-D
-include("SQuadrature.jl")  			   # Gram-Schmidt procedure for DG basis functions in 1-D
 include("1D_DG_Functions.jl") 		   # Explicitly building the 1-D Galerkin Basis
 include("DG_Methods.jl") 			   # Multidimensional hierarchical & sparse coefficients
 include("DG_vMethods.jl") 			   # Going between a dictionary & a vector of coeffs
@@ -68,7 +67,6 @@ export sparse_D_matrix
 export sparse_wave_equation45
 export sparse_wave_equation78
 
-export squadrature
 export mcerr
 export mcerr2
 

@@ -116,10 +116,10 @@ function traveling_wave_equation78(k::Int,n::Int, m::Array{Int,1}, time0::Real, 
 	J = Int[]
 	K = Float64[]
 	
-	rows = rowvals(A)
-	vals = nonzeros(A)
+	rows = rowvals(laplac)
+	vals = nonzeros(laplac)
 	for col = 1:len
-	   for i in nzrange(A, col)
+	   for i in nzrange(laplac, col)
 	      row = rows[i]
 	      val = vals[i]
 	      push!(I,row+len)
@@ -128,18 +128,15 @@ function traveling_wave_equation78(k::Int,n::Int, m::Array{Int,1}, time0::Real, 
 	   end
 	end
 	
-	for row = 1:len
-		for col = 1:len
-			push(I, row)
-			push(J, col+len)
-			push(K, 1.0)
-		end
+	for i = 1:len
+		push!(I, i)
+		push!(J, i+len)
+		push!(K, 1.0)
 	end
 	
 	RHS = sparse(I, J, K, 2*len, 2*len, +)
-	# Does not seem helpful for this matrix:
-	# dropzeros!(RHS)
-	
+	dropzeros!(RHS)
+
     y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
     soln=ode78((t,x)->*(RHS,x), y0, [time0,time1])
     return soln

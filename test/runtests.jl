@@ -310,5 +310,21 @@ end
 
 println("Test Passed.")
 
+print("Testing traveling wave example in 2-D... ")
+
+m = [1,2]
+truesoln = x -> cos(2*pi*(vecdot(m,x) - sqrt(vecdot(m,m))*0.54))
+
+k_used = 3
+n_used = 6
+
+D = length(m)
+
+soln = traveling_wave_equation45(k_used, n_used, m, 0, 0.54)
+dict = sparse_V2D(k_used, soln[2][end], n_used, D)
+
+@test mcerr(x->reconstruct_DG(k_used, dict, [x...]), truesoln, D) < 0.05
+
+println("Test passed.")
 
 println("Finished Tests of GalerkinSparseGrids.jl---------------------------------------")
