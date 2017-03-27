@@ -40,7 +40,7 @@ In D-dimensions, we use the standard tensor-products construction on these 1-D b
 
 Because this scheme becomes rapidly and prohibitively expensive in high dimensions, we apply the well-known sparse grid cutoff to exclude all basis functions with levels having 1-norm greater than n. This reduces us from O(k^D 2^(n D)) to O(k^D 2^n n^(D-1)).
 
-### Interpolation:
+### Interpolation
 
 To interpolate a given function f on the D-dimensional hypercube [0,1]^D, the `coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")` method is used. 
 
@@ -66,7 +66,10 @@ The default scheme is always "sparse".
 
 All solvers can be found in the `PDEs.jl` script. The simplest one solves the wave equation in 1-D using the DG position basis 
 	
-	wave_evolve_1D(k::Int, n::Int, f0::Function, v0::Function, time0::Real, time1::Real; base = "hier", order = "45"). 
+	wave_evolve_1D(k::Int, n::Int, 
+				   f0::Function, v0::Function, 
+				   time0::Real, time1::Real; 
+				   base = "hier", order = "45"). 
 	
 Here, k and n are as before, f0 is the initial condition for position, v0 is the initial condition for velocity, time0 and time1 are the initial and final times of evolution. For 1D, we can also use the "pos" position basis (rather than the multi-resolution), and order "78" ode solvers. In either case, `ode45/ode78` from `ODE.jl` are respectively used to solve the differential equation.
     
@@ -78,7 +81,10 @@ For example, for a standing wave solution from t_0 to t_1 seconds with k polynom
 
 For higher dimensions, we use 
 
-	wave_evolve(D::Int, k::Int, n::Int, f0::Function, v0::Function, time0::Real, time1::Real; order = "45", scheme="sparse").
+	wave_evolve(D::Int, k::Int, n::Int, 
+				f0::Function, v0::Function, 
+				time0::Real, time1::Real; 
+				order = "45", scheme="sparse").
 
 For example, to solve a standing wave in 2-D from t_0 to t_1 seconds at k polynomials on each division, sparse depth n and using ode78:
 
@@ -128,7 +134,8 @@ Conversely, If we wanted to see what index we should look at to get the coeffici
 
 The higher dimensional full and sparse derivative operators are implemented in `Multidim_Derivative.jl`. Here, `D`, `k`, and `n` are as before, and `i` specifies the axis along which the derivative is taken.
 
-	D_matrix(D::Int, i::Int, k::Int, n::Int; scheme="sparse")
+	D_matrix(D::Int, i::Int, k::Int, n::Int; 
+			 scheme="sparse")
 	
 We also have the gradient vector that is `D_matrix` over all i, and the Laplacian:
 
@@ -143,19 +150,19 @@ In the discontinuous Galerkin method, it is customary to formulate the derivativ
 
 ### Canonical "Hat" Basis
 
-To interpolate a multivariate function in a standard "position" basis, use the `standard_coefficients(f::Function, ls::NTuple{D,Int})`. This takes a scalar function that takes an `D`-dimensional array input `xs` and interpolates it to resolution `2^l[i]` along the `i`th coordinate direction.
+To interpolate a multivariate function in the multiresolution (aka hierarchical) scheme of hat-functions (c.f. Gerstner & Griebel below) use 
 
-From this interpolation, we can reconstruct the function at a point `xs` from the basis coefficients by using the `standard_reconstruct(coefficients::AbstractArray, ls::NTuple{D,Int}, xs::NTuple{D,T})` function.
+	coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
+	
+The coefficients are given as a dictionary of CartesianIndex{D} types. The keys of the dictionary correspond to multi-levels and corresponding CartesianIndex{D} entries correspond to the set of multi-places at a specific multi-level.
 
-To interpolate a multivariate function in the multiresolution (aka hierarchical) scheme (c.f. Gerstner & Griebel below) use `coeffs_hat(D::Int, n::Int, f::Function)`. This gives the exact same interpolation but within the multiresolution basis. The coefficients are given as a dictionary of CartesianIndex types. The keys of the dictionary correspond to multi-levels and corresponding CartesianIndex entries correspond to the set of places at a specific multilevel.
+For example in 2-D:
 
-Similarly, we can interpolate in a sparse basis (equivalent to the multiresolution basis in 1D) using `sparse_coefficients(D::Int, n::Int, f::Function)` where `n` is the max 1-norm of the multi-level and `D` is the dimension of the space. For example in 2-D:
+	coeffs = coeffs_hat(2, n, x->sin(4*x[1]+x[2]); scheme="sparse")
 
-	scoeffs = coeffs_hat(2, 5, 2x->sin(4*x[1]+x[2]))
+For either the full or sparse basis coefficients, we can reconstruct the interpolation at a point xs using the `reconstruct_hat(coefficients::Dict{CartesianIndex{D},Array{Float64,D}}, x::NTuple{D,T})` function. For example we could take the prior result and evaluate at the point (.4,.6) by
 
-For either the hierarchical and sparse basis coefficients, we can reconstruct the interpolation at a point xs using the `reconstruct_hat(coefficients::Dict{CartesianIndex{D},Array{Float64,D}}, x::NTuple{D,T})` function. For example we could take the prior result and evaluate at the point (.4,.6) by
-
-	reconstruct_hat(scoeffs, (.4,.6))
+	reconstruct_hat(coeffs, (.4,.6))
 
 ## Construction of the DG Basis
 
@@ -164,7 +171,6 @@ The DG position basis in consists of `k` Legendre polynomials (from degree 0 to 
 The corresponding multiresolution basis formed by a series of orthogonalizations implemented in `DG_Functions.jl`. This basis spans the same space as the position basis, but makes use of a discontinuous basis (c.f. `1D_DG_Functions.jl`) to achieve the hierarchical structure.
 
 (More to come on orthogonalization schemes)
-
 
 ## Future updates
 
