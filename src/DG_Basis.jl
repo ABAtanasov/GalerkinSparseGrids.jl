@@ -59,9 +59,9 @@ function inner_product{T<:Real}(v1::Array{T},j::Int) #we consider x^(j-1)
     return value
 end
 
-#------------------------------------------------------
+#-------------------------------------------------------
 # Defining Gram-Schmidt and forming Legendre Polynomials
-#------------------------------------------------------
+#-------------------------------------------------------
 
 # The gram schmidt process on a set of vectors
 # I think using an array of arrays is easiest here
@@ -92,31 +92,15 @@ function legendre(k::Int)
 	#Orthgonalize, and now we have the Legendre polynomials
     return Q
 end
-#working 
 
 # I want to be able to do this completely analytically, using fractions
 # so that I can avoid any numerical error in this process
 
 
-#------------------------------------------------------
-# Making a function have the first k moments vanish
-#------------------------------------------------------
+#------------------------------------------------------------
+# Making a basis of functions have the first k moments vanish
+#------------------------------------------------------------
 
-# # For just one function, v:
-# function orthogonalize_1{T<:Real}(v::Array{T})     #modifier of v
-#     n= length(v)
-#     k= Int(round(n/2))
-#     legendre_polys=legendre(k-1)
-# 	#We need an orthogonal basis spanning the first k polys: x^0 to x^(k-1)
-#     for j in 1:k
-#         v[j]-= inner_product(v,legendre_polys[j])/product_matrix(j-1,j-1,n)
-# 		#project out v by each element of this orthogonal basis
-#     end
-#     return v
-# end
-# #working
-
-# For a basis of functions:
 function orthogonalize_1{T<:Real}(Q_initial::Array{Array{T,1},1})
     n = length(Q_initial[1])
     k = Int(round(n/2)) 
@@ -135,7 +119,6 @@ function orthogonalize_1{T<:Real}(Q_initial::Array{Array{T,1},1})
     end
     return Q_final
 end
-#working
 
 #------------------------------------------------------
 # Make some functions have higher vanishing moments
@@ -143,6 +126,7 @@ end
 
 # This function will make k-1 of the basis vectors orth to x^k, 
 # k-2 to x^k+1  all the way to 1 vector orth to x^2k-2
+
 function orthogonalize_2{T<:Real}(Q_initial::Array{Array{T,1},1})
     n = length(Q_initial[1])
     k = Int(round(n/2))
@@ -166,7 +150,8 @@ end
 # (this is important, because the last function is orthogonal to a lot of higher 
 # polynomials, and we don't want to do anything other than normalize it, 
 # with similar reasoning for the penultimate, etc. functions) 
-function gram_schmidt_rev{T<:Real}(Q_initial::Array{Array{T,1},1}) #I think an array of arrays is easiest here
+
+function gram_schmidt_rev{T<:Real}(Q_initial::Array{Array{T,1},1}) 
     n = length(Q_initial[1])
     k = Int(round(n/2))
     Q_final = [[0.0 for i in 1:n] for j in 1:k]
@@ -182,12 +167,12 @@ function gram_schmidt_rev{T<:Real}(Q_initial::Array{Array{T,1},1}) #I think an a
     end
     return Q_final
 end
-#working
 
 
 #------------------------------------------------------
-# All together:
+# All together, for the final result:
 #------------------------------------------------------
+
 function dg_basis(k::Int)
     Q = [[j==(i-k)?1.0:0.0 for i in 1:2*k] for j in 1:k]
     Q = orthogonalize_1(Q)

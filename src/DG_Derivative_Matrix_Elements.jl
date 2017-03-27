@@ -1,6 +1,7 @@
 #------------------------------------------------------------
 #
-# Constructing the Derivatives in 1-D DG Basis
+# Constructing the matrix elements of the derivative
+# operator in the 1-D DG Basis
 #
 #------------------------------------------------------------
 
@@ -51,6 +52,7 @@ end
 # Numerical Inner Product
 #------------------------------------------------------
 
+# TODO: There is a way to do this all symbolically, with no use for numerics
 function inner_product1D(f::Function, g::Function, lvl::Int, place::Int; 
 								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
     xmin = (place-1)/(1<<(pos(lvl-1)))
@@ -59,7 +61,6 @@ function inner_product1D(f::Function, g::Function, lvl::Int, place::Int;
     (val, err) = hquadrature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)
 	return val 
 end
-#There may be a way to do this all symbolically, with no use for numerics
 
 #------------------------------------------------------
 # Taking Derivative of Array Representing Polynomial
@@ -80,7 +81,6 @@ function symbolic_diff{T<:Real}(v::Array{T})
 	end
 	return ans
 end
-#working
 
 #------------------------------------------------------
 # < f_1 | D | f_2 > matrix elements
@@ -112,7 +112,6 @@ function vDv(k::Int, lvl1::Int, place1::Int, f_number1::Int, lvl2::Int, place2::
 									rel_tol = rel_tol, abs_tol = abs_tol, max_evals=max_evals)
 		end
 		if (1<<(lvl2-lvl1))*place1 >= place2 && (1<<(lvl2-lvl1))*(place1-1) < place2
-            #@show (lvl1, place1, lvl2, place2)
             return inner_product1D(v(k,lvl1,place1,f_number1), dv(k,lvl2,place2,f_number2), lvl2, place2;
 									rel_tol = rel_tol, abs_tol = abs_tol, max_evals=max_evals)
 		end

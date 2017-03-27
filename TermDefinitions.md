@@ -25,13 +25,13 @@
 							fnumber uniquely determines one of the k such basis functions
 
 
-"multilevel"				A vector of D numbers specifying the resolution along each of D dimensions
+"multi-level"				A vector of D numbers specifying the resolution along each of D dimensions
 variable name: "levels"
 
-"multiplace"				A vector of D numbers specifying a specific interval product given a multilevel
+"multi-place"				A vector of D numbers specifying a specific interval product given a multilevel
 variable name: "places"
 
-"multinumber"				A vector of D numbers specifying a specific product of galerkin basis functions for 
+"multi-fnumber"				A vector of D numbers specifying a specific product of galerkin basis functions for 
 variable name: "fnumbers"	each interval associated with the interval product obtained from (levels, places)
 							
 

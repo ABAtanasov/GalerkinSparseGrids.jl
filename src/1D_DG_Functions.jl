@@ -57,12 +57,12 @@ end
 
 
 # This is the dg basis function corresponding to number f_number
-function h(k,f_number,x)
+function h(k, f_number, x)
     f_number<=k || throw(DomainError())
     return array2poly((dg_coeffs[k])[f_number],x)
 end
 
-function h(k,f_number)
+function h(k, f_number)
     f_number<=k || throw(DomainError())
     return array2poly((dg_coeffs[k])[f_number])
 end

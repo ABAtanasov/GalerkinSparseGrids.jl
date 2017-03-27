@@ -1,5 +1,21 @@
+#------------------------------------------------------------
+#
+# Using boundary terms and integration (summation) by parts
+# to construct more accurate derivative matrices for time
+# evolution using Lax-Friedricks-type fluxes
+#
+# All derivatives are computed here in pos basis first
+# Then conjugated into hier basis
+#
+#------------------------------------------------------------
+
+
+#------------------------------------------------------
 # Generates the coefficients for a traveling wave 
-# with n nodes on the interior of our D-dimensional hypercube
+# A cos(\vec{k} \cdot \vec{x} + \phi), \vec{k} = 2 \pi \vec{m}
+# with sparse interpolation of type (k,n) 
+# using periodic boundary conditions in D-dimensionss
+#------------------------------------------------------
 
 function cos_coeffs(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
     D = length(m)
@@ -7,17 +23,13 @@ function cos_coeffs(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
     
     # Begin with writing cos(\sum_i k_i x_i) as a sum of products
     # of sines/cosines of individual k_j x_j
-    sines = [i==1?x->sin(wavenumber[i]*x[1]+phase):x->sin(wavenumber[i]*x[1]) for i in 1:D]
+    sines   = [i==1?x->sin(wavenumber[i]*x[1]+phase):x->sin(wavenumber[i]*x[1]) for i in 1:D]
     cosines = [i==1?x->cos(wavenumber[i]*x[1]+phase):x->cos(wavenumber[i]*x[1]) for i in 1:D]
     
-    
-    sine_coeffs = [vhier_coefficients_DG(k, sines[i], (n+1,)) for i in 1:D]
-    cosine_coeffs = [vhier_coefficients_DG(k, cosines[i], (n+1,)) for i in 1:D]
-
-    sine_dicts = [full_V2D(k, sine_coeffs[i], (n+1,)) for i in 1:D]
-    cosine_dicts = [full_V2D(k, cosine_coeffs[i], (n+1,)) for i in 1:D]
-    
-    ansVect = zeros(sparse_size(k,n,D))
+    sine_dicts   = [coeffs_DG(1, k, n, sines[i]) for i in 1:D]
+    cosine_dicts = [coeffs_DG(1, k, n, cosines[i]) for i in 1:D]
+	
+    ansVect = zeros(get_size(D, k, n))
 
     for SCs in CartesianRange(ntuple(q->2, D))
         num_sines = sum([SCs[i]-1 for i in 1:D])
@@ -28,8 +40,8 @@ function cos_coeffs(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
         # may want to add an if-statement for if any n[i] == 0
         
         coeffArray = [SCs[i]==1?cosine_dicts[i]:sine_dicts[i] for i in 1:D]
-        productDict = tensor_construct_sparse(k, n, D, coeffArray)
-        productVect = sparse_D2V(k, productDict, n)
+        productDict = tensor_construct(D, k, n, coeffArray)
+        productVect = D2V(D, k, n, productDict)
         
         ansVect += sign * productVect
     end
@@ -37,9 +49,18 @@ function cos_coeffs(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
     return A*ansVect
 end
 
+#------------------------------------------------------
+# The same as above, but using sin
+#------------------------------------------------------
+
 function sin_coeffs(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
     return cos_coeffs(k, n, m; phase = - pi/2 + phase, A = A)
 end
+
+#------------------------------------------------------
+# Returns the data for a traveling wave 
+# using the above methods
+#------------------------------------------------------
 
 function traveling_wave(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
     wavenumber = 2*pi*m
@@ -56,22 +77,28 @@ function traveling_wave(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
     
 end
 
+#------------------------------------------------------
+# Evolves a traveling wave using the above methods
+# between time0 and time1
+# using an ODE solver of type 'order' (default 45)
+#------------------------------------------------------
 
-function traveling_wave_equation45(k::Int,n::Int, m::Array{Int,1}, time0::Real, time1::Real; phase = 0.0, A = 1.0)
+function traveling_wave_solver(k::Int, n::Int, m::Array{Int,1}, time0::Real, time1::Real; 
+									phase = 0.0, A = 1.0, order="45")
     D = length(m)
     f0coeffs, v0coeffs = traveling_wave(k, n, m; phase = phase, A = A)
-    srefVD = sparse_referenceV2D(k, n, D);
-    srefDV = sparse_referenceD2V(k, n, D);
+    srefVD = V2Dref(D, k, n);
+    srefDV = D2Vref(D, k, n);
     
     len = length(f0coeffs)
     laplac=spzeros(len, len)
     for i in 1:D
-        D_op = sparse_D_matrix(i,k,n,srefVD, srefDV)
-        laplac += *(D_op,D_op)
+        D_op = D_matrix(i, k, n, srefVD, srefDV)
+        laplac += *(D_op, D_op)
     end
 	I = Int[]
 	J = Int[]
-	K = Float64[]
+	V = Float64[]
 	
 	rows = rowvals(laplac)
 	vals = nonzeros(laplac)
@@ -81,64 +108,27 @@ function traveling_wave_equation45(k::Int,n::Int, m::Array{Int,1}, time0::Real, 
 	      val = vals[i]
 	      push!(I,row+len)
 		  push!(J,col)
-		  push!(K,val)
+		  push!(V,val)
 	   end
 	end
 	
 	for i = 1:len
 		push!(I, i)
 		push!(J, i+len)
-		push!(K, 1.0)
+		push!(V, 1.0)
 	end
 	
-	RHS = sparse(I, J, K, 2*len, 2*len, +)
+	RHS = sparse(I, J, V, 2*len, 2*len, +)
 	dropzeros!(RHS)
 
     y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-    soln=ode45((t,x)->*(RHS,x), y0, [time0,time1])
-    return soln
-    
-end
-
-function traveling_wave_equation78(k::Int,n::Int, m::Array{Int,1}, time0::Real, time1::Real; phase = 0.0, A = 1.0)
-    D = length(m)
-    f0coeffs, v0coeffs = traveling_wave(k, n, m; phase = phase, A = A)
-    srefVD = sparse_referenceV2D(k, n, D);
-    srefDV = sparse_referenceD2V(k, n, D);
-    
-    len = length(f0coeffs)
-    laplac=spzeros(len, len)
-    for i in 1:D
-        D_op = sparse_D_matrix(i,k,n,srefVD, srefDV)
-        laplac += *(D_op,D_op)
-    end
-	I = Int[]
-	J = Int[]
-	K = Float64[]
-	
-	rows = rowvals(laplac)
-	vals = nonzeros(laplac)
-	for col = 1:len
-	   for i in nzrange(laplac, col)
-	      row = rows[i]
-	      val = vals[i]
-	      push!(I,row+len)
-		  push!(J,col)
-		  push!(K,val)
-	   end
+    if order == "78"
+		soln=ode78((t,x)->*(RHS,x), y0, [time0,time1])
+	elseif order == "45"
+		soln=ode45((t,x)->*(RHS,x), y0, [time0,time1])
+	else
+		throw(ArgumentError)
 	end
-	
-	for i = 1:len
-		push!(I, i)
-		push!(J, i+len)
-		push!(K, 1.0)
-	end
-	
-	RHS = sparse(I, J, K, 2*len, 2*len, +)
-	dropzeros!(RHS)
-
-    y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-    soln=ode78((t,x)->*(RHS,x), y0, [time0,time1])
     return soln
     
 end

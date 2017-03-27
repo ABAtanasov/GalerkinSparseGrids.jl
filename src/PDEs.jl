@@ -1,27 +1,39 @@
+#------------------------------------------------------------
+#
+# Using boundary terms and integration (summation) by parts
+# to construct more accurate derivative matrices for time
+# evolution using Lax-Friedricks-type fluxes
+#
+# All derivatives are computed here in pos basis first
+# Then conjugated into hier basis
+#
+#------------------------------------------------------------
+
+# Efficiency criticality: MED
+# Most computations time is taken up by functions called from
+# other script files
+
+# Accuracy criticality: LOW
+# The accuracy is limited only by functions in other scripts 
+# and ODE.jl
 
 
-function pos_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
-	f0coeffs=get_vcoeffs(k,level, f0)
-	v0coeffs=get_vcoeffs(k,level, v0)
-	len = length(f0coeffs)
-    laplac= *(periodic_pos_DLF_Matrix(0,k,level),periodic_pos_DLF_Matrix(0,k,level))
-	RHS = spzeros(2*len, 2*len)
-	for i in len+1:2*len
-	    for j in 1:len
-	        RHS[i,j] = laplac[i-len,j]
-	        RHS[j,j+len] = 1.0
-	    end
+function wave_evolve_1D(k::Int, max_level::Int, 
+							  f0::Function, v0::Function, 
+							  time0::Real, time1::Real; base = "hier", order = "45")
+	if base == "pos"
+		f0coeffs = pos_vcoeffs_DG(k, max_level, f0)
+		v0coeffs = pos_vcoeffs_DG(k, max_level, v0)		
+	elseif base == "hier"
+		f0coeffs = vcoeffs_DG(1, k, max_level, f0)
+		v0coeffs = vcoeffs_DG(1, k, max_level, v0)		
+	else
+		throw(ArgumentError(:base))
 	end
-    y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-	soln=ode45((t,x)->*(RHS,x), y0, [time0, time1])
-	return soln
-end
-
-function hier_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, time0::Real, time1::Real)
-    f0coeffs=vhier_coefficients_DG(k,f0, (level+1,))
-    v0coeffs=vhier_coefficients_DG(k,v0, (level+1,))
-	len = length(f0coeffs)
-    D_op = periodic_hier_DLF_Matrix(0,k,level)
+    
+	
+	len = get_size(1, k, max_level)
+    D_op = periodic_DLF_Matrix(k, max_level; base=base)
     laplac= *(D_op,D_op)
 	RHS = spzeros(2*len, 2*len)
 	for i in len+1:2*len
@@ -31,140 +43,97 @@ function hier_wave_equation45(f0::Function, v0::Function, k::Int,level::Int, tim
 	    end
 	end
     y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-    soln=ode45((t,x)->*(RHS,x), y0, [time0,time1])
+	if order == "45"
+		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1])
+	elseif order == "78"
+		soln = ode78((t,x)->*(RHS,x), y0, [time0,time1])
+	else
+		throw(ArgumentError(:order))
+	end
 	return soln
 end
 
 function norm_squared{T<:Real}(coeffs::Array{T})
     sum = 0
     for i in coeffs
-        sum+= i^2
+        sum += i^2
     end
     return sum
 end
 
-function pos_energy_func(k, level, soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}})
+function energy_func_1D(k, level, soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}}; 
+							base = "hier")
     len = length(soln[1])
     num_coeffs = Int(round(length(soln[2][1])/2))
+    times    = copy(soln[1])
+    energies = Array(Float64, len)
     
-    times = copy(soln[1])
-    energies = Array(Float64,len)
-    
-    D_op = periodic_pos_DLF_Matrix(0,k,level)
+    D_op = periodic_DLF_Matrix(k, level; base=base)
 
     for i in 1:len
-        ux   = *(D_op,soln[2][i][1:num_coeffs])
+        ux   = *(D_op, soln[2][i][1:num_coeffs])
         udot = soln[2][i][num_coeffs+1:end]
-        energies[i] = norm_squared(ux)+norm_squared(udot)
+        energies[i] = norm_squared(ux) + norm_squared(udot)
 
     end
     return (times, energies)
 end
 
-function hier_energy_func(k, level, soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}})
+function wave_evolve(D::Int, k::Int, n::Int, 
+							  f0::Function, v0::Function, 
+							  time0::Real, time1::Real; 
+							  order = "45", scheme="sparse")
+		
+    f0coeffs = vcoeffs_DG(D, k, n, f0; scheme=scheme)
+    v0coeffs = vcoeffs_DG(D, k, n, v0; scheme=scheme)
+	laplac   = laplacian_matrix(D, k, n; scheme=scheme)
+	len = length(f0coeffs)
+	I = Int[]
+	J = Int[]
+	V = Float64[]
+    
+	for i in len+1:2*len
+	    for j in 1:len
+			push!(I, i)
+			push!(J, j)
+			push!(V, laplac[i-len, j])
+	    end
+	end
+	for j in 1:len
+		push!(I, j)
+		push!(J, j + len)
+		push!(V, 1.0)
+	end
+	
+	RHS = sparse(I, J, V, 2*len, 2*len, +)
+	
+    y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
+	
+    if order == "45"
+		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1])
+	elseif order == "78"
+		soln = ode78((t,x)->*(RHS,x), y0, [time0,time1])
+	else
+		throw(ArgumentError(:order))
+	end
+	return soln
+end
+
+function energy_func(D::Int, k::Int, n::Int, soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}}; 
+						scheme = "sparse")
     len = length(soln[1])
     num_coeffs = Int(round(length(soln[2][1])/2))
     
     times = copy(soln[1])
-    energies = Array(Float64,len)
+    energies = Array(Float64, len)
     
-    D_op = periodic_hier_DLF_Matrix(0,k,level)
+    D_ops = grad_matrix(D, k, n; scheme=scheme)
 
     for i in 1:len
-        ux   = *(D_op,soln[2][i][1:num_coeffs])
-        udot = soln[2][i][num_coeffs+1:end]
-        energies[i] = norm_squared(ux)+norm_squared(udot)
-
-    end
-    return (times, energies)
-end
-
-
-function sparse_wave_equation45(f0::Function, v0::Function, k::Int,n::Int, D::Int, time0::Real, time1::Real)
-    f0coeffs=vsparse_coefficients_DG(k,f0,n,D)
-    v0coeffs=vsparse_coefficients_DG(k,v0,n,D)
-    srefVD = sparse_referenceV2D(k, n, D);
-    srefDV = sparse_referenceD2V(k, n, D);
-    
-	len = length(f0coeffs)
-    laplac=spzeros(len, len)
-    for i in 1:D
-        D_op = sparse_D_matrix(i,k,n,srefVD, srefDV)
-        laplac += *(D_op,D_op)
-    end
-	RHS = spzeros(2*len, 2*len)
-    
-	for i in len+1:2*len
-	    for j in 1:len
-	        RHS[i,j] = laplac[i-len,j]
-	        RHS[j,j+len] = 1.0
-	    end
-	end
-    y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-    soln = ode45((t,x)->*(RHS,x), y0, [time0,time1])
-	return soln
-end
-
-function sparse_wave_equation78(f0::Function, v0::Function, k::Int,n::Int, D::Int, time0::Real, time1::Real)
-    f0coeffs=vsparse_coefficients_DG(k,f0,n,D)
-    v0coeffs=vsparse_coefficients_DG(k,v0,n,D)
-    srefVD = sparse_referenceV2D(k, n, D);
-    srefDV = sparse_referenceD2V(k, n, D);
-    
-	len = length(f0coeffs)
-    laplac=spzeros(len, len)
-    for i in 1:D
-        D_op = sparse_D_matrix(i,k,n,srefVD, srefDV)
-        laplac += *(D_op,D_op)
-    end
-	RHS = spzeros(2*len, 2*len)
-    
-	for i in len+1:2*len
-	    for j in 1:len
-	        RHS[i,j] = laplac[i-len,j]
-	        RHS[j,j+len] = 1.0
-	    end
-	end
-    y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-    soln=ode78((t,x)->*(RHS,x), y0, [time0,time1])
-	return soln
-end
-
-
-function sparse_energy_func(k::Int, n::Int, D::Int, soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}})
-    len = length(soln[1])
-    num_coeffs = Int(round(length(soln[2][1])/2))
-    
-    times = copy(soln[1])
-    energies = Array(Float64,len)
-    
-    srefVD = sparse_referenceV2D(k, n, D);
-    srefDV = sparse_referenceD2V(k, n, D);
-    
-    D_op = [sparse_D_matrix(i,k,n,srefVD, srefDV) for i in 1:D]
-
-    for i in 1:len
-        ux   = [*(D_op[j],soln[2][i][1:num_coeffs]) for j in 1:D]
+        ux   = [*(D_ops[j], soln[2][i][1:num_coeffs]) for j in 1:D]
         udot = soln[2][i][num_coeffs+1:end]
         energies[i] = sum([norm_squared(ux[j]) for j in 1:D])+norm_squared(udot)
-
     end
     return (times, energies)
 end
 
-# soln=wave_equation(x->sin(2*pi*x),x->0, 3,5,0,1)
-#
-# p = plotfunc1D(x->reconstruct_vcoeffs(3,5,soln[2][1], x[1]))
-# anim = Animation()
-#
-# for i in 1:50:length(soln[2])
-#                   p = plotfunc1D(x->reconstruct_vcoeffs(3,5,soln[2][i], x[1]))
-# 				  xs=linspace(0,1,300)
-# 				  ys=[1.0 for x in xs]
-# 				  plot!(xs,ys)
-# 				  ys=[-1.0 for x in xs]
-# 				  plot!(xs,ys)
-#                   frame(anim)
-#               end
-#
-# gif(anim)
