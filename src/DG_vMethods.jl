@@ -33,9 +33,9 @@
 # using the degree k-1 Galerkin polynomials
 # with multi-resolution up to n
 function get_size(D::Int, k::Int, n::Int; scheme="sparse")
-	cutoff = get_cutoff(scheme, D, n)
-	ls = ntuple(i->(n+1), D)
-	size = 0
+	cutoff	= get_cutoff(scheme, D, n)
+	ls		= ntuple(i->(n+1), D)
+	size	= 0
 	for level in CartesianRange(ls)
 		cutoff(level) && continue
 

@@ -32,17 +32,19 @@ This package allows for the efficient interpolation, differentiation, and time e
 
 ### Summary of the DG Basis
 
-In the 1-dimensional setting, the standard DG basis at order `k` and resolution `n` is equivalent to subdividing the axis in to 2^n sub-intervals and interpolating the function by polynomials of order strictly less than `k` on each of these sub-intervals. This gives a vector space of size `k 2^n`.
+In the 1-dimensional setting, the standard DG basis at order `k` and resolution `n` is equivalent to subdividing the axis in to `2^n` sub-intervals and interpolating the function by polynomials of order strictly less than `k` on each of these sub-intervals. This gives a vector space of size `k 2^n`.
 
 To make this compatible with sparse grids in higher dimensions, we find a "multi-resolution" basis for this vector space. That is, our basis functions `v(level, place, f_number)` are indexed by a level ranging from `0` to `n` and then a place ranging from `0` to `2^l - 1` so that `v` is supported on (p 2^(-l), (p+1) 2^(-l)). Lastly, `f_number` ranges over the `k` polynomials on each such interval. These `v` are made orthonormal to one another by a Grahm-Schmidt process detailed in Alpert and implemented in `DG_Basis.jl`
 
-In D-dimensions, we use the standard tensor-products construction on these 1-D basis functions to obtain a basis of size `(k 2^n)^D`. For a default full grid, this vector space is equivalent to subdividing each axis of this domain into 2^n sub-intervals, for a total of `2^(n D)` hypercubes, and interpolating the function on each of these subdomains by multivariate polynomials of degree strictly less than k. The basis functions V(level, place, f_number) now have each of their arguments as a D-vector. 
+In D-dimensions, we use the standard tensor-products construction on these 1-D basis functions to obtain a basis of size `(k 2^n)^D`. For a default full grid, this vector space is equivalent to subdividing each axis of this domain into 2^n sub-intervals, for a total of `2^(n D)` hypercubes, and interpolating the function on each of these subdomains by multivariate polynomials of degree strictly less than `k`. The basis functions `V(level, place, f_number)` now have each of their arguments as a `D`-vector. 
 
-Because this scheme becomes rapidly and prohibitively expensive in high dimensions, we apply the well-known sparse grid cutoff to exclude all basis functions with levels having 1-norm greater than n. This reduces us from O(k^D 2^(n D)) to O(k^D 2^n n^(D-1)).
+Because this scheme becomes rapidly and prohibitively expensive in high dimensions, we apply the well-known sparse grid cutoff to exclude all basis functions with levels having 1-norm greater than `n`. This reduces us from `O(k^D 2^(n D))` to `O(k^D 2^n n^(D-1))`.
 
 ### Interpolation
 
-To interpolate a given function f on the D-dimensional hypercube [0,1]^D, the `coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")` method is used. 
+The following method interpolates a given function `f` on the `D`-dimensional hypercube `[0,1]^D`.
+
+	coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")` 
 
 For example, to interpolate a 2-D function at order k = 3 and n = 5, we would do
 
@@ -53,14 +55,14 @@ For example, to interpolate a 2-D function at order k = 3 and n = 5, we would do
 
 This gives a dictionary indexed by multi-levels of type CartesianIndex{2}. For a given multi-level, any dictionary entry is an array of arrays indexed by the multi-place and multi-fnumber that holds the coefficient data.
 
-In either case, the interpolation can be evaluated at a given point xs (given by an array of length D) by 
+In either case, the interpolation can be evaluated at a given point `xs` (given by an array of length D) by 
 
 	full_val   = reconstruct_DG(full_coeffs  , xs)
 	sparse_val = reconstruct_DG(sparse_coeffs, xs)
-	
-No scheme, D, k, or n, need be specified, as all of these can be deduced from the dictionary itself. 
 
-The default scheme is always "sparse".
+No `scheme`, `D`, `k`, or `n`, need be specified, as all of these can be deduced from the dictionary itself. 
+
+The default scheme is always `"sparse"`.
 
 ### Solving Hyperbolic PDEs
 
@@ -71,13 +73,13 @@ All solvers can be found in the `PDEs.jl` script. The simplest one solves the wa
 				   time0::Real, time1::Real; 
 				   base = "hier", order = "45"). 
 	
-Here, k and n are as before, f0 is the initial condition for position, v0 is the initial condition for velocity, time0 and time1 are the initial and final times of evolution. For 1D, we can also use the "pos" position basis (rather than the multi-resolution), and order "78" ode solvers. In either case, `ode45/ode78` from `ODE.jl` are respectively used to solve the differential equation.
+Here, `k` and `n` are as before, `f0` is the initial condition for position, `v0` is the initial condition for velocity, `time0` and `time1` are the initial and final times of evolution. For 1D, we can also use the `"pos"` position basis (rather than the multi-resolution), and order `"78"` ode solvers. In either case, `ode45/ode78` from `ODE.jl` are respectively used to solve the differential equation.
     
-For example, for a standing wave solution from t_0 to t_1 seconds with k polynomials on each division, up to hierarchical level max_level, using ode78:
+For example, for a standing wave solution from `t_0` to `t_1` seconds with k polynomials on each division, up to hierarchical level n, using `ode78`:
 
 	f0 = x->sin(2*pi*x[1])
 	v0 = x->0
-    hier_soln = wave_evolve_1D(k, max_level, f0, v0, t_0, t_1; order="78")
+    hier_soln = wave_evolve_1D(k, n, f0, v0, t_0, t_1; order="78")
 
 For higher dimensions, we use 
 
@@ -86,15 +88,15 @@ For higher dimensions, we use
 				time0::Real, time1::Real; 
 				order = "45", scheme="sparse").
 
-For example, to solve a standing wave in 2-D from t_0 to t_1 seconds at k polynomials on each division, sparse depth n and using ode78:
+For example, to solve a standing wave in 2-D from `t_0` to `t_1` with polynomials of degree less than `k` on each division, sparse depth `n`, and using `ode78`:
 
 	f0 = x->sin(2*pi*x[1])*sin(2*pi*x[2])
 	v0 = 0
 	sparse_soln = wave_evolve(2, k, n, f0, v0, t_0, t_1; order="78")
 
-At n = 1, this is the same as `wave_evolve_1D` in the "hier" basis.  
+At `n = 1`, this is the same as `wave_evolve_1D` in the `"hier"` basis.  
 
-Although the option scheme="full" is implemented for higher dimensions, it is almost never computationally feasible, even in dimensions as low as D=3.
+Although the option `scheme = "full"` is implemented for higher dimensions, it is almost never computationally feasible, even in dimensions as low as `D = 3`.
 
 ### Coefficient Vectors
 
@@ -102,7 +104,7 @@ It is best to work directly with vectors of coefficients rather than dictionary 
 
 For this reason we have the `vcoeffs_DG` method that works exactly the same as their non-vector relatives, but return a coefficient vector instead of a dictionary. 
 
-We can convert between coefficient vectors and corresponding dictionaries as follows (in 2D with k = 3, n = 5):
+We can convert between coefficient vectors and corresponding dictionaries as follows (in 2D with `k = 3, n = 5`):
 
 	D = 2; k = 3; n = 5;
 	f = x->sin(4*x[1]+x[2])
@@ -117,12 +119,12 @@ We can convert between coefficient vectors and corresponding dictionaries as fol
 
 In addition, we can generate a lookup by using the `D2Vref` and `V2Dref`that takes us from a dictionary-like level-place-fnumber scheme to a specific index in a coefficient vector and vice versa. This is useful when trying to understand specific values in a vector of coefficients. 
 
-If we have the vector `sparse_vcoeffs` as above and wanted to understand what (level, place, fnumber) corresponds to the value of sparse_vcoeffs[10], the code would be
+If we have the vector `sparse_vcoeffs` as above and wanted to understand what `(level, place, fnumber)` corresponds to the value of `sparse_vcoeffs[10]`, the code would be
 
 	VD = V2Dref(D, k, n; scheme="sparse")
 	VD[10]
 
-Conversely, If we wanted to see what index we should look at to get the coefficient for (level, place, fnumber) = ((4,4), (1,2), (2, 3)), the code would be
+Conversely, If we wanted to see what index we should look at to get the coefficient for `(level, place, fnumber) = ((4,4), (1,2), (2, 3))`, the code would be
 
 	level 	= CartesianIndex{2}((4, 4))
 	place 	= CartesianIndex{2}((1, 2))
@@ -137,30 +139,30 @@ The higher dimensional full and sparse derivative operators are implemented in `
 	D_matrix(D::Int, i::Int, k::Int, n::Int; 
 			 scheme="sparse")
 	
-We also have the gradient vector that is `D_matrix` over all i, and the Laplacian:
+We also have the gradient vector that is `D_matrix` over all `i`, and the Laplacian:
 
 	grad_matrix(D::Int, k::Int, n::Int; scheme="sparse")
 	laplacian_matrix(D::Int, k::Int, n::Int; scheme="sparse")
 
 All these matrices act directly on the coefficient vectors obtained from `vcoeffs_DG`. For now, we assume periodic boundary conditions. It is not too difficult to generalize away from a periodic boundary. 
 
-In the discontinuous Galerkin method, it is customary to formulate the derivative in the weak sense. This is how the method is implemented. As is standard, this is done through an integration by parts, leading to the derivative matrix having two summands: one being a boundary term and the other a derivative term on the interior. 
+In the discontinuous Galerkin method, it is customary to formulate the derivative in the weak sense, and that is how this method is implemented. As is standard, the derivative matrix elements are calculated through an integration by parts, leading to the derivative matrix having two summands: one being a boundary term and the other a derivative term on the interior.
 
 ## Other Bases
 
 ### Canonical "Hat" Basis
 
-To interpolate a multivariate function in the multiresolution (aka hierarchical) scheme of hat-functions (c.f. Gerstner & Griebel below) use 
+To interpolate a multivariate function in the multiresolution (aka hierarchical) scheme of hat-functions (c.f. Gerstner & Griebel below) use:
 
 	coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
 	
-The coefficients are given as a dictionary of CartesianIndex{D} types. The keys of the dictionary correspond to multi-levels and corresponding CartesianIndex{D} entries correspond to the set of multi-places at a specific multi-level.
+The coefficients are given as a dictionary of `CartesianIndex{D}` types. The keys of the dictionary correspond to multi-levels and corresponding `CartesianIndex{D}` entries correspond to the set of multi-places at a specific multi-level.
 
 For example in 2-D:
 
 	coeffs = coeffs_hat(2, n, x->sin(4*x[1]+x[2]); scheme="sparse")
 
-For either the full or sparse basis coefficients, we can reconstruct the interpolation at a point xs using the `reconstruct_hat(coefficients::Dict{CartesianIndex{D},Array{Float64,D}}, x::NTuple{D,T})` function. For example we could take the prior result and evaluate at the point (.4,.6) by
+For either the full or sparse basis coefficients, we can reconstruct the interpolation at a point xs using the `reconstruct_hat(coefficients::Dict{CartesianIndex{D},Array{Float64,D}}, xs::NTuple{D,T})` function. For example we could take the prior result and evaluate at the point `(.4,.6)` by
 
 	reconstruct_hat(coeffs, (.4,.6))
 
