@@ -189,8 +189,8 @@ function reconstruct_hat{D,T<:Real}(coefficients::Dict{CartesianIndex{D},
 	value = 0.0
 	for key in keys(coefficients)	#For every level that has coefficients
 		level = ntuple(i->key[i]-2, D)	# Get the actual level corresponding to that CartesianIndex
-		place = ntuple(i->hat_index(xs[i], level[i]), D)  # Get the relevant place for our position x
-		value += coefficients[key][place]*hat(level, place, xs)
+		place = ntuple(i->hat_index(xs[i], level[i]), D)  # The relevant place for x
+		value += coefficients[key][CartesianIndex{D}(place)]*hat(level, place, xs)
 		#get the appropriate coefficient and evaluate the appropriate hat at x
 	end
 	return value	#return the sum of all the relevant hat functions at that place x
