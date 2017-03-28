@@ -350,17 +350,21 @@ print("Testing traveling wave example in 2-D... ")
 
 m = [1,2]
 truesoln = x -> cos(2*pi*(vecdot(m,x) - sqrt(vecdot(m,m))*0.54))
-
+print("0 ")
 D = length(m)
 k_used = 3
 n_used = 6
-
+print("1 ")
 soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; order="45")
+print("2 ")
 dict = V2D(D, k_used, n_used, soln[2][end]; scheme="sparse")
+print("3 ")
 @test mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D) < 0.05
-
+print("4 ")
 soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; order="78")
+print("5 ")
 dict = V2D(D, k_used, n_used, soln[2][end]; scheme="sparse")
+print("6 ")
 @test mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D) < 0.05
 
 println("Test passed.")
