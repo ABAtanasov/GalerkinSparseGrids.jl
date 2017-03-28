@@ -328,15 +328,15 @@ k_used = 3
 n_used = 5
 f0 = x->sin(2*pi*x[1])*sin(2*pi*x[2])
 v0 = x->0
-sparse_soln = wave_evolve(D, k_used, n_used, f0, v0, 0,1; order="78", scheme="sparse");
+sparse_soln = wave_evolve(D, k_used, n_used, f0, v0, 0,1; order="45", scheme="sparse");
 senergy = energy_func(D, k_used, n_used, sparse_soln)
-@test senergy[2][1]-senergy[2][end]>0
-@test abs(senergy[2][1]-senergy[2][end])<1.0e-8
+@test senergy[2][1]-senergy[2][end] > 0
+@test abs(senergy[2][1]-senergy[2][end]) < 1.0e-8
 for i in 1:length(senergy[1])
-    @test abs(sqrt(senergy[2][i])-sqrt(2)*pi)<=1.0e-4
+    @test abs(sqrt(senergy[2][i])-sqrt(2)*pi) <= 1.0e-4
 end
 
-sparse_soln = wave_evolve(D, k_used, n_used, f0, v0, 0,1; order = "45", scheme = "sparse");
+sparse_soln = wave_evolve(D, k_used, n_used, f0, v0, 0,1; order="45", scheme="sparse");
 senergy = energy_func(D, k_used, n_used, sparse_soln)
 @test senergy[2][1]-senergy[2][end]>0
 @test abs(senergy[2][1]-senergy[2][end])<1.0e-8
