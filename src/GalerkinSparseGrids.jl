@@ -1,6 +1,6 @@
 module GalerkinSparseGrids
 
-# The prerequisite packages as of January 2017 are Cubature.jl and ODE.jl
+# The prerequisite packages as of March 2017 are Cubature.jl and ODE.jl
 
 using Cubature
 using ODE
