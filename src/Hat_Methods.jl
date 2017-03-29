@@ -18,45 +18,45 @@
 
 #Our original function which we will shift and scale
 function hat(x::Real)
-    b=abs(x)
-    if b>1
-        return zero(x)
-    end
-    return 1-b
+	b = abs(x)
+	if b > 1
+		return zero(x)
+	end
+	return 1 - b
 end
 
 #Our 1-D basis
 function hat(l::Int,i::Int,x::Real)
-    if l==-1				#The constant function (doesn't vanish on boundary)
-        return one(x)		
-    end
-    if l==0					#The linear function (vanishes on only one boundary)
-        return x
-    end
-    return hat((1<<l)*x - (2i - 1)) #Shifts and scalings of the original hat function
+	if l==-1				#The constant function (doesn't vanish on boundary)
+		return one(x)		
+	end
+	if l==0					#The linear function (vanishes on only one boundary)
+		return x
+	end
+	return hat((1<<l)*x - (2i - 1)) #Shifts and scalings of the original hat function
 end
 
 #Tensor product construction: our d-D basis
 function hat{D,T<:Real}(ls::NTuple{D,Int},is::NTuple{D,Int},xs::NTuple{D,T}) 
-    ans=one(eltype(xs))
-    for k = 1:length(ls)
-        ans *= hat(ls[k],is[k],xs[k])
-    end
-    return ans
+	ans=one(eltype(xs))
+	for k = 1:length(ls)
+		ans *= hat(ls[k],is[k],xs[k])
+	end
+	return ans
 end
 
 #Lagrange function that spikes up only at a point
 function delta(l::Int,i::Int,x::Float64)
-    return hat((1<<l) * x - i)
+	return hat((1<<l) * x - i)
 end
 
 #Tensor product construction of Lagrange basis
 function delta{D,T<:Real}(ls::NTuple{D,Int}, is::NTuple{D,Int}, xs::NTuple{D,T})
-    ans=one(eltype(xs))
-    for k = 1:length(ls)
-        ans *= delta(ls[k],is[k],xs[k])
-    end
-    return ans
+	ans=one(eltype(xs))
+	for k = 1:length(ls)
+		ans *= delta(ls[k],is[k],xs[k])
+	end
+	return ans
 end
 
 
@@ -64,23 +64,23 @@ end
 # Lagrange Basis
 #------------------------------------------------------
 function standard_coeffs{D}(f::Function, ls::NTuple{D,Int})
-    positions = ntuple(i -> (1<<ls[i])+1,D)
-    coeffs = zeros(Float64, positions)
-    for place in CartesianRange(positions)
-        x = ntuple(i-> (2.0^-ls[i])*(place[i]-1),D)
-        coeffs[place] = f(x) 
-    end
-    return coeffs
+	positions = ntuple(i -> (1<<ls[i])+1,D)
+	coeffs = zeros(Float64, positions)
+	for place in CartesianRange(positions)
+		x = ntuple(i-> (2.0^-ls[i])*(place[i]-1),D)
+		coeffs[place] = f(x) 
+	end
+	return coeffs
 end
 
 function standard_reconstruct{D,T<:Real}(coefficients::AbstractArray, ls::NTuple{D,Int}, xs::NTuple{D,T})
-    positions = ntuple(i -> (1<<ls[i])+1,D)
-    value=0.0
-    for place in CartesianRange(positions)
-        is = ntuple(i->place[i]-1,D)
-        value += coefficients[place]*delta(ls, is, xs)
-    end
-    return value
+	positions = ntuple(i -> (1<<ls[i])+1,D)
+	value=0.0
+	for place in CartesianRange(positions)
+		is = ntuple(i->place[i]-1,D)
+		value += coefficients[place]*delta(ls, is, xs)
+	end
+	return value
 end
 
 
@@ -121,7 +121,7 @@ end
 function get_coefficient{D,T<:Real}(f::Function,
 									level::NTuple{D,Int},
 									x::Array{T})
-									
+
 	if D==1					#This is the base case for 1D on the interval [0,1]
 		if level[1]==1
 			return f([0.])
@@ -164,8 +164,8 @@ function coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
 	cutoff = get_cutoff(scheme, D, n)
 	coeffs = Dict{CartesianIndex{D}, Array{Float64,D}}()
 	ls 	   = ntuple(i -> (n+2), D)	# n + 2 because we go From -1 to l_i for each i
-	
-	for level in CartesianRange(ls) 	
+
+	for level in CartesianRange(ls)
 		cutoff(level) && continue
 
 		ks = ntuple(i -> 1<<pos(level[i]-3), D)  

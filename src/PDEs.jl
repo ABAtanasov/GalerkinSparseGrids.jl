@@ -83,17 +83,14 @@ function wave_evolve(D::Int, k::Int, n::Int,
 							  f0::Function, v0::Function,
 							  time0::Real, time1::Real;
 							  order = "45", scheme="sparse")
-	println("0")
+
 	f0coeffs = vcoeffs_DG(D, k, n, f0; scheme=scheme)
 	v0coeffs = vcoeffs_DG(D, k, n, v0; scheme=scheme)
-	println("1")
 	laplac   = laplacian_matrix(D, k, n; scheme=scheme)
-	println("2")
 	len 	 = length(f0coeffs)
 	I = Int[]
 	J = Int[]
 	V = Float64[]
-	println("3")
 
 	for i in len+1:2*len
 		for j in 1:len
@@ -102,17 +99,16 @@ function wave_evolve(D::Int, k::Int, n::Int,
 			push!(V, laplac[i - len, j])
 		end
 	end
-	println("4")
 	for j in 1:len
 		push!(I, j)
 		push!(J, j + len)
 		push!(V, 1.0)
 	end
-	println("5")
+
 	RHS = sparse(I, J, V, 2*len, 2*len, +)
-	println("6")
+
 	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-	println("7")
+
 	if order == "45"
 		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1])
 	elseif order == "78"
@@ -120,7 +116,6 @@ function wave_evolve(D::Int, k::Int, n::Int,
 	else
 		throw(ArgumentError(:order))
 	end
-	println("8")
 	return soln
 end
 
