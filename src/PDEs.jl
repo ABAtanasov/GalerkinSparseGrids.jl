@@ -19,8 +19,8 @@
 
 
 function wave_evolve_1D(k::Int, max_level::Int,
-							  f0::Function, v0::Function,
-							  time0::Real, time1::Real; base = "hier", order = "45")
+							f0::Function, v0::Function,
+							time0::Real, time1::Real; base = "hier", order = "45")
 	if base == "pos"
 		f0coeffs = pos_vcoeffs_DG(k, max_level, f0)
 		v0coeffs = pos_vcoeffs_DG(k, max_level, v0)
@@ -61,12 +61,12 @@ function norm_squared{T<:Real}(coeffs::Array{T})
 	return sum
 end
 
-function energy_func_1D(k, level, 
-						soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}}; 
+function energy_func_1D(k, level,
+						soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}};
 						base = "hier")
 	len			= length(soln[1])
 	num_coeffs	= Int(round(length(soln[2][1])/2))
-	times    	= copy(soln[1])
+	times		= copy(soln[1])
 	energies	= Array(Float64, len)
 	D_op		= periodic_DLF_Matrix(k, level; base=base)
 
@@ -119,10 +119,10 @@ function wave_evolve(D::Int, k::Int, n::Int,
 	return soln
 end
 
-function energy_func(D::Int, k::Int, n::Int, 
+function energy_func(D::Int, k::Int, n::Int,
 					 soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}};
+					 scheme = "sparse")
 
-	scheme = "sparse")
 	len 		= length(soln[1])
 	num_coeffs	= Int(round(length(soln[2][1])/2))
 	times 		= copy(soln[1])
