@@ -1,7 +1,7 @@
 using GalerkinSparseGrids
 using Base.Test
 using Cubature
-using ODE
+using OrdinaryDiffEq
 
 println("Beginning Tests of GalerkinSparseGrids.jl--------------------------------------")
 
@@ -297,10 +297,10 @@ k = 4
 level = 4
 f0 = x->sin(2*pi*x[1])
 v0 = x->2*pi*cos(2*pi*x[1])
-pos_soln = wave_evolve_1D(k, level, f0, v0, 0, 1; base="pos", order="45")
+pos_soln = wave_evolve_1D(k, level, f0, v0, 0, 1; base="pos", alg=Tsit5())
 energy_soln = energy_func_1D(k, level, pos_soln; base="pos")
 for i in 1:length(energy_soln[2])
-    @test abs(sqrt(energy_soln[2][i])-2*pi)<=1.0e-7
+    @test abs(sqrt(energy_soln[2][i])-2*pi)<=1.0e-6
 end
 
 println("Test Passed.")
@@ -309,10 +309,10 @@ println("Test Passed.")
 
 print("Testing wave equation solver 1-D hierarchical DG basis... ")
 
-hier_soln  = wave_evolve_1D(k, level, f0, v0, 0, 1; base="hier", order="45")
+hier_soln  = wave_evolve_1D(k, level, f0, v0, 0, 1; base="hier", alg=Tsit5())
 energy_soln = energy_func_1D(k, level, hier_soln; base="hier")
 for i in 1:length(energy_soln[2])
-    @test abs(sqrt(energy_soln[2][i])-2*pi)<=1.0e-7
+    @test abs(sqrt(energy_soln[2][i])-2*pi)<=1.0e-6
 end
 
 println("Test Passed.")
@@ -328,7 +328,7 @@ println("Test Passed.")
 # n_used = 5
 # f0 = x->sin(2*pi*x[1])*sin(2*pi*x[2])
 # v0 = x->0
-# sparse_soln = wave_evolve(D, k_used, n_used, f0, v0, 0,1; order="78", scheme="sparse");
+# sparse_soln = wave_evolve(D, k_used, n_used, f0, v0, 0,1; alg=Vern7(), scheme="sparse");
 # senergy = energy_func(D, k_used, n_used, sparse_soln)
 # @test senergy[2][1]-senergy[2][end] > 0
 # @test abs(senergy[2][1]-senergy[2][end]) < 1.0e-8
@@ -336,7 +336,7 @@ println("Test Passed.")
 #     @test abs(sqrt(senergy[2][i])-sqrt(2)*pi) <= 1.0e-4
 # end
 #
-# sparse_soln = wave_evolve(D, k_used, n_used, f0, v0, 0,1; order="45", scheme="sparse");
+# sparse_soln = wave_evolve(D, k_used, n_used, f0, v0, 0,1; alg=Tsit5(), scheme="sparse");
 # senergy = energy_func(D, k_used, n_used, sparse_soln)
 # @test senergy[2][1]-senergy[2][end]>0
 # @test abs(senergy[2][1]-senergy[2][end])<1.0e-8
@@ -355,11 +355,11 @@ println("Test Passed.")
 # k_used = 3
 # n_used = 6
 #
-# soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; order="45")
+# soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; alg=Tsit5())
 # dict = V2D(D, k_used, n_used, soln[2][end]; scheme="sparse")
 # @test mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D) < 0.05
 #
-# soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; order="78")
+# soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; alg=Vern7())
 # dict = V2D(D, k_used, n_used, soln[2][end]; scheme="sparse")
 # @test mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D) < 0.05
 #
