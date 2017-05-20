@@ -3,7 +3,7 @@ module GalerkinSparseGrids
 # The prerequisite packages as of March 2017 are Cubature.jl and ODE.jl
 
 using Cubature
-using ODE
+using DiffEqBase, OrdinaryDiffEq
 
 # The following script files are used
 
@@ -13,7 +13,7 @@ include("DG_Basis.jl")	  			   # Gram-Schmidt procedure for DG basis functions i
 include("1D_DG_Functions.jl") 		   # Explicitly building the 1-D Galerkin Basis
 include("DG_Methods.jl") 			   # Multidimensional hierarchical & sparse coefficients
 include("DG_vMethods.jl") 			   # Going between a dictionary & a vector of coeffs
-include("DG_Derivative_Matrix_Elements.jl") 		   # 1-D symbolic piecewise derivative 
+include("DG_Derivative_Matrix_Elements.jl") 		   # 1-D symbolic piecewise derivative
 include("DG_Derivative_Precompute.jl") # Precomputing derivative matrix for coeff vect
 include("Derivative_LF_1D.jl") 	   	   # Constructing ideal 1D derivative matrix using boundary terms
 include("Multidim_Derivative.jl") 	   # Multidimensional DG Derivatives in full & sparse bases
@@ -25,11 +25,11 @@ include("Tensor_Construct.jl") 		   # Quickly calculates coeffs of `simple tenso
 include("Traveling_Wave_Example.jl")
 
 
-# make naming scheme more systematic 
+# make naming scheme more systematic
 export standard_coeffs
 export standard_reconstruct
 export coeffs_hat
-export reconstruct_hat 
+export reconstruct_hat
 
 export coeffs_DG
 export reconstruct_DG

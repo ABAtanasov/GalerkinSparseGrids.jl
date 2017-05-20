@@ -14,13 +14,13 @@
 # other script files
 
 # Accuracy criticality: LOW
-# The accuracy is limited only by functions in other scripts 
+# The accuracy is limited only by functions in other scripts
 # and ODE.jl
 
 
 function wave_evolve_1D(k::Int, max_level::Int,
 							f0::Function, v0::Function,
-							time0::Real, time1::Real; base = "hier", order = "45")
+							time0::Real, time1::Real; base = "hier", alg = Tsit5())
 	if base == "pos"
 		f0coeffs = pos_vcoeffs_DG(k, max_level, f0)
 		v0coeffs = pos_vcoeffs_DG(k, max_level, v0)
@@ -43,13 +43,7 @@ function wave_evolve_1D(k::Int, max_level::Int,
 		end
 	end
 	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-	if order == "45"
-		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1])
-	elseif order == "78"
-		soln = ode78((t,x)->*(RHS,x), y0, [time0,time1])
-	else
-		throw(ArgumentError(:order))
-	end
+	soln = solve(ODEProblem((t,x)->*(RHS,x), y0, (float(time0),float(time1))),alg)
 	return soln
 end
 
@@ -62,17 +56,17 @@ function norm_squared{T<:Real}(coeffs::Array{T})
 end
 
 function energy_func_1D(k, level,
-						soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}};
+						soln;
 						base = "hier")
-	len			= length(soln[1])
-	num_coeffs	= Int(round(length(soln[2][1])/2))
-	times		= copy(soln[1])
+	len			= length(soln)
+	num_coeffs	= Int(round(length(soln[1])/2))
+	times		= copy(soln.t)
 	energies	= Array(Float64, len)
 	D_op		= periodic_DLF_Matrix(k, level; base=base)
 
 	for i in 1:len
-		ux   = *(D_op, soln[2][i][1:num_coeffs])
-		udot = soln[2][i][num_coeffs+1:end]
+		ux   = *(D_op, soln[i][1:num_coeffs])
+		udot = soln[i][num_coeffs+1:end]
 		energies[i] = norm_squared(ux) + norm_squared(udot)
 
 	end
@@ -82,7 +76,7 @@ end
 function wave_evolve(D::Int, k::Int, n::Int,
 							  f0::Function, v0::Function,
 							  time0::Real, time1::Real;
-							  order = "45", scheme="sparse")
+							  alg = Tsit5(), scheme="sparse")
 
 	f0coeffs = vcoeffs_DG(D, k, n, f0; scheme=scheme)
 	v0coeffs = vcoeffs_DG(D, k, n, v0; scheme=scheme)
@@ -108,30 +102,23 @@ function wave_evolve(D::Int, k::Int, n::Int,
 	RHS = sparse(I, J, V, 2*len, 2*len, +)
 
 	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-
-	if order == "45"
-		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1])
-	elseif order == "78"
-		soln = ode78((t,x)->*(RHS,x), y0, [time0,time1])
-	else
-		throw(ArgumentError(:order))
-	end
+	soln = solve(ODEProblem((t,x)->*(RHS,x), y0, (float(time0),float(time1))),alg)
 	return soln
 end
 
 function energy_func(D::Int, k::Int, n::Int,
-					 soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}};
+					 soln;
 					 scheme = "sparse")
 
-	len 		= length(soln[1])
-	num_coeffs	= Int(round(length(soln[2][1])/2))
-	times 		= copy(soln[1])
+	len 		= length(soln)
+	num_coeffs	= Int(round(length(soln[1])/2))
+	times 		= copy(soln.t)
 	energies	= Array(Float64, len)
 	D_ops 		= grad_matrix(D, k, n; scheme=scheme)
 
 	for i in 1:len
-		ux   = [*(D_ops[j], soln[2][i][1:num_coeffs]) for j in 1:D]
-		udot = soln[2][i][num_coeffs+1:end]
+		ux   = [*(D_ops[j], soln[i][1:num_coeffs]) for j in 1:D]
+		udot = soln[i][num_coeffs+1:end]
 		energies[i] = sum([norm_squared(ux[j]) for j in 1:D])+norm_squared(udot)
 	end
 	return (times, energies)
