@@ -20,7 +20,7 @@
 
 function wave_evolve_1D(k::Int, max_level::Int,
 							f0::Function, v0::Function,
-							time0::Real, time1::Real; base = "hier", alg = Tsit5())
+							time0::Real, time1::Real; base = "hier", alg = Tsit5(),kwargs...)
 	if base == "pos"
 		f0coeffs = pos_vcoeffs_DG(k, max_level, f0)
 		v0coeffs = pos_vcoeffs_DG(k, max_level, v0)
@@ -43,7 +43,7 @@ function wave_evolve_1D(k::Int, max_level::Int,
 		end
 	end
 	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-	soln = solve(ODEProblem((t,x,dx)->A_mul_B!(dx,RHS,x), y0, (float(time0),float(time1))),alg)
+	soln = solve(ODEProblem((t,x,dx)->A_mul_B!(dx,RHS,x), y0, (float(time0),float(time1))),alg,kwargs...)
 	return soln
 end
 
@@ -76,7 +76,7 @@ end
 function wave_evolve(D::Int, k::Int, n::Int,
 							  f0::Function, v0::Function,
 							  time0::Real, time1::Real;
-							  alg = Tsit5(), scheme="sparse")
+							  alg = Tsit5(), scheme="sparse", kwargs...)
 
 	f0coeffs = vcoeffs_DG(D, k, n, f0; scheme=scheme)
 	v0coeffs = vcoeffs_DG(D, k, n, v0; scheme=scheme)
@@ -102,7 +102,7 @@ function wave_evolve(D::Int, k::Int, n::Int,
 	RHS = sparse(I, J, V, 2*len, 2*len, +)
 
 	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-	soln = solve(ODEProblem((t,x,dx)->A_mul_B!(dx,RHS,x), y0, (float(time0),float(time1))),alg)
+	soln = solve(ODEProblem((t,x,dx)->A_mul_B!(dx,RHS,x), y0, (float(time0),float(time1))),alg,kwargs...)
 	return soln
 end
 
