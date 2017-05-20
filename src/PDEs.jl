@@ -43,7 +43,7 @@ function wave_evolve_1D(k::Int, max_level::Int,
 		end
 	end
 	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-	soln = solve(ODEProblem((t,x)->*(RHS,x), y0, (float(time0),float(time1))),alg)
+	soln = solve(ODEProblem((t,x,dx)->A_mul_B!(dx,RHS,x), y0, (float(time0),float(time1))),alg)
 	return soln
 end
 
@@ -102,7 +102,7 @@ function wave_evolve(D::Int, k::Int, n::Int,
 	RHS = sparse(I, J, V, 2*len, 2*len, +)
 
 	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-	soln = solve(ODEProblem((t,x)->*(RHS,x), y0, (float(time0),float(time1))),alg)
+	soln = solve(ODEProblem((t,x,dx)->A_mul_B!(dx,RHS,x), y0, (float(time0),float(time1))),alg)
 	return soln
 end
 
