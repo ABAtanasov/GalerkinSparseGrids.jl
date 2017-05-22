@@ -18,6 +18,9 @@
 # and ODE.jl
 
 
+# The reason we have a wave evolution in 1D is to test 
+# that the standard "position" and multiresolution "heirarchical"
+# bases agree for wave PDE evolution
 function wave_evolve_1D(k::Int, max_level::Int,
 							f0::Function, v0::Function,
 							time0::Real, time1::Real; base = "hier", order = "45")

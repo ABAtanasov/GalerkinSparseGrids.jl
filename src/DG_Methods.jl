@@ -110,8 +110,13 @@ end
 
 # We obtain coefficients simply by doing inner products, it's easy :)
 # Only hard part is inner product integrations can be slower than we want :(
-function get_coefficient_DG{D}(k::Int, lvl::NTuple{D,Int}, place::CartesianIndex{D}, f_number::CartesianIndex{D},
-								f::Function; rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
+function get_coefficient_DG{D}(k::Int, lvl::NTuple{D,Int},
+		 							place::CartesianIndex{D},
+									f_number::CartesianIndex{D},
+									f::Function;
+									rel_tol = REL_TOL,
+									abs_tol = ABS_TOL,
+									max_evals=MAX_EVALS)
 
 	return inner_product(f, V(k,lvl,place,f_number),lvl,place; 
 							rel_tol = rel_tol, abs_tol = abs_tol, max_evals=max_evals)
@@ -126,7 +131,7 @@ function coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	coeffs		= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
 	f_numbers	= ntuple(i-> k, D)
-	ls 			= ntuple(i->(n+1),D)
+	ls			= ntuple(i->(n+1),D)
 
 	for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
 		cutoff(level) && continue
@@ -152,7 +157,8 @@ end
 # coefficients
 #------------------------------------------------------------
 
-function reconstruct_DG{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}, xs::Array{T,1})
+function reconstruct_DG{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{Float64,D},D}},
+									xs::Array{T,1})
 	value		= zero(T)
 	k			= size(first(values(coeffs))[1])[1]
 	f_numbers	= ntuple(i-> k ,D)

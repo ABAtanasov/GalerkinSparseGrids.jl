@@ -24,48 +24,37 @@ include("Error_Measure.jl") 		   # Monte Carlo Methods to measure error
 include("Tensor_Construct.jl") 		   # Quickly calculates coeffs of `simple tensor' functions
 include("Traveling_Wave_Example.jl")
 
+export 
+standard_coeffs,
+standard_reconstruct,
+coeffs_hat,
+reconstruct_hat,
 
-# make naming scheme more systematic 
-export standard_coeffs
-export standard_reconstruct
-export coeffs_hat
-export reconstruct_hat 
+coeffs_DG,
+reconstruct_DG,
 
-export coeffs_DG
-export reconstruct_DG
+V2D,
+D2V,
+V2Dref,
+D2Vref,
+vcoeffs_DG, 
 
-export V2D
-export D2V
-export total_value
-export V2Dref
-export D2Vref
-export vcoeffs_DG
+periodic_DLF_Matrix,
+D_matrix,
+grad_matrix,
+laplacian_matrix,
 
-export get_coeffs
-export get_vcoeffs
-export reconstruct_coeffs
-export reconstruct_vcoeffs
+wave_evolve_1D,
+wave_evolve,
 
-export pos_DLF_Matrix
-export periodic_pos_DLF_Matrix
-export hier_DLF_Matrix
-export periodic_hier_DLF_Matrix
-export D_matrix
-export grad_matrix
-export laplacian_matrix
+mcerr,
+mcerr2,
 
-export wave_evolve_1D
-export wave_evolve
+tensor_construct,
 
-export mcerr
-export mcerr2
-
-export tensor_construct_full
-export tensor_construct_sparse
-
-export cos_coeffs
-export sin_coeffs
-export traveling_wave_solver
+cos_coeffs,
+sin_coeffs,
+traveling_wave_solver
 
 
 end # module
