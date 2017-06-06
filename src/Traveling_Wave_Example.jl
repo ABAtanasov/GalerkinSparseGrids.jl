@@ -30,7 +30,7 @@ function cos_coeffs(k::Int, n::Int, m::Array{Int,1};
 	sine_dicts   = [coeffs_DG(1, k, n, sines[i]) for i in 1:D]
 	cosine_dicts = [coeffs_DG(1, k, n, cosines[i]) for i in 1:D]
 
-	ansVect = zeros(get_size(D, k, n))
+	ansVect = zeros(get_size(D, k, n; scheme=scheme))
 
 	for SCs in CartesianRange(ntuple(q->2, D))
 		num_sines = sum([SCs[i]-1 for i in 1:D])
