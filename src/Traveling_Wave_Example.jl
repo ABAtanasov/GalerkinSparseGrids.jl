@@ -17,7 +17,8 @@
 # using periodic boundary conditions in D-dimensionss
 #------------------------------------------------------
 
-function cos_coeffs(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
+function cos_coeffs(k::Int, n::Int, m::Array{Int,1};
+					scheme="sparse", phase = 0.0, A = 1.0)
 	D = length(m)
 	wavenumber = 2*pi*m
 
@@ -33,27 +34,30 @@ function cos_coeffs(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
 
 	for SCs in CartesianRange(ntuple(q->2, D))
 		num_sines = sum([SCs[i]-1 for i in 1:D])
-		num_sines % 2 == 1 && continue
-
+		if num_sines % 2 == 1
+			continue 
+		end
 		sign = num_sines%4==0?1:-1
-		# may want to add an if-statement for if any m[i] == 0
+		# may want to add an if-statement for if any n[i] == 0
 
 		coeffArray = [SCs[i]==1?cosine_dicts[i]:sine_dicts[i] for i in 1:D]
-		productDict = tensor_construct(D, k, n, coeffArray)
-		productVect = D2V(D, k, n, productDict)
-		
+		productDict = tensor_construct(D, k, n, coeffArray; scheme=scheme)
+		productVect = D2V(D, k, n, productDict; scheme=scheme)
+
 		ansVect += sign * productVect
 	end
 
-	return A*ansVect
+	return A * ansVect
 end
 
 #------------------------------------------------------
 # The same as above, but using sin
 #------------------------------------------------------
 
-function sin_coeffs(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
-	return cos_coeffs(k, n, m; phase = - pi/2 + phase, A = A)
+
+function sin_coeffs(k::Int, n::Int, m::Array{Int,1};
+					scheme="sparse", phase=0.0, A=1.0)
+	return cos_coeffs(k, n, m; scheme=scheme, phase=phase-pi/2, A=A)
 end
 
 #------------------------------------------------------
@@ -61,17 +65,16 @@ end
 # using the above methods
 #------------------------------------------------------
 
-function traveling_wave(k::Int, n::Int, m::Array{Int,1}; phase = 0.0, A = 1.0)
-
+function traveling_wave(k::Int, n::Int, m::Array{Int,1};
+						scheme="sparse", phase=0.0, A=1.0)
 	wavenumber = 2*pi*m
 	frequency = sqrt(vecdot(wavenumber,wavenumber))
-	
-	u0 = x -> A*cos(vecdot(wavenumber,x)+phase)
-	v0 = x -> A*frequency*sin(vecdot(k,x)+phase)
-	
-	u0_coeffs = cos_coeffs(k, n, m; phase = phase, A = A)
-	v0_coeffs = sin_coeffs(k, n, m; phase = phase, A = A*frequency)
-	
+
+	u0 = x -> A * cos(vecdot(wavenumber,x) + phase)
+	v0 = x -> A * frequency * sin(vecdot(k,x) + phase)
+	u0_coeffs = cos_coeffs(k, n, m; phase=phase, A=A) 
+	v0_coeffs = sin_coeffs(k, n, m; scheme=scheme, phase=phase, A=A*frequency) 
+
 	return (u0_coeffs, v0_coeffs, u0, v0)
 end
 
@@ -82,22 +85,22 @@ end
 #------------------------------------------------------
 
 function traveling_wave_solver(k::Int, n::Int, m::Array{Int,1}, time0::Real, time1::Real; 
-									phase = 0.0, A = 1.0, order="45")
+								scheme="sparse", phase=0.0, A=1.0, order="45")
 	D = length(m)
-	f0coeffs, v0coeffs = traveling_wave(k, n, m; phase = phase, A = A)
-	srefVD = V2Dref(D, k, n);
-	srefDV = D2Vref(D, k, n);
+	f0coeffs, v0coeffs = traveling_wave(k, n, m; scheme=scheme, phase=phase, A=A)
+	srefVD = V2Dref(D, k, n; scheme=scheme);
+	srefDV = D2Vref(D, k, n; scheme=scheme);
 	
 	len = length(f0coeffs)
 	laplac=spzeros(len, len)
 	for i in 1:D
-		D_op = D_matrix(i, k, n, srefVD, srefDV)
+		D_op = D_matrix(i, k, n, srefVD, srefDV; scheme=scheme)
 		laplac += *(D_op, D_op)
 	end
+	
 	I = Int[]
 	J = Int[]
 	V = Float64[]
-
 	rows = rowvals(laplac)
 	vals = nonzeros(laplac)
 	for col = 1:len
@@ -128,5 +131,4 @@ function traveling_wave_solver(k::Int, n::Int, m::Array{Int,1}, time0::Real, tim
 		throw(ArgumentError)
 	end
 	return soln
-
 end
