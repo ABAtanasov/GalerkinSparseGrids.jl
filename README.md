@@ -44,21 +44,27 @@ Because this scheme becomes rapidly and prohibitively expensive in high dimensio
 
 The following method interpolates a given function `f` on the `D`-dimensional hypercube `[0,1]^D`.
 
-	coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")` 
+```julia
+coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")
+```
 
 For example, to interpolate a 2-D function at order k = 3 and n = 5, we would do
 
-	D = 2; k = 3; n = 5;
-	f = x->sin(2*pi*x[1])*sin(2*pi*x[2])
-	full_coeffs   = coeffs_DG(D, k, n, f; scheme="full"  )
-	sparse_coeffs = coeffs_DG(D, k, n, f; scheme="sparse")
+```julia
+D = 2; k = 3; n = 5;
+f = x->sin(2*pi*x[1])*sin(2*pi*x[2])
+full_coeffs   = coeffs_DG(D, k, n, f; scheme="full"  )
+sparse_coeffs = coeffs_DG(D, k, n, f; scheme="sparse")
+```
 
 This gives a dictionary indexed by multi-levels of type CartesianIndex{2}. For a given multi-level, any dictionary entry is an array of arrays indexed by the multi-place and multi-fnumber that holds the coefficient data.
 
 In either case, the interpolation can be evaluated at a given point `xs` (given by an array of length D) by 
 
-	full_val   = reconstruct_DG(full_coeffs  , xs)
-	sparse_val = reconstruct_DG(sparse_coeffs, xs)
+```julia
+full_val   = reconstruct_DG(full_coeffs  , xs)
+sparse_val = reconstruct_DG(sparse_coeffs, xs)
+```
 
 No `scheme`, `D`, `k`, or `n`, need be specified, as all of these can be deduced from the dictionary itself. 
 
@@ -68,31 +74,39 @@ The default scheme is always `"sparse"`.
 
 All solvers can be found in the `PDEs.jl` script. The simplest one solves the wave equation in 1-D using the DG position basis 
 	
-	wave_evolve_1D(k::Int, n::Int, 
-				   f0::Function, v0::Function, 
-				   time0::Real, time1::Real; 
-				   base = "hier", order = "45"). 
+```julia
+wave_evolve_1D(k::Int, n::Int, 
+			   f0::Function, v0::Function, 
+			   time0::Real, time1::Real; 
+			   base = "hier", order = "45"). 
+```
 	
 Here, `k` and `n` are as before, `f0` is the initial condition for position, `v0` is the initial condition for velocity, `time0` and `time1` are the initial and final times of evolution. For 1D, we can also use the `"pos"` position basis (rather than the multi-resolution), and order `"78"` ode solvers. In either case, `ode45/ode78` from `ODE.jl` are respectively used to solve the differential equation.
     
 For example, for a standing wave solution from `t_0` to `t_1` seconds with k polynomials on each division, up to hierarchical level n, using `ode78`:
 
-	f0 = x->sin(2*pi*x[1])
-	v0 = x->0
-    hier_soln = wave_evolve_1D(k, n, f0, v0, t_0, t_1; order="78")
+```julia
+f0 = x->sin(2*pi*x[1])
+v0 = x->0
+hier_soln = wave_evolve_1D(k, n, f0, v0, t_0, t_1; order="78")
+```
 
 For higher dimensions, we use 
 
-	wave_evolve(D::Int, k::Int, n::Int, 
-				f0::Function, v0::Function, 
-				time0::Real, time1::Real; 
-				order = "45", scheme="sparse").
+```julia
+wave_evolve(D::Int, k::Int, n::Int, 
+			f0::Function, v0::Function, 
+			time0::Real, time1::Real; 
+			order="45", scheme="sparse")
+```
 
 For example, to solve a standing wave in 2-D from `t_0` to `t_1` with polynomials of degree less than `k` on each division, sparse depth `n`, and using `ode78`:
 
-	f0 = x->sin(2*pi*x[1])*sin(2*pi*x[2])
-	v0 = 0
-	sparse_soln = wave_evolve(2, k, n, f0, v0, t_0, t_1; order="78")
+```julia
+f0 = x->sin(2*pi*x[1])*sin(2*pi*x[2])
+v0 = 0
+sparse_soln = wave_evolve(2, k, n, f0, v0, t_0, t_1; order="78")
+```
 
 At `n = 1`, this is the same as `wave_evolve_1D` in the `"hier"` basis.  
 
@@ -106,43 +120,53 @@ For this reason we have the `vcoeffs_DG` method that works exactly the same as t
 
 We can convert between coefficient vectors and corresponding dictionaries as follows (in 2D with `k = 3, n = 5`):
 
-	D = 2; k = 3; n = 5;
-	f = x->sin(4*x[1]+x[2])
-	
-	full_vcoeffs = vcoeffs_DG(D, k, n, f; scheme="full")
-	full_dict = V2D(D, k, n, full_vcoeffs; scheme="full")
-	# Note this also means full_vcoeffs = D2V(D, k, n, full_dict; scheme="full") 
+```julia
+D = 2; k = 3; n = 5;
+f = x->sin(4*x[1]+x[2])
 
-	sparse_vcoeffs = vcoeffs_DG(D, k, n, f; scheme="sparse")
-	sparse_dict = V2D(3,sparse_vcoeffs,5,2)
-	# Note this also means sparse_vcoeffs = D2V(D, k, n, sparse_dict; scheme="sparse") 
+full_vcoeffs = vcoeffs_DG(D, k, n, f; scheme="full")
+full_dict = V2D(D, k, n, full_vcoeffs; scheme="full")
+# Note this also means full_vcoeffs = D2V(D, k, n, full_dict; scheme="full") 
+
+sparse_vcoeffs = vcoeffs_DG(D, k, n, f; scheme="sparse")
+sparse_dict = V2D(3,sparse_vcoeffs,5,2)
+# Note this also means sparse_vcoeffs = D2V(D, k, n, sparse_dict; scheme="sparse") 
+```
 
 In addition, we can generate a lookup by using the `D2Vref` and `V2Dref`that takes us from a dictionary-like level-place-fnumber scheme to a specific index in a coefficient vector and vice versa. This is useful when trying to understand specific values in a vector of coefficients. 
 
 If we have the vector `sparse_vcoeffs` as above and wanted to understand what `(level, place, fnumber)` corresponds to the value of `sparse_vcoeffs[10]`, the code would be
 
-	VD = V2Dref(D, k, n; scheme="sparse")
-	VD[10]
+```julia
+VD = V2Dref(D, k, n; scheme="sparse")
+VD[10]
+```
 
 Conversely, If we wanted to see what index we should look at to get the coefficient for `(level, place, fnumber) = ((4,4), (1,2), (2, 3))`, the code would be
 
-	level 	= CartesianIndex{2}((4, 4))
-	place 	= CartesianIndex{2}((1, 2))
-	fnumber = CartesianIndex{2}((2, 3))
-	DV = D2Vref(D, k, n; scheme="sparse")
-	DV[(level, place, fnumber)]
+```julia
+level 	= CartesianIndex{2}((4, 4))
+place 	= CartesianIndex{2}((1, 2))
+fnumber = CartesianIndex{2}((2, 3))
+DV = D2Vref(D, k, n; scheme="sparse")
+DV[(level, place, fnumber)]
+```
 
 ### Differentiation
 
 The higher dimensional full and sparse derivative operators are implemented in `Multidim_Derivative.jl`. Here, `D`, `k`, and `n` are as before, and `i` specifies the axis along which the derivative is taken.
 
-	D_matrix(D::Int, i::Int, k::Int, n::Int; 
-			 scheme="sparse")
+```julia
+D_matrix(D::Int, i::Int, k::Int, n::Int; 
+		 scheme="sparse")
+```
 	
 We also have the gradient vector that is `D_matrix` over all `i`, and the Laplacian:
 
-	grad_matrix(D::Int, k::Int, n::Int; scheme="sparse")
-	laplacian_matrix(D::Int, k::Int, n::Int; scheme="sparse")
+```julia
+grad_matrix(D::Int, k::Int, n::Int; scheme="sparse")
+laplacian_matrix(D::Int, k::Int, n::Int; scheme="sparse")
+```
 
 All these matrices act directly on the coefficient vectors obtained from `vcoeffs_DG`. For now, we assume periodic boundary conditions. It is not too difficult to generalize away from a periodic boundary. 
 
@@ -154,17 +178,23 @@ In the discontinuous Galerkin method, it is customary to formulate the derivativ
 
 To interpolate a multivariate function in the multiresolution (aka hierarchical) scheme of hat-functions (c.f. Gerstner & Griebel below) use:
 
-	coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
+```julia
+coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
+```
 	
 The coefficients are given as a dictionary of `CartesianIndex{D}` types. The keys of the dictionary correspond to multi-levels and corresponding `CartesianIndex{D}` entries correspond to the set of multi-places at a specific multi-level.
 
 For example in 2-D:
 
-	coeffs = coeffs_hat(2, n, x->sin(4*x[1]+x[2]); scheme="sparse")
+```julia
+coeffs = coeffs_hat(2, n, x->sin(4*x[1]+x[2]); scheme="sparse")
+```
 
 For either the full or sparse basis coefficients, we can reconstruct the interpolation at a point xs using the `reconstruct_hat(coefficients::Dict{CartesianIndex{D},Array{Float64,D}}, xs::NTuple{D,T})` function. For example we could take the prior result and evaluate at the point `(.4,.6)` by
 
-	reconstruct_hat(coeffs, (.4,.6))
+```julia
+reconstruct_hat(coeffs, (.4,.6))
+```
 
 ## Construction of the DG Basis
 
