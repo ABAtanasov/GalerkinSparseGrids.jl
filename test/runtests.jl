@@ -13,7 +13,7 @@ tests = [
 ]
 
 for filename in tests
-	name = first(splittext(filename))
+	name = first(splitext(filename))
 	@testset "$name" begin
 		include(filename)
 	end
