@@ -9,8 +9,6 @@ notifications:
   email: false
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'println("Beginning Tests of GalerkinSparseGrids.jl--------------------------------------")'
   - julia -e 'Pkg.clone(pwd()); Pkg.build("GalerkinSparseGrids"); Pkg.test("GalerkinSparseGrids"; coverage=true)'
-  - julia -e 'println("Finished Tests of GalerkinSparseGrids.jl---------------------------------------")'
 after_success:
   - julia -e 'cd(Pkg.dir("GalerkinSparseGrids")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
