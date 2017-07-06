@@ -3,12 +3,9 @@
 [![Build Status](https://travis-ci.org/ABAtanasov/GalerkinSparseGrids.jl.svg?branch=master)](https://travis-ci.org/ABAtanasov/GalerkinSparseGrids.jl)
 [![codecov](https://codecov.io/gh/ABAtanasov/GalerkinSparseGrids.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/ABAtanasov/GalerkinSparseGrids.jl)
 
-This Julia Language Package is intended for accurately and efficiently solving hyperbolic partial differential equations in higher dimensions, where the curse of dimensionality restricts the computational feasibility of discretization of space using regular grids. Instead, we employ the sparse grid construction as in Bungartz & Griebel:
-http://wissrech.ins.uni-bonn.de/research/pub/griebel/sparsegrids.pdf.
+This [Julia language](https://julialang.org/) package is intended for accurately and efficiently solving hyperbolic partial differential equations in higher dimensions, where the curse of dimensionality restricts the computational feasibility of discretization of space using regular grids. Instead, we employ the sparse grid construction as in [Bungartz & Griebel](http://wissrech.ins.uni-bonn.de/research/pub/griebel/sparsegrids.pdf).
 
-This technique in particular allows for an efficient numerical solution of Einstein's equations in full 3+1 dimensional space, as well as for tackling other systems in high-dimensional condensed matter calculations.
-
-The sparse grid methods of this package can be extended beyond numerical relativity to many areas in high-dimensional data science and dynamics.
+This technique allows for an efficient numerical solution of Einstein's equations in full 3+1 dimensional space. The sparse grid methods of this package can further be extended beyond numerical relativity to many areas in high-dimensional data science and dynamics.
 
 ## Installing
 
@@ -18,10 +15,9 @@ Prerequisites for using this package are:
 	ODE.jl	(For running the timesteps to solve the sparse dynamical evolution)
 	Cubature.jl (working to remove this prerequisite)
 
-They can be pulled from <https://github.com/JuliaLang/ODE.jl> and <https://github.com/stevengj/Cubature.jl>, respectively.
+They can be added using the Julia package manager. Source documentation is [here](<https://github.com/JuliaLang/ODE.jl>) for ODE.jl and [here](<https://github.com/stevengj/Cubature.jl>) for Cubature.jl.
 
-Within Julia, use the package manager to write
-`Pkg.add("GalerkinSparseGrids")` to locally install this package. 
+Within Julia, use the package manager to write `Pkg.add("GalerkinSparseGrids")` to locally install this package. 
 
 The latest version is available to be pulled from <https://github.com/ABAtanasov/GalerkinSparseGrids.jl>. You can access it by running `git pull https://github.com/ABAtanasov/GalerkinSparseGrids.jl master` from the appropriate package directory.
 
@@ -212,14 +208,11 @@ Future updates include adaptivity as well as parallelizability to these methods.
 
 ## References
 
-A Sparse Grid Discontinuous Galerkin Method for high-dimensional transport equations
-http://arxiv.org/abs/1602.02124
+[A Sparse Grid Discontinuous Galerkin Method for high-dimensional transport equations](http://arxiv.org/abs/1602.02124)
 
-(also c.f. for elliptic equations: http://arxiv.org/abs/1508.07781)
+[Sparse Grid DG Methods for Elliptic Equations](http://arxiv.org/abs/1508.07781)
 
 Gerstner & Griebel:
-A survey of sparse grid discretization and applciations to quadrature, data compression, and dynamical systems: 
-http://wissrech.ins.uni-bonn.de/research/pub/gerstner/sparsegrids.pdf
+[A survey of sparse grid discretization and applciations to quadrature, data compression, and dynamical systems](http://wissrech.ins.uni-bonn.de/research/pub/gerstner/sparsegrids.pdf)
 
-Good introduction to the Interior Penality Discontinuous Galerkin (IPDG):
-http://www.cs.elte.hu/~izsakf/otka/presentation_dg_23dim_en.pdf
+[Introduction to the Interior Penality Discontinuous Galerkin (IPDG)](http://www.cs.elte.hu/~izsakf/otka/presentation_dg_23dim_en.pdf)
