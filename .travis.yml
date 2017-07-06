@@ -4,7 +4,7 @@ os:
   - linux
   - osx
 julia:
-  - stable
+  - 0.6
   - nightly
 notifications:
   email: false
