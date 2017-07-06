@@ -126,7 +126,7 @@ end
 #------------------------------------------------------
 
 function diff_basis_DG(k::Int, level::Int, place::Int, f_number::Int)
-    dcoeffs = Array(Float64, (level+1,k))
+    dcoeffs = Array{Float64}((level+1, k))
     p = place
     for l in level:-1:0
         for f_n in 1:k

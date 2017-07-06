@@ -14,7 +14,7 @@ The sparse grid methods of this package can be extended beyond numerical relativ
 
 Prerequisites for using this package are:
 
-	Julia-0.5 (Latest Release)
+	Julia-0.6 (Latest Release)
 	ODE.jl	(For running the timesteps to solve the sparse dynamical evolution)
 	Cubature.jl (working to remove this prerequisite)
 

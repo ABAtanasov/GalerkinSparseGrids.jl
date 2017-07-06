@@ -47,7 +47,7 @@ end
 
 #precomputing the DG functions
 
-dg_coeffs=Array(Array{Array{Float64,1},1}, K_max)
+dg_coeffs = Array{Array{Array{Float64,1},1}}(K_max)
 #TODO Make this a 2D array
 
 for i in 1:K_max

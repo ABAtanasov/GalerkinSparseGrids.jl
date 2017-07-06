@@ -42,7 +42,7 @@ end
 
 function pos_vcoeffs_DG(k::Int, level::Int, f::Function;
 						rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals = MAX_EVALS)
-	vcoeffs = Array(Float64,(1<<level)*(k))
+	vcoeffs = Array{Float64}((1<<level)*(k))
 	i = 1
 	for place in 1:(1<<level)
 		for f_number in 1:k

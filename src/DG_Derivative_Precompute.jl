@@ -9,7 +9,7 @@
 KMAX = 5
 LMAX = 10
 
-precomputed_diffs = Dict{NTuple{4,Int},Array{Float64,2}}()
+precomputed_diffs = Dict{NTuple{4, Int}, Array{Float64, 2}}()
 
 for k in 1:KMAX
 	for level in 0:LMAX

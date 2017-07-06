@@ -70,7 +70,7 @@ function energy_func_1D(k, level,
 	len			= length(soln[1])
 	num_coeffs	= Int(round(length(soln[2][1])/2))
 	times		= copy(soln[1])
-	energies	= Array(Float64, len)
+	energies	= Array{Float64}(len)
 	D_op		= periodic_DLF_Matrix(k, level; base=base)
 
 	for i in 1:len
@@ -129,7 +129,7 @@ function energy_func(D::Int, k::Int, n::Int,
 	len 		= length(soln[1])
 	num_coeffs	= Int(round(length(soln[2][1])/2))
 	times 		= copy(soln[1])
-	energies	= Array(Float64, len)
+	energies	= Array{Float64}(len)
 	D_ops 		= grad_matrix(D, k, n; scheme=scheme)
 
 	for i in 1:len

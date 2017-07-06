@@ -52,7 +52,7 @@ function D2V{d,T<:Real}(D::Int, k::Int, n::Int,
 	(d != D) && throw(TypeError(:coeffs))
 	cutoff		= get_cutoff(scheme, D, n)
 	size		= get_size(D, k, n; scheme=scheme)
-	vect		= Array(Float64, size)
+	vect		= Array{Float64}(size)
 	f_numbers	= ntuple(i-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
@@ -81,9 +81,9 @@ function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 		cutoff(level) && continue
 
 		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
-		level_coeffs = Array(Array{Float64},ks)	 #all the coefficients at this level
+		level_coeffs = Array{Array{Float64}}(ks) #all the coefficients at this level
 		for place in CartesianRange(ks)
-			place_coeffs = Array(Float64,f_numbers)
+			place_coeffs = Array{Float64}(f_numbers)
 			for f_number in CartesianRange(f_numbers)
 				place_coeffs[f_number] = vect[j]
 				j+=1
@@ -120,7 +120,7 @@ end
 function V2Dref(D::Int, k::Int, n::Int; scheme = "sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	size		= get_size(D, k, n; scheme=scheme)
-	vect		= Array(NTuple{3,CartesianIndex{D}}, size)
+	vect		= Array{NTuple{3,CartesianIndex{D}}}(size)
 	f_numbers	= ntuple(q-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1	
@@ -151,7 +151,7 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 								scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	len			= get_size(D, k, n; scheme=scheme)
-	coeffs		= Array(Float64, len)
+	coeffs		= Array{Float64}(len)
 	f_numbers	= ntuple(i-> k, D)
 	ls			= ntuple(i-> (n+1), D)
 	j = 1

@@ -12,6 +12,7 @@ using ODE
 # In the position basis:
 
 import GalerkinSparseGrids.energy_func_1D
+import GalerkinSparseGrids.energy_func
 
 print("Testing wave equation solver 1-D position DG basis... ")
 
@@ -38,7 +39,7 @@ for i in 1:length(energy_soln[2])
 end
 
 hier_soln  = wave_evolve(1, k, level, f0, v0, 0, 1; order="78")
-energy_soln = energy_func(1, k, level, hier_soln; order="78")
+energy_soln = energy_func(1, k, level, hier_soln)
 for i in 1:length(energy_soln[2])
     @test sqrt(energy_soln[2][i]) ≈ 2*pi atol=1.0e-7
 end
@@ -46,8 +47,6 @@ end
 println("Test Passed.")
 
 # 2D Sparse case:
-
-import GalerkinSparseGrids.energy_func
 
 print("Testing wave equation solver on 2-D sparse DG basis... ")
 

@@ -6,6 +6,8 @@ using Cubature
 # Elementary Tests
 #--------------------------------------
 
+ε = eps(Float64)
+
 import GalerkinSparseGrids.pos
 print("Testing pos function... ")
 for i in -10:0
@@ -32,13 +34,16 @@ end
 println("Tests Passed.")
 
 import GalerkinSparseGrids.inner_product
+
 print("Testing 1D inner product... ")
-@test abs(inner_product(x->x[1]^2, x->x[1]^3, (0,),CartesianIndex((1,)))-(1/6)) < 2*eps(Float64)
-@test abs(inner_product(x->sin(pi*x[1]), x->cos(pi*x[1]), (0,),CartesianIndex((1,)))) < eps(Float64)
+@test inner_product(x->x[1]^2, x->x[1]^3, (0,),CartesianIndex((1,))) ≈ (1/6) atol=2*ε
+@test inner_product(x->sin(pi*x[1]), x->cos(pi*x[1]), (0,),CartesianIndex((1,))) ≈ 0 atol=2*ε
 println("Tests Passed.")
+
 print("Testing 2D inner product... ")
-@test abs(inner_product(x->(x[1]^2+x[2]^2), x->x[1]^3, (0,0),CartesianIndex((1,1)))-.25)<2*eps(Float64)
+@test inner_product(x->(x[1]^2+x[2]^2), x->x[1]^3, (0,0),CartesianIndex((1,1))) ≈ .25 atol=2*ε
 println("Tests Passed.")
+
 print("Testing 3D inner product... ")
-@test abs(inner_product(x->(x[1]^2+x[2]^2-x[3]^2), x->x[1]^3+x[2]+x[3], (0,0,0),CartesianIndex((1,1,1)))-.5)<2*eps(Float64)
+@test inner_product(x->(x[1]^2+x[2]^2-x[3]^2), x->x[1]^3+x[2]+x[3], (0,0,0),CartesianIndex((1,1,1))) ≈ .5 atol=2*ε
 println("Tests Passed.")

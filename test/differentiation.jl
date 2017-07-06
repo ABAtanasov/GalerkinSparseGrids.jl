@@ -18,7 +18,7 @@ for l in 2:5
     dict= V2D(1, k, l, vcoeffs; scheme="full")
     ddict = V2D(1, k, l, dvcoeffs; scheme="full")
     err = x->(reconstruct_DG(ddict,[x[1]])+2*pi*sin(2*pi*x[1]))^2
-    @test hquadrature(err, 0, 1, abstol=1.0e-10, maxevals=500)[1]<1/(1<<(k+l-2))
+    @test hquadrature(err, 0, 1, abstol=1.0e-10, maxevals=500)[1] < 1/(1<<(k+l-2))
 end
 
 println("Test Passed.")

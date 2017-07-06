@@ -137,12 +137,12 @@ function coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")
 		cutoff(level) && continue
 		
 		places = ntuple(i -> 1<<pos(level[i]-2), D)
-		level_coeffs = Array(Array{Float64,D},places)
+		level_coeffs = Array{Array{Float64,D}}(places)
 		lvl = ntuple(i -> level[i]-1,D)
 		for place in CartesianRange(places)
-			place_coeffs = Array(Float64,f_numbers)
+			place_coeffs = Array{Float64}(f_numbers)
 			for f_number in CartesianRange(f_numbers)
-				place_coeffs[f_number]=get_coefficient_DG(k, lvl, place, f_number, f)
+				place_coeffs[f_number] = get_coefficient_DG(k, lvl, place, f_number, f)
 			end
 			level_coeffs[place]=place_coeffs
 		end
