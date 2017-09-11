@@ -43,9 +43,9 @@ function D_matrix{D}(i::Int, k::Int, n::Int,
 			level2 = make_cartesian_index(i, lpf2[1][1], lpf[1])
 			cutoff(level2) && continue
 			
-			place2 = make_cartesian_index(i, lpf2[2][1], lpf[2])
+			cell2 = make_cartesian_index(i, lpf2[2][1], lpf[2])
 			f_number2 = make_cartesian_index(i, lpf2[3][1], lpf[3])
-			c2 = srefDV[(level2, place2, f_number2)]
+			c2 = srefDV[(level2, cell2, f_number2)]
 			push!(I, c2)
 			push!(J, c1)
 			push!(V, dvc1s[j])

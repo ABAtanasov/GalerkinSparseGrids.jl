@@ -29,13 +29,13 @@ function tensor_construct(D::Int, k::Int, n::Int, coeffArray; scheme="sparse")
 		ks = ntuple(i -> 1<<pos(level[i]-2), D)  
 		level_coeffs = Array{Array{Float64,D}}(ks)
 		lvl = ntuple(i -> level[i]-1,D)
-		for place in CartesianRange(ks)
-			place_coeffs=Array{Float64}(f_numbers)
+		for cell in CartesianRange(ks)
+			cell_coeffs=Array{Float64}(f_numbers)
 			for f_number in CartesianRange(f_numbers)
-				c = [(coeffArray[i])[CartesianIndex{1}((level[i],))][place[i]][f_number[i]] for i in 1:D]
-				place_coeffs[f_number] = prod(c)
+				c = [(coeffArray[i])[CartesianIndex{1}((level[i],))][cell[i]][f_number[i]] for i in 1:D]
+				cell_coeffs[f_number] = prod(c)
 			end
-			level_coeffs[place]=place_coeffs
+			level_coeffs[cell]=cell_coeffs
 		end
 		coeffs[level] = level_coeffs
 	end

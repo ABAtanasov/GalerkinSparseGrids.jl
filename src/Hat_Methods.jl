@@ -8,7 +8,7 @@
 # Efficiency criticality: MEDIUM
 # Important for calculating error for testing package
 # Not critical for user
-# Potential use to replace multidimensional integration 
+# Potential use to recell multidimensional integration 
 # from hcubature with more efficient method
 
 
@@ -66,9 +66,9 @@ end
 function standard_coeffs{D}(f::Function, ls::NTuple{D,Int})
 	positions = ntuple(i -> (1<<ls[i])+1,D)
 	coeffs = zeros(Float64, positions)
-	for place in CartesianRange(positions)
-		x = ntuple(i-> (2.0^-ls[i])*(place[i]-1),D)
-		coeffs[place] = f(x) 
+	for cell in CartesianRange(positions)
+		x = ntuple(i-> (2.0^-ls[i])*(cell[i]-1),D)
+		coeffs[cell] = f(x) 
 	end
 	return coeffs
 end
@@ -76,9 +76,9 @@ end
 function standard_reconstruct{D,T<:Real}(coefficients::AbstractArray, ls::NTuple{D,Int}, xs::NTuple{D,T})
 	positions = ntuple(i -> (1<<ls[i])+1,D)
 	value=0.0
-	for place in CartesianRange(positions)
-		is = ntuple(i->place[i]-1,D)
-		value += coefficients[place]*delta(ls, is, xs)
+	for cell in CartesianRange(positions)
+		is = ntuple(i->cell[i]-1,D)
+		value += coefficients[cell]*delta(ls, is, xs)
 	end
 	return value
 end
@@ -89,13 +89,13 @@ end
 # coefficients
 #------------------------------------------------------
 
-# Given a level and place describing a sub-interval
+# Given a level and cell describing a sub-interval
 # gives the x-coordinate for the center of that sub-interval.
 # This is used for obtaining the coefficient corresponding to
-# a specific level and place in a position (lagrange basis).
+# a specific level and cell in a position (lagrange basis).
 # This function's implementation is multi-dimensional
-function get_position{D}(level::CartesianIndex{D},place::CartesianIndex{D})
-	xs = [(0.5)^pos(level[i]-2) *(2*place[i]-1) for i in 1:D]
+function get_position{D}(level::CartesianIndex{D},cell::CartesianIndex{D})
+	xs = [(0.5)^pos(level[i]-2) *(2*cell[i]-1) for i in 1:D]
 	return xs
 end
 
@@ -170,9 +170,9 @@ function coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
 
 		ks = ntuple(i -> 1<<pos(level[i]-3), D)  
 		level_coeffs = zeros(Float64, ks)
-		for place in CartesianRange(ks)
-			x = get_position(level, place) 
-			level_coeffs[place]=get_coefficient(f, ntuple(i -> level[i], D),x)
+		for cell in CartesianRange(ks)
+			x = get_position(level, cell) 
+			level_coeffs[cell]=get_coefficient(f, ntuple(i -> level[i], D),x)
 		end
 		coeffs[level] = level_coeffs
 	end
@@ -189,9 +189,9 @@ function reconstruct_hat{D,T<:Real}(coefficients::Dict{CartesianIndex{D},
 	value = 0.0
 	for key in keys(coefficients)	#For every level that has coefficients
 		level = ntuple(i->key[i]-2, D)	# Get the actual level corresponding to that CartesianIndex
-		place = ntuple(i->hat_index(xs[i], level[i]), D)  # The relevant place for x
-		value += coefficients[key][CartesianIndex{D}(place)]*hat(level, place, xs)
+		cell = ntuple(i->hat_index(xs[i], level[i]), D)  # The relevant cell for x
+		value += coefficients[key][CartesianIndex{D}(cell)]*hat(level, cell, xs)
 		#get the appropriate coefficient and evaluate the appropriate hat at x
 	end
-	return value	#return the sum of all the relevant hat functions at that place x
+	return value	#return the sum of all the relevant hat functions at that cell x
 end

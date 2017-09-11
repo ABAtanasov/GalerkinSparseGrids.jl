@@ -13,9 +13,9 @@ precomputed_diffs = Dict{NTuple{4, Int}, Array{Float64, 2}}()
 
 for k in 1:KMAX
 	for level in 0:LMAX
-	    for place in 1:(1<<pos(level-1)) 
+	    for cell in 1:(1<<pos(level-1)) 
 	        for f_number in 1:k
-	            precomputed_diffs[(k,level,place,f_number)] = diff_basis_DG(k,level,place,f_number)
+	            precomputed_diffs[(k,level,cell,f_number)] = diff_basis_DG(k,level,cell,f_number)
 	        end
 	    end
 	end

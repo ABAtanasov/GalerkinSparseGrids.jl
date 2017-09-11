@@ -30,9 +30,9 @@ This package allows for the efficient interpolation, differentiation, and time e
 
 In the 1-dimensional setting, the standard DG basis at order `k` and resolution `n` is equivalent to subdividing the axis in to `2^n` sub-intervals and interpolating the function by polynomials of order strictly less than `k` on each of these sub-intervals. This gives a vector space of size `k 2^n`.
 
-To make this compatible with sparse grids in higher dimensions, we find a "multi-resolution" basis for this vector space. That is, our basis functions `v(level, place, f_number)` are indexed by a level ranging from `0` to `n` and then a place ranging from `0` to `2^l - 1` so that `v` is supported on (p 2^(-l), (p+1) 2^(-l)). Lastly, `f_number` ranges over the `k` polynomials on each such interval. These `v` are made orthonormal to one another by a Grahm-Schmidt process detailed in Alpert and implemented in `DG_Basis.jl`
+To make this compatible with sparse grids in higher dimensions, we find a "multi-resolution" basis for this vector space. That is, our basis functions `v(level, cell, f_number)` are indexed by a level ranging from `0` to `n` and then a cell ranging from `0` to `2^l - 1` so that `v` is supported on (p 2^(-l), (p+1) 2^(-l)). Lastly, `f_number` ranges over the `k` polynomials on each such interval. These `v` are made orthonormal to one another by a Grahm-Schmidt process detailed in Alpert and implemented in `DG_Basis.jl`
 
-In D-dimensions, we use the standard tensor-products construction on these 1-D basis functions to obtain a basis of size `(k 2^n)^D`. For a default full grid, this vector space is equivalent to subdividing each axis of this domain into 2^n sub-intervals, for a total of `2^(n D)` hypercubes, and interpolating the function on each of these subdomains by multivariate polynomials of degree strictly less than `k`. The basis functions `V(level, place, f_number)` now have each of their arguments as a `D`-vector. 
+In D-dimensions, we use the standard tensor-products construction on these 1-D basis functions to obtain a basis of size `(k 2^n)^D`. For a default full grid, this vector space is equivalent to subdividing each axis of this domain into 2^n sub-intervals, for a total of `2^(n D)` hypercubes, and interpolating the function on each of these subdomains by multivariate polynomials of degree strictly less than `k`. The basis functions `V(level, cell, f_number)` now have each of their arguments as a `D`-vector. 
 
 Because this scheme becomes rapidly and prohibitively expensive in high dimensions, we apply the well-known sparse grid cutoff to exclude all basis functions with levels having 1-norm greater than `n`. This reduces us from `O(k^D 2^(n D))` to `O(k^D 2^n n^(D-1))`.
 
@@ -53,7 +53,7 @@ full_coeffs   = coeffs_DG(D, k, n, f; scheme="full"  )
 sparse_coeffs = coeffs_DG(D, k, n, f; scheme="sparse")
 ```
 
-This gives a dictionary indexed by multi-levels of type CartesianIndex{2}. For a given multi-level, any dictionary entry is an array of arrays indexed by the multi-place and multi-fnumber that holds the coefficient data.
+This gives a dictionary indexed by multi-levels of type CartesianIndex{2}. For a given multi-level, any dictionary entry is an array of arrays indexed by the multi-cell and multi-fnumber that holds the coefficient data.
 
 In either case, the interpolation can be evaluated at a given point `xs` (given by an array of length D) by 
 
@@ -129,23 +129,23 @@ sparse_dict = V2D(3,sparse_vcoeffs,5,2)
 # Note this also means sparse_vcoeffs = D2V(D, k, n, sparse_dict; scheme="sparse") 
 ```
 
-In addition, we can generate a lookup by using the `D2Vref` and `V2Dref`that takes us from a dictionary-like level-place-fnumber scheme to a specific index in a coefficient vector and vice versa. This is useful when trying to understand specific values in a vector of coefficients. 
+In addition, we can generate a lookup by using the `D2Vref` and `V2Dref`that takes us from a dictionary-like level-cell-fnumber scheme to a specific index in a coefficient vector and vice versa. This is useful when trying to understand specific values in a vector of coefficients. 
 
-If we have the vector `sparse_vcoeffs` as above and wanted to understand what `(level, place, fnumber)` corresponds to the value of `sparse_vcoeffs[10]`, the code would be
+If we have the vector `sparse_vcoeffs` as above and wanted to understand what `(level, cell, fnumber)` corresponds to the value of `sparse_vcoeffs[10]`, the code would be
 
 ```julia
 VD = V2Dref(D, k, n; scheme="sparse")
 VD[10]
 ```
 
-Conversely, If we wanted to see what index we should look at to get the coefficient for `(level, place, fnumber) = ((4,4), (1,2), (2, 3))`, the code would be
+Conversely, If we wanted to see what index we should look at to get the coefficient for `(level, cell, fnumber) = ((4,4), (1,2), (2, 3))`, the code would be
 
 ```julia
 level 	= CartesianIndex{2}((4, 4))
-place 	= CartesianIndex{2}((1, 2))
+cell 	= CartesianIndex{2}((1, 2))
 fnumber = CartesianIndex{2}((2, 3))
 DV = D2Vref(D, k, n; scheme="sparse")
-DV[(level, place, fnumber)]
+DV[(level, cell, fnumber)]
 ```
 
 ### Differentiation
@@ -178,7 +178,7 @@ To interpolate a multivariate function in the multiresolution (aka hierarchical)
 coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
 ```
 	
-The coefficients are given as a dictionary of `CartesianIndex{D}` types. The keys of the dictionary correspond to multi-levels and corresponding `CartesianIndex{D}` entries correspond to the set of multi-places at a specific multi-level.
+The coefficients are given as a dictionary of `CartesianIndex{D}` types. The keys of the dictionary correspond to multi-levels and corresponding `CartesianIndex{D}` entries correspond to the set of multi-cells at a specific multi-level.
 
 For example in 2-D:
 

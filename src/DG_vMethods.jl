@@ -6,18 +6,18 @@
 #
 # In this script, we "vectorize" our functions,
 # not in the regular meaning of the word, but in the
-# sense that dictionaries will all be replaced by vectors
+# sense that dictionaries will all be recelld by vectors
 #
 # The main difficulty with this is that, unlike with dictionaries
-# there is no easy way to go from (level, place, fnumber) to a
+# there is no easy way to go from (level, cell, fnumber) to a
 # corresponding index in a 1-D vector. 
 #
 # For this, we have the reference functions:
 # full/sparse_referenceV2D/D2V 
-# D2V generates a dict that, upon input of a level, place, f_number
+# D2V generates a dict that, upon input of a level, cell, f_number
 # gives the corresponding index in a vector
 # V2D generates a vector, with row i having the three numbers
-# level, place, f_number corresponding to index i in the vector
+# level, cell, f_number corresponding to index i in the vector
 # 
 # These methods work in all dimensions, and there are ones for both
 # full and sparse grids. 
@@ -60,9 +60,9 @@ function D2V{d,T<:Real}(D::Int, k::Int, n::Int,
 		cutoff(level) && continue
 
 		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
-		for place in CartesianRange(ks)
+		for cell in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-				vect[j] = coeffs[level][place][f_number]
+				vect[j] = coeffs[level][cell][f_number]
 				j+=1
 			end
 		end
@@ -82,13 +82,13 @@ function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 
 		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
 		level_coeffs = Array{Array{Float64}}(ks) #all the coefficients at this level
-		for place in CartesianRange(ks)
-			place_coeffs = Array{Float64}(f_numbers)
+		for cell in CartesianRange(ks)
+			cell_coeffs = Array{Float64}(f_numbers)
 			for f_number in CartesianRange(f_numbers)
-				place_coeffs[f_number] = vect[j]
+				cell_coeffs[f_number] = vect[j]
 				j+=1
 			end
-			level_coeffs[place] = place_coeffs
+			level_coeffs[cell] = cell_coeffs
 		end
 		coeffs[level] = level_coeffs
 	end
@@ -107,9 +107,9 @@ function D2Vref(D::Int, k::Int, n::Int; scheme="sparse")
 
 		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
-		for place in CartesianRange(ks)
+		for cell in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-				dict[(level, place, f_number)] = j
+				dict[(level, cell, f_number)] = j
 				j+=1
 			end
 		end
@@ -129,9 +129,9 @@ function V2Dref(D::Int, k::Int, n::Int; scheme = "sparse")
 
 		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
-		for place in CartesianRange(ks)
+		for cell in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-				vect[j] = (level, place, f_number)
+				vect[j] = (level, cell, f_number)
 				j+=1
 			end
 		end
@@ -160,9 +160,9 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 
 		ks = ntuple(i -> 1<<pos(level[i]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
-		for place in CartesianRange(ks)
+		for cell in CartesianRange(ks)
 			for f_number in CartesianRange(f_numbers)
-				coeffs[j] = get_coefficient_DG(k, lvl, place, f_number, f;
+				coeffs[j] = get_coefficient_DG(k, lvl, cell, f_number, f;
 												rel_tol=rel_tol, abs_tol=abs_tol, 
 												max_evals=max_evals)
 				j+=1
