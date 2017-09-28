@@ -125,7 +125,7 @@ full_dict = V2D(D, k, n, full_vcoeffs; scheme="full")
 # Note this also means full_vcoeffs = D2V(D, k, n, full_dict; scheme="full") 
 
 sparse_vcoeffs = vcoeffs_DG(D, k, n, f; scheme="sparse")
-sparse_dict = V2D(3,sparse_vcoeffs,5,2)
+sparse_dict = V2D(D, k, n, sparse_vcoeffs; scheme="sparse")
 # Note this also means sparse_vcoeffs = D2V(D, k, n, sparse_dict; scheme="sparse") 
 ```
 
