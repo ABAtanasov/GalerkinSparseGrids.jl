@@ -11,7 +11,7 @@ const K_max = 10;
 
 # Going from arrays to polynomials
 
-@fastmath function array2poly{T<:Real}(v::Array{T},x::Real)
+@fastmath function array2poly{T<:Real}(v::Array{T}, x::Real)
 	if abs(x)>1 
 		return zero(T)
 	end
@@ -22,7 +22,7 @@ const K_max = 10;
 	@inbounds for i in k:-1:1
 		# Using Horner's method 
 		s *= x
-		s += v[i] + flipsign(v[i+k],x)
+		s += v[i] + flipsign(v[i+k], x)
 	end
 	return s
 end
@@ -35,9 +35,9 @@ end
 
 leg_coeffs=legendre(K_max)
 
-function LegendreP(k,x)
+function LegendreP(k, x)
 	k<=K_max || throw(DomainError())
-	return array2poly(leg_coeffs[k+1],x)
+	return array2poly(leg_coeffs[k+1], x)
 end
 
 function LegendreP(k)

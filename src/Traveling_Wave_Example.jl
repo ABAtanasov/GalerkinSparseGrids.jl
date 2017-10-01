@@ -85,7 +85,7 @@ end
 #------------------------------------------------------
 
 function traveling_wave_solver(k::Int, n::Int, m::Array{Int,1}, time0::Real, time1::Real; 
-								scheme="sparse", phase=0.0, A=1.0, order="45")
+								scheme="sparse", phase=0.0, A=1.0, order="45", kwargs...)
 	D = length(m)
 	f0coeffs, v0coeffs = traveling_wave(k, n, m; scheme=scheme, phase=phase, A=A)
 	srefVD = V2Dref(D, k, n; scheme=scheme);
@@ -124,9 +124,9 @@ function traveling_wave_solver(k::Int, n::Int, m::Array{Int,1}, time0::Real, tim
 
 	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
 	if order == "78"
-		soln=ode78((t,x)->*(RHS,x), y0, [time0,time1])
+		soln=ode78((t,x)->*(RHS,x), y0, [time0,time1]; kwargs)
 	elseif order == "45"
-		soln=ode45((t,x)->*(RHS,x), y0, [time0,time1])
+		soln=ode45((t,x)->*(RHS,x), y0, [time0,time1]; kwargs)
 	else
 		throw(ArgumentError)
 	end
