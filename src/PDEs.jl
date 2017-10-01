@@ -113,9 +113,9 @@ function wave_evolve(D::Int, k::Int, n::Int,
 	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
 
 	if order == "45"
-		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1]; kwargs)
+		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1]; kwargs...)
 	elseif order == "78"
-		soln = ode78((t,x)->*(RHS,x), y0, [time0,time1]; kwargs)
+		soln = ode78((t,x)->*(RHS,x), y0, [time0,time1]; kwargs...)
 	else
 		throw(ArgumentError(:order))
 	end
