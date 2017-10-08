@@ -9,8 +9,9 @@
 #
 #------------------------------------------------------------
 
-# Efficiency criticality: LOW
-# Computations only performed once
+# Efficiency criticality: MEDIUM
+# Computations performed once, 
+# but take very long in multidimensional setting
 
 # Accuracy criticality: HIGH
 # Critical for accurate PDE evolution
@@ -39,7 +40,7 @@ function dbasis(level::Int, cell::Int, f_number::Int)
 	return x->dbasis(level, cell, f_number, x)
 end
 
-
+# TODO: Remove all integration here
 function pos_vcoeffs_DG(k::Int, level::Int, f::Function;
 						rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals = MAX_EVALS)
 	vcoeffs = Array{Float64}((1<<level)*(k))
@@ -163,9 +164,9 @@ function hier2pos(k::Int, max_level::Int; abs_tol = ABS_TOL)
 	for level in 0:max_level
 		for cell in 1:(1<<pos(level-1))
 			for f_number in 1:k
-				# Possible issue right here:
+				# TODO: rectify inefficiency right here:
 				ans = pos_vcoeffs_DG(k, max_level, x->v(k,level,cell,f_number,x);
-								  abs_tol = abs_tol)
+										abs_tol = abs_tol)
 				for i in 1:length(ans)
 					if abs(ans[i]) > 1e-15
 						push!(I, i)

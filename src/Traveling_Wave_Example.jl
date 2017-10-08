@@ -88,15 +88,9 @@ function traveling_wave_solver(k::Int, n::Int, m::Array{Int,1}, time0::Real, tim
 								scheme="sparse", phase=0.0, A=1.0, order="45", kwargs...)
 	D = length(m)
 	f0coeffs, v0coeffs = traveling_wave(k, n, m; scheme=scheme, phase=phase, A=A)
-	srefVD = V2Dref(D, k, n; scheme=scheme);
-	srefDV = D2Vref(D, k, n; scheme=scheme);
-	
 	len = length(f0coeffs)
-	laplac=spzeros(len, len)
-	for i in 1:D
-		D_op = D_matrix(i, k, n, srefVD, srefDV; scheme=scheme)
-		laplac += *(D_op, D_op)
-	end
+	
+	laplac = laplacian_matrix(D, k, n; scheme=scheme)
 	
 	I = Int[]
 	J = Int[]
