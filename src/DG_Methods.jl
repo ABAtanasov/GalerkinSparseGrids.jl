@@ -9,7 +9,7 @@
 using Cubature
 
 const REL_TOL = 1.0e-8
-const ABS_TOL = 1.0e-10
+const ABS_TOL = 1.0e-12
 const MAX_EVALS = 1000
 
 #------------------------------------------------------
@@ -111,7 +111,7 @@ end
 # We obtain coefficients simply by doing inner products, it's easy :)
 # Only hard part is inner product integrations can be slower than we want :(
 function get_coefficient_DG{D}(k::Int, lvl::NTuple{D,Int},
-		 							cell::CartesianIndex{D},
+									cell::CartesianIndex{D},
 									f_number::CartesianIndex{D},
 									f::Function;
 									rel_tol = REL_TOL,
@@ -159,6 +159,7 @@ end
 
 function reconstruct_DG{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{Float64,D},D}},
 									xs::Array{T,1})
+	
 	value		= zero(T)
 	k			= size(first(values(coeffs))[1])[1]
 	f_numbers	= ntuple(i-> k ,D)
@@ -172,4 +173,30 @@ function reconstruct_DG{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{F
 		end
 	end
 	return value
+end
+
+
+# Can be made more efficient, but this function does not get much use currently
+# TODO: If this averaging becomes advantageous, speed up the evaluation
+function reconstruct_DG_averaged{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{Float64,D},D}},
+									xs::Array{T,1}; boundary_dist=0.01)
+	n 			= maximum((x->maximum(x.I)).(collect(keys(coeffs))))
+	h 			= 1/(1<<n)
+	f0			= x->reconstruct_DG(coeffs, x)
+	fvals 		= []
+	
+	for a in 1:D
+		(xs[a] <= boundary_dist || xs[a] >= 1 - boundary_dist) && continue
+		x_modh = xs[a] % h
+		if (x_modh <= boundary_dist || x_modh >= h-boundary_dist)
+			xp = setindex!(copy(xs), xs[a]+h, a)
+			xm = setindex!(copy(xs), xs[a]-h, a)
+			(xp[a] > 1 || xm[a] < 0) && continue
+			val = 0.5*(f0(xp) + f0(xm))
+			push!(fvals, val)
+		end
+	end
+	
+	length(fvals) == 0 && return reconstruct_DG(coeffs, xs)
+	return mean(fvals)
 end
