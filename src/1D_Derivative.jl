@@ -40,7 +40,7 @@ function dbasis(level::Int, cell::Int, f_number::Int)
 	return x->dbasis(level, cell, f_number, x)
 end
 
-# TODO: Remove all integration here
+# TODO: Remove integration here
 function pos_vcoeffs_DG(k::Int, level::Int, f::Function;
 						rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals = MAX_EVALS)
 	vcoeffs = Array{Float64}((1<<level)*(k))
@@ -60,11 +60,7 @@ end
 function legvDv(level, cell1, f_number1, cell2, f_number2;
 				rel_tol = REL_TOL, abs_tol=ABS_TOL, max_evals=MAX_EVALS)
 	if cell1 == cell2
-		fcn 		= x->(basis(level, cell1,f_number1,x)*
-							dbasis(level, cell2, f_number2,x))
-		left_bound  = (cell1-1)/(1<<level)
-		right_bound = (cell1)/(1<<level)
-		return hquadrature(fcn, left_bound, right_bound; abstol=abs_tol)[1]
+		return (1<<(level+1))*legendreDlegendre(f_number1, f_number2)
 	end
 	return 0.0
 end
