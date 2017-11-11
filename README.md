@@ -1,9 +1,7 @@
 # A Module for Sparse Grid Discretization using Discontinuous Galerkin Bases
-
-### Authors: Alex Atanasov and Erik Schnetter
-
 [![Build Status](https://travis-ci.org/ABAtanasov/GalerkinSparseGrids.jl.svg?branch=master)](https://travis-ci.org/ABAtanasov/GalerkinSparseGrids.jl)
 [![codecov](https://codecov.io/gh/ABAtanasov/GalerkinSparseGrids.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/ABAtanasov/GalerkinSparseGrids.jl)
+
 
 This [Julia language](https://julialang.org/) package is intended for accurately and efficiently solving hyperbolic partial differential equations in higher dimensions, where the curse of dimensionality restricts the computational feasibility of discretization of space using regular grid methods. Instead, we employ the sparse grid construction as in [Bungartz & Griebel](http://wissrech.ins.uni-bonn.de/research/pub/griebel/sparsegrids.pdf).
 
@@ -18,6 +16,8 @@ In order to make full anisotropic gravitational evolution a reality, several nec
 For more information, see [Sparse Grid Discretizations based on a Discontinuous Galerkin Method](https://arxiv.org/abs/1710.09356)
 
 The sparse grid methods of this package apply well beyond numerical relativity to many areas in high-dimensional dynamics and data science. The user is invited to experiment.
+
+Authors: Alex Atanasov (alex.atanasov@yale.edu) & Erik Schnetter (eschnetter@perimeterinstitute.ca)
 
 ## Installing
 
