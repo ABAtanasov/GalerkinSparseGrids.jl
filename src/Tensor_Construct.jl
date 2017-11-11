@@ -19,8 +19,8 @@
 function tensor_construct(D::Int, k::Int, n::Int, coeffArray; scheme="sparse")
 	cutoff = get_cutoff(scheme, D, n)
 	coeffs = Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
-	c = zeros(Float64, D)
-	f_numbers= ntuple(i-> k, D)
+	nD_coeffs = zeros(Float64, D)
+	modes = ntuple(i-> k, D)
 	ls = ntuple(i-> (n+1), D)
 	
 	for level in CartesianRange(ls)
@@ -30,10 +30,10 @@ function tensor_construct(D::Int, k::Int, n::Int, coeffArray; scheme="sparse")
 		level_coeffs = Array{Array{Float64,D}}(ks)
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(ks)
-			cell_coeffs=Array{Float64}(f_numbers)
-			for f_number in CartesianRange(f_numbers)
-				c = [(coeffArray[i])[CartesianIndex{1}((level[i],))][cell[i]][f_number[i]] for i in 1:D]
-				cell_coeffs[f_number] = prod(c)
+			cell_coeffs=Array{Float64}(modes)
+			for mode in CartesianRange(modes)
+				nD_coeffs = [(coeffArray[i])[CartesianIndex{1}((level[i],))][cell[i]][mode[i]] for i in 1:D]
+				cell_coeffs[mode] = prod(nD_coeffs)
 			end
 			level_coeffs[cell]=cell_coeffs
 		end

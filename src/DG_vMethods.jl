@@ -9,15 +9,15 @@
 # sense that dictionaries will all be recelld by vectors
 #
 # The main difficulty with this is that, unlike with dictionaries
-# there is no easy way to go from (level, cell, fnumber) to a
+# there is no easy way to go from (level, cell, mode) to a
 # corresponding index in a 1-D vector. 
 #
 # For this, we have the reference functions:
 # full/sparse_referenceV2D/D2V 
-# D2V generates a dict that, upon input of a level, cell, f_number
+# D2V generates a dict that, upon input of a level, cell, mode
 # gives the corresponding index in a vector
 # V2D generates a vector, with row i having the three numbers
-# level, cell, f_number corresponding to index i in the vector
+# level, cell, mode corresponding to index i in the vector
 # 
 # These methods work in all dimensions, and there are ones for both
 # full and sparse grids. 
@@ -53,7 +53,7 @@ function D2V{d,T<:Real}(D::Int, k::Int, n::Int,
 	cutoff		= get_cutoff(scheme, D, n)
 	size		= get_size(D, k, n; scheme=scheme)
 	vect		= Array{Float64}(size)
-	f_numbers	= ntuple(i-> k, D)
+	modes	= ntuple(i-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
 	for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
@@ -61,8 +61,8 @@ function D2V{d,T<:Real}(D::Int, k::Int, n::Int,
 
 		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
 		for cell in CartesianRange(ks)
-			for f_number in CartesianRange(f_numbers)
-				vect[j] = coeffs[level][cell][f_number]
+			for mode in CartesianRange(modes)
+				vect[j] = coeffs[level][cell][mode]
 				j+=1
 			end
 		end
@@ -74,7 +74,7 @@ end
 function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	coeffs		= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
-	f_numbers	= ntuple(q-> k, D)
+	modes	= ntuple(q-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
 	for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
@@ -83,9 +83,9 @@ function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
 		level_coeffs = Array{Array{Float64}}(ks) #all the coefficients at this level
 		for cell in CartesianRange(ks)
-			cell_coeffs = Array{Float64}(f_numbers)
-			for f_number in CartesianRange(f_numbers)
-				cell_coeffs[f_number] = vect[j]
+			cell_coeffs = Array{Float64}(modes)
+			for mode in CartesianRange(modes)
+				cell_coeffs[mode] = vect[j]
 				j+=1
 			end
 			level_coeffs[cell] = cell_coeffs
@@ -99,7 +99,7 @@ function D2Vref(D::Int, k::Int, n::Int; scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	size		= get_size(D, k, n; scheme=scheme)
 	dict		= Dict{NTuple{3,CartesianIndex{D}}, Int}()
-	f_numbers	= ntuple(q-> k, D)
+	modes	= ntuple(q-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
 	for level in CartesianRange(ls)
@@ -108,8 +108,8 @@ function D2Vref(D::Int, k::Int, n::Int; scheme="sparse")
 		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(ks)
-			for f_number in CartesianRange(f_numbers)
-				dict[(level, cell, f_number)] = j
+			for mode in CartesianRange(modes)
+				dict[(level, cell, mode)] = j
 				j+=1
 			end
 		end
@@ -121,7 +121,7 @@ function V2Dref(D::Int, k::Int, n::Int; scheme = "sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	size		= get_size(D, k, n; scheme=scheme)
 	vect		= Array{NTuple{3,CartesianIndex{D}}}(size)
-	f_numbers	= ntuple(q-> k, D)
+	modes	= ntuple(q-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1	
 	for level in CartesianRange(ls)
@@ -130,8 +130,8 @@ function V2Dref(D::Int, k::Int, n::Int; scheme = "sparse")
 		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(ks)
-			for f_number in CartesianRange(f_numbers)
-				vect[j] = (level, cell, f_number)
+			for mode in CartesianRange(modes)
+				vect[j] = (level, cell, mode)
 				j+=1
 			end
 		end
@@ -152,7 +152,7 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 	cutoff		= get_cutoff(scheme, D, n)
 	len			= get_size(D, k, n; scheme=scheme)
 	coeffs		= Array{Float64}(len)
-	f_numbers	= ntuple(i-> k, D)
+	modes	= ntuple(i-> k, D)
 	ls			= ntuple(i-> (n+1), D)
 	j = 1
 	for level in CartesianRange(ls)     # This really goes from 0 to l_i for each i,
@@ -161,8 +161,8 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 		ks = ntuple(i -> 1<<pos(level[i]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(ks)
-			for f_number in CartesianRange(f_numbers)
-				coeffs[j] = get_coefficient_DG(k, lvl, cell, f_number, f;
+			for mode in CartesianRange(modes)
+				coeffs[j] = get_coefficient_DG(k, lvl, cell, mode, f;
 												rel_tol=rel_tol, abs_tol=abs_tol, 
 												max_evals=max_evals)
 				j+=1

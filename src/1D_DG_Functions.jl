@@ -55,13 +55,13 @@ for i in 1:K_max
 end
 
 
-# This is the dg basis function corresponding to number f_number
-function h(k, f_number, x)
-	f_number<=k || throw(DomainError())
-	return array2poly((dg_coeffs[k])[f_number],x)
+# This is the dg basis function corresponding to number mode
+function h(k, mode, x)
+	mode<=k || throw(DomainError())
+	return array2poly((dg_coeffs[k])[mode],x)
 end
 
-function h(k, f_number)
-	f_number<=k || throw(DomainError())
-	return array2poly((dg_coeffs[k])[f_number])
+function h(k, mode)
+	mode<=k || throw(DomainError())
+	return array2poly((dg_coeffs[k])[mode])
 end
