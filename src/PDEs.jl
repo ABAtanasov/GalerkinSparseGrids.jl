@@ -17,6 +17,35 @@
 # The accuracy is limited only by functions in other scripts 
 # and ODE.jl
 
+# Construct the time evolution matrix given a laplacian and 
+# initial data given f0, v0
+function wave_data{A<:AbstractArray, T<:Real}(laplac::A, 
+							f0coeffs::Array{T,1}, v0coeffs::Array{T,1})
+	len = length(f0coeffs)
+	rows = rowvals(laplac)
+	vals = nonzeros(laplac)
+	
+	I = Int[]
+	J = Int[]
+	V = Float64[]
+	for col = 1:len
+		for i in nzrange(laplac, col)
+			row = rows[i]
+			val = vals[i]
+			push!(I,row+len)
+			push!(J,col)
+			push!(V,val)
+		end
+	end
+	for i = 1:len
+		push!(I, i)
+		push!(J, i+len)
+		push!(V, 1.0)
+	end
+	RHS = sparse(I, J, V, 2*len, 2*len, +)
+	y0 = Array{Float64}([i<=len ? f0coeffs[i] : v0coeffs[i-len] for i in 1:2*len])
+	return RHS, y0
+end
 
 # The reason we have a wave evolution in 1D is to test 
 # that the standard "position" and multiresolution "heirarchical"
@@ -34,18 +63,10 @@ function wave_evolve_1D(k::Int, max_level::Int,
 		throw(ArgumentError(:base))
 	end
 
-	len = get_size(1, k, max_level)
 	D_op = periodic_DLF_Matrix(k, max_level; base=base)
 	laplac= *(D_op,D_op)
-	RHS = spzeros(2*len, 2*len)
-
-	for i in len+1:2*len
-		for j in 1:len
-			RHS[i,j] = laplac[i-len,j]
-			RHS[j,j+len] = 1.0
-		end
-	end
-	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
+	
+	RHS, y0 = wave_data(laplac, f0coeffs, v0coeffs)
 	if order == "45"
 		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1])
 	elseif order == "78"
@@ -57,11 +78,7 @@ function wave_evolve_1D(k::Int, max_level::Int,
 end
 
 function norm_squared{T<:Real}(coeffs::Array{T})
-	sum = 0
-	for i in coeffs
-		sum += i^2
-	end
-	return sum
+	return sum(i^2 for i in coeffs)
 end
 
 function energy_func_1D(k, level,
@@ -90,28 +107,8 @@ function wave_evolve(D::Int, k::Int, n::Int,
 	f0coeffs = vcoeffs_DG(D, k, n, f0; scheme=scheme)
 	v0coeffs = vcoeffs_DG(D, k, n, v0; scheme=scheme)
 	laplac   = laplacian_matrix(D, k, n; scheme=scheme)
-	len 	 = length(f0coeffs)
-	I = Int[]
-	J = Int[]
-	V = Float64[]
 
-	for i in len+1:2*len
-		for j in 1:len
-			push!(I, i)
-			push!(J, j)
-			push!(V, laplac[i - len, j])
-		end
-	end
-	for j in 1:len
-		push!(I, j)
-		push!(J, j + len)
-		push!(V, 1.0)
-	end
-
-	RHS = sparse(I, J, V, 2*len, 2*len, +)
-
-	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
-
+	RHS, y0 = wave_data(laplac, f0coeffs, v0coeffs)
 	if order == "45"
 		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1]; kwargs...)
 	elseif order == "78"
@@ -122,15 +119,15 @@ function wave_evolve(D::Int, k::Int, n::Int,
 	return soln
 end
 
-function energy_func(D::Int, k::Int, n::Int,
-					 soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}};
+function energy_func{T<:Real}(D::Int, k::Int, n::Int,
+					 soln::Tuple{Array{T,1},Array{Array{T,1},1}};
 					 scheme = "sparse")
 
 	len 		= length(soln[1])
 	num_coeffs	= Int(round(length(soln[2][1])/2))
 	times 		= copy(soln[1])
-	energies	= Array{Float64}(len)
-	D_ops 		= grad_matrix(D, k, n; scheme=scheme)
+	energies	= Array{T}(len)
+	D_ops		= grad_matrix(D, k, n; scheme=scheme)
 
 	for i in 1:len
 		ux   = [*(D_ops[j], soln[2][i][1:num_coeffs]) for j in 1:D]

@@ -26,7 +26,7 @@ println("Test Passed.")
 print("Testing D2V and V2D Full Case 2D... ")
 
 for k in 1:5
-    for l in 1:4
+    for l in 1:3
         dict = coeffs_DG(2, k, l, x->sin(4*x[1]+x[2]); scheme="full")
         vect = D2V(2, k, l, dict; scheme="full")
         @test V2D(2, k, l, vect; scheme="full")==dict
@@ -34,7 +34,7 @@ for k in 1:5
 end
 
 for k in 1:5
-    for l in 1:4
+    for l in 1:3
         vect = vcoeffs_DG(2, k, l, x->sin(4*x[1]+x[2]); scheme="full")
         dict = V2D(2, k, l, vect; scheme="full")
         @test D2V(2, k, l, dict; scheme="full")==vect
@@ -48,7 +48,7 @@ println("Test Passed.")
 print("Testing D2V and V2D Sparse Case 2D... ")
 
 for k in 1:5
-    for l in 1:4
+    for l in 1:3
         dict = coeffs_DG(2, k, l, x->sin(4*x[1]+x[2]); scheme="sparse")
         vect = D2V(2, k, l, dict; scheme="sparse")
         @test V2D(2, k, l, vect; scheme="sparse")==dict
@@ -56,7 +56,7 @@ for k in 1:5
 end
 
 for k in 1:5
-    for l in 1:4
+    for l in 1:3
         vect = vcoeffs_DG(2, k, l, x->sin(4*x[1]+x[2]); scheme="sparse")
         dict= V2D(2, k, l, vect; scheme="sparse")
         @test D2V(2, k, l, dict; scheme="sparse")==vect

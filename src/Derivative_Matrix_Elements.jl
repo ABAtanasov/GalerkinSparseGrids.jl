@@ -27,6 +27,17 @@ function dh(k,mode,x)
 	return array2poly(symbolic_diff((dg_coeffs[k])[mode]),x)
 end
 
+function dleg{T<:Real}(mode::Int, x::T)
+	return sqrt(2.0)*dLegendreP(mode-1, 2*x-1) *2
+end
+
+function dbasis{T<:Real}(level::Int, cell::Int, mode::Int, x::T)
+	return dleg(mode, (1<<level)*x - (cell-1)) * (2.0)^(level/2) * (1<<level)
+end
+
+function dbasis(level::Int, cell::Int, mode::Int)
+	return x->dbasis(level, cell, mode, x)
+end
 
 #------------------------------------------------------
 # Shifted and scaled derivatives: v
@@ -86,15 +97,26 @@ end
 # < f_1 | D | f_2 > matrix elements
 #------------------------------------------------------
 
+# Matrix element of legendre basis on [-1, 1]
 function legendreDlegendre(mode1::Int, mode2::Int)
 	return inner_product(leg_coeffs[mode1], symbolic_diff(leg_coeffs[mode2]))
 end
 
+# Matrix element of position basis elements
+function legvDv(level, cell1, mode1, cell2, mode2;
+				rel_tol = REL_TOL, abs_tol=ABS_TOL, max_evals=MAX_EVALS)
+	if cell1 == cell2
+		return (1<<(level+1))*legendreDlegendre(mode1, mode2)
+	end
+	return 0.0
+end
 
+# Matrix element of DG basis on [-1, 1]
 function hDh(k::Int, mode1::Int, mode2::Int)
 	return inner_product(dg_coeffs[k][mode1], symbolic_diff(dg_coeffs[k][mode2]))
 end
 
+# Matrix element of hierarchical basis elements
 function vDv(k::Int, lvl1::Int, cell1::Int, mode1::Int, lvl2::Int, cell2::Int, mode2::Int;
 					rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
 	if lvl1 == lvl2

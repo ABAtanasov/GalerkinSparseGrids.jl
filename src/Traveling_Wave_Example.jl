@@ -54,7 +54,6 @@ end
 # The same as above, but using sin
 #------------------------------------------------------
 
-
 function sin_coeffs(k::Int, n::Int, m::Array{Int,1};
 					scheme="sparse", phase=0.0, A=1.0)
 	return cos_coeffs(k, n, m; scheme=scheme, phase=phase-pi/2, A=A)
@@ -82,40 +81,14 @@ end
 # between time0 and time1
 # using an ODE solver of type 'order' (default 45)
 #------------------------------------------------------
-
 function traveling_wave_solver(k::Int, n::Int, m::Array{Int,1}, time0::Real, time1::Real; 
 								scheme="sparse", phase=0.0, A=1.0, order="45", kwargs...)
 	D = length(m)
 	f0coeffs, v0coeffs = traveling_wave(k, n, m; scheme=scheme, phase=phase, A=A)
-	len = length(f0coeffs)
-	
 	laplac = laplacian_matrix(D, k, n; scheme=scheme)
 	
-	I = Int[]
-	J = Int[]
-	V = Float64[]
-	rows = rowvals(laplac)
-	vals = nonzeros(laplac)
-	for col = 1:len
-		for i in nzrange(laplac, col)
-			row = rows[i]
-			val = vals[i]
-			push!(I,row+len)
-			push!(J,col)
-			push!(V,val)
-		end
-	end
+	RHS, y0 = wave_data(laplac, f0coeffs, v0coeffs)
 
-	for i = 1:len
-		push!(I, i)
-		push!(J, i+len)
-		push!(V, 1.0)
-	end
-
-	RHS = sparse(I, J, V, 2*len, 2*len, +)
-	dropzeros!(RHS)
-
-	y0 = Array{Float64}([i<=len?f0coeffs[i]:v0coeffs[i-len] for i in 1:2*len])
 	if order == "78"
 		soln=ode78((t,x)->*(RHS,x), y0, [time0,time1]; kwargs...)
 	elseif order == "45"

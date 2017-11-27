@@ -5,7 +5,6 @@
 #
 #------------------------------------------------------------
 
-
 using Cubature
 
 const REL_TOL = 1.0e-8
@@ -66,13 +65,9 @@ end
 #------------------------------------------------------
 # This function is just for special boundary cases to make sure
 # that the number of coefficients for the constant & linear functions
-# doesn't become non-positive
+# doesn't become negative
 function pos(x::Int)
-	if x >= 0
-		return x
-	else
-		return 0
-	end
+	x < 0 ? zero(x) : x
 end
 
 # Given a 1-D position and level, this tells us which cell 
