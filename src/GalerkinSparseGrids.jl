@@ -18,7 +18,7 @@ include("Derivative_Precompute.jl")		# Precomputing derivative matrix for coeff 
 include("1D_Derivative.jl")				# Constructing ideal 1D derivative matrix using boundary terms
 include("Multidim_Derivative.jl")		# Multidimensional DG Derivatives in full & sparse bases
 include("PDEs.jl")						# Solving the n-D wave equation with periodic boundary
-include("Nodal_Basis.jl")			# Construct 1D nodal basis for multiplication
+
 
 include("Error_Measure.jl")				# Monte Carlo Methods to measure error
 include("Tensor_Construct.jl")			# Quickly calculates coeffs of simple tensors of functions
