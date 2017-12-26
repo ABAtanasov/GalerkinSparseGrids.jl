@@ -157,9 +157,9 @@ Conversely, If we wanted to see what index we should look at to get the coeffici
 ```julia
 level 	= CartesianIndex{2}((4, 4))
 cell 	= CartesianIndex{2}((1, 2))
-mode = CartesianIndex{2}((2, 3))
-DV = D2Vref(D, k, n; scheme="sparse")
-DV[(level, cell, mode)]
+mode 	= CartesianIndex{2}((2, 3))
+DV 	= D2Vref(D, k, n; scheme="sparse")
+index	= DV[(level, cell, mode)]
 ```
 
 ### Differentiation
@@ -167,8 +167,7 @@ DV[(level, cell, mode)]
 The higher dimensional full and sparse derivative operators are implemented in `Multidim_Derivative.jl`. Here, `D`, `k`, and `n` are as before, and `i` specifies the axis along which the derivative is taken.
 
 ```julia
-D_matrix(D::Int, i::Int, k::Int, n::Int; 
-		 scheme="sparse")
+D_matrix(D::Int, i::Int, k::Int, n::Int; scheme="sparse")
 ```
 	
 We also have the gradient vector that is `D_matrix` over all `i`, and the Laplacian:
