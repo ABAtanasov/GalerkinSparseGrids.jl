@@ -63,16 +63,10 @@ end
 #------------------------------------------------------
 # Methods for obtaining the coefficients
 #------------------------------------------------------
-# This function is just for special boundary cases to make sure
-# that the number of coefficients for the constant & linear functions
-# doesn't become negative
-function pos(x::Int)
-	x < 0 ? zero(x) : x
-end
 
 # Given a 1-D position and level, this tells us which cell 
 # that position belongs to, at that level resolution
-function hat_index(x::Real,l::Int)
+function cell_index(x::Real,l::Int)
 	if l <= 1
 		return 1
 	end
@@ -125,7 +119,7 @@ end
 function coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	coeffs		= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
-	modes	= ntuple(i-> k, D)
+	modes		= ntuple(i-> k, D)
 	ls			= ntuple(i->(n+1),D)
 
 	for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
@@ -161,7 +155,7 @@ function reconstruct_DG{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{F
 
 	for key in keys(coeffs)
 		level = ntuple(i->key[i]-1,D)
-		cell = CartesianIndex{D}(ntuple(i->hat_index(xs[i],level[i]),D))
+		cell = CartesianIndex{D}(ntuple(i->cell_index(xs[i],level[i]),D))
 		coeff = coeffs[key][cell]::Array{T,D}
 		@inbounds for mode in CartesianRange(modes)
 			value += coeff[mode]*V(k, level, cell, mode, xs)
@@ -170,28 +164,3 @@ function reconstruct_DG{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{F
 	return value
 end
 
-
-# Can be made more efficient, but this function does not get much use currently
-# TODO: If this averaging becomes advantageous, speed up the evaluation
-function reconstruct_DG_averaged{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{Float64,D},D}},
-									xs::Array{T,1}; boundary_dist=0.01)
-	n 			= maximum((x->maximum(x.I)).(collect(keys(coeffs))))
-	h 			= 1/(1<<n)
-	f0			= x->reconstruct_DG(coeffs, x)
-	fvals 		= []
-	
-	for a in 1:D
-		(xs[a] <= boundary_dist || xs[a] >= 1 - boundary_dist) && continue
-		x_modh = xs[a] % h
-		if (x_modh <= boundary_dist || x_modh >= h-boundary_dist)
-			xp = setindex!(copy(xs), xs[a]+h, a)
-			xm = setindex!(copy(xs), xs[a]-h, a)
-			(xp[a] > 1 || xm[a] < 0) && continue
-			val = 0.5*(f0(xp) + f0(xm))
-			push!(fvals, val)
-		end
-	end
-	
-	length(fvals) == 0 && return reconstruct_DG(coeffs, xs)
-	return mean(fvals)
-end

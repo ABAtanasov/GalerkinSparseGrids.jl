@@ -189,7 +189,7 @@ function reconstruct_hat{D,T<:Real}(coefficients::Dict{CartesianIndex{D},
 	value = 0.0
 	for key in keys(coefficients)	#For every level that has coefficients
 		level = ntuple(i->key[i]-2, D)	# Get the actual level corresponding to that CartesianIndex
-		cell = ntuple(i->hat_index(xs[i], level[i]), D)  # The relevant cell for x
+		cell = ntuple(i->cell_index(xs[i], level[i]), D)  # The relevant cell for x
 		value += coefficients[key][CartesianIndex{D}(cell)]*hat(level, cell, xs)
 		#get the appropriate coefficient and evaluate the appropriate hat at x
 	end

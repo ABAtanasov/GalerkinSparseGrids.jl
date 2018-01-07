@@ -3,4 +3,5 @@
 *.jl.mem
 *.ipynb
 *.DS_STORE
+*old.jl
 /src/animation.jl

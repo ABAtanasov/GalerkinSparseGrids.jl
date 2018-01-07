@@ -18,19 +18,19 @@ for i in 0:10
 end
 println("Tests Passed.")
 
-print("Testing hat_index function... ")
-import GalerkinSparseGrids.hat_index
+print("Testing cell_index function... ")
+import GalerkinSparseGrids.cell_index
 for l in 1:5
-	@test hat_index(1.3,l)==(1<<(l-1))
+	@test cell_index(1.3,l)==(1<<(l-1))
 end
 for l in 1:5
-	@test hat_index(.01,l)==1
+	@test cell_index(.01,l)==1
 end
-@test hat_index(.3,1)==1
-@test hat_index(.3,2)==1
-@test hat_index(.3,3)==2
-@test hat_index(.3,4)==3
-@test hat_index(.3,5)==5
+@test cell_index(.3,1)==1
+@test cell_index(.3,2)==1
+@test cell_index(.3,3)==2
+@test cell_index(.3,4)==3
+@test cell_index(.3,5)==5
 println("Tests Passed.")
 
 import GalerkinSparseGrids.inner_product

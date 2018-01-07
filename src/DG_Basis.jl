@@ -168,6 +168,15 @@ function gram_schmidt_rev{T<:Real}(Q_initial::Array{Array{T,1},1})
 	return Q_final
 end
 
+#------------------------------------------------------
+# TODO: Lastly, perform a rotation so that there
+# is only one 'dicontinuous' basis element,
+# namely the last one
+#------------------------------------------------------
+
+function rotate_discontinuity{T<:Real}(Q_initial::Array{Array{T,1},1}) 
+	# To be implemented
+end
 
 #------------------------------------------------------
 # All together, for the final result:
@@ -180,3 +189,5 @@ function dg_basis(k::Int)
 	Q = gram_schmidt_rev(Q)
 	return Q
 end
+
+

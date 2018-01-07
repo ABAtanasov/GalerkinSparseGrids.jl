@@ -34,10 +34,10 @@ function D_matrix(k::Int, level::Int)
 						push!(J, j)
 						push!(V, ans)
 					end
-					j+=1
+					j += 1
 				end
 			end
-			i+=1
+			i += 1
 		end
 	end
 	return sparse(I, J, V, k * (1<<level), k * (1<<level), +)
@@ -90,10 +90,10 @@ function periodic_LF_matrix(k::Int, level::Int; alpha::Real = 0)
 						push!(J, j)
 						push!(V, ans)
 					end
-					j+=1
+					j += 1
 				end
 			end
-			i+=1
+			i += 1
 		end
 	end
 	return sparse(I, J, V, k * (1<<level), k * (1<<level), +)

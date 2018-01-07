@@ -7,7 +7,7 @@
 
 # Efficiency criticality: HIGH
 # Matrix computations are only performed once, 
-# but this is currently the bottleneck
+# but this can be the main bottleneck if not done right
 
 # Accuracy criticality: HIGH
 # Critical for accurate PDE evolution
@@ -57,6 +57,9 @@ end
 
 
 function D_matrix(D::Int, i::Int, k::Int, n::Int; scheme="sparse")
+	# Precompute the 1D derivatve matrix elements as global variables
+	# if they are not yet formed
+	precompute_diffs()
 	VD = V2Dref(D, k, n; scheme=scheme)
 	DV = D2Vref(D, k, n; scheme=scheme)
 	return D_matrix(i, k, n, VD, DV; scheme=scheme)
@@ -71,7 +74,7 @@ function laplacian_matrix(D::Int, k::Int, n::Int; scheme="sparse")
 	laplac = spzeros(len, len)
 	for i in 1:D
 		D_op = D_matrix(D, i, k, n; scheme=scheme)
-		laplac += *(D_op,D_op)
+		laplac += *(D_op, D_op)
 	end
 	return laplac
 end

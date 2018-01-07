@@ -63,7 +63,7 @@ function D2V{d,T<:Real}(D::Int, k::Int, n::Int,
 		for cell in CartesianRange(ks)
 			for mode in CartesianRange(modes)
 				vect[j] = coeffs[level][cell][mode]
-				j+=1
+				j += 1
 			end
 		end
 	end
@@ -74,7 +74,7 @@ end
 function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	coeffs		= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
-	modes	= ntuple(q-> k, D)
+	modes		= ntuple(q-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
 	for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
@@ -86,7 +86,7 @@ function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 			cell_coeffs = Array{Float64}(modes)
 			for mode in CartesianRange(modes)
 				cell_coeffs[mode] = vect[j]
-				j+=1
+				j += 1
 			end
 			level_coeffs[cell] = cell_coeffs
 		end
@@ -99,7 +99,7 @@ function D2Vref(D::Int, k::Int, n::Int; scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	size		= get_size(D, k, n; scheme=scheme)
 	dict		= Dict{NTuple{3,CartesianIndex{D}}, Int}()
-	modes	= ntuple(q-> k, D)
+	modes		= ntuple(q-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
 	for level in CartesianRange(ls)
@@ -110,7 +110,7 @@ function D2Vref(D::Int, k::Int, n::Int; scheme="sparse")
 		for cell in CartesianRange(ks)
 			for mode in CartesianRange(modes)
 				dict[(level, cell, mode)] = j
-				j+=1
+				j += 1
 			end
 		end
 	end
@@ -132,7 +132,7 @@ function V2Dref(D::Int, k::Int, n::Int; scheme = "sparse")
 		for cell in CartesianRange(ks)
 			for mode in CartesianRange(modes)
 				vect[j] = (level, cell, mode)
-				j+=1
+				j += 1
 			end
 		end
 	end
@@ -144,7 +144,6 @@ end
 # Let's now make the coefficient operators work on
 # and return vectors
 #------------------------------------------------------
-
 function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 								rel_tol = REL_TOL, abs_tol = ABS_TOL,
 								max_evals=MAX_EVALS,
@@ -152,7 +151,7 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 	cutoff		= get_cutoff(scheme, D, n)
 	len			= get_size(D, k, n; scheme=scheme)
 	coeffs		= Array{Float64}(len)
-	modes	= ntuple(i-> k, D)
+	modes		= ntuple(i-> k, D)
 	ls			= ntuple(i-> (n+1), D)
 	j = 1
 	for level in CartesianRange(ls)     # This really goes from 0 to l_i for each i,
@@ -165,7 +164,7 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 				coeffs[j] = get_coefficient_DG(k, lvl, cell, mode, f;
 												rel_tol=rel_tol, abs_tol=abs_tol, 
 												max_evals=max_evals)
-				j+=1
+				j += 1
 			end
 		end
 	end

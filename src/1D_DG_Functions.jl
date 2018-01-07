@@ -20,10 +20,11 @@ const K_max = 10;
 	k = div(n,2)
 	s = zero(T)
 	xi = one(T)
+	sgn = sign(x)
 	@inbounds for i in k:-1:1
 		# Using Horner's method 
 		s *= x
-		s += v[i] + flipsign(v[i+k], x)
+		s += v[i] + flipsign(v[i+k], x)#v[i+k]*sign(x)#
 	end
 	return s
 end
@@ -104,7 +105,7 @@ function pos_vcoeffs_DG(k::Int, level::Int, f::Function;
 			left_bound  = (cell-1)/(1<<level)
 			right_bound = (cell)/(1<<level)
 			vcoeffs[i]  = hquadrature(fcn, left_bound, right_bound; abstol=abs_tol)[1]
-			i+=1
+			i += 1
 		end
 	end
 	return vcoeffs
@@ -248,7 +249,7 @@ function hier2pos(k::Int, max_level::Int; abs_tol = ABS_TOL)
 						push!(V, ans[i])
 					end
 				end
-				j+=1
+				j += 1
 			end
 		end
 	end
