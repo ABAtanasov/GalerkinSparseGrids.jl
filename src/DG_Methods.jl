@@ -1,9 +1,9 @@
-#------------------------------------------------------------
+# -----------------------------------------------------------
 #
 # Methods for DG interpolation using readable
 # dictionary-style structs
 #
-#------------------------------------------------------------
+# -----------------------------------------------------------
 
 using Cubature
 
@@ -84,13 +84,13 @@ end
 function inner_product{D}(f::Function, g::Function, lvl::NTuple{D,Int}, cell::CartesianIndex{D};
 								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
 	if D < 2
-		xmin = (cell[1]-1)/(1<<(pos(lvl[1]-1)))
-		xmax = (cell[1])/(1<<(pos(lvl[1]-1)))
+		xmin = (cell[1]-1)/(1<<max(0,lvl[1]-1))
+		xmax = (cell[1])/(1<<max(0,lvl[1]-1))
 		h = (x-> f([x])*g([x]))
 		val = hquadrature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
 	else
-		xmin = ntuple(i-> (cell[i]-1)/(1<<(pos(lvl[i]-1))), D)
-		xmax = ntuple(i-> (cell[i])/(1<<(pos(lvl[i]-1))), D)
+		xmin = ntuple(i-> (cell[i]-1)/(1<<max(0,lvl[i]-1)), D)
+		xmax = ntuple(i-> (cell[i])/(1<<max(0,lvl[i]-1)), D)
 		h = (x-> f(x)*g(x))
 		val = hcubature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
 	end
@@ -117,15 +117,15 @@ end
 # Full or Sparse Galerkin Coefficients in n-D
 #------------------------------------------------------
 function coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")
-	cutoff		= get_cutoff(scheme, D, n)
-	coeffs		= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
-	modes		= ntuple(i-> k, D)
-	ls			= ntuple(i->(n+1),D)
+	cutoff	= get_cutoff(scheme, D, n)
+	coeffs	= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
+	modes	= ntuple(i-> k, D)
+	ls		= ntuple(i->(n+1),D)
 
 	for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
 		cutoff(level) && continue
 		
-		cells = ntuple(i -> 1<<pos(level[i]-2), D)
+		cells = ntuple(i -> 1<<max(0, level[i]-2), D)
 		level_coeffs = Array{Array{Float64,D}}(cells)
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(cells)
@@ -141,16 +141,16 @@ function coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")
 end
 
 
-#------------------------------------------------------------
+# -----------------------------------------------------------
 # Reconstruction (full and sparse) in n-D from a Dict of
 # coefficients
-#------------------------------------------------------------
+# -----------------------------------------------------------
 
 function reconstruct_DG{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{Float64,D},D}},
 									xs::Array{T,1})
 	
-	value		= zero(T)
-	k			= size(first(values(coeffs))[1])[1]
+	value	= zero(T)
+	k		= size(first(values(coeffs))[1])[1]
 	modes	= ntuple(i-> k ,D)
 
 	for key in keys(coeffs)

@@ -1,4 +1,4 @@
-#------------------------------------------------------------
+# -----------------------------------------------------------
 #
 # Using boundary terms and integration (summation) by parts
 # to construct more accurate derivative matrices for time
@@ -7,7 +7,7 @@
 # All derivatives are computed here in pos basis first
 # Then conjugated into hier basis
 #
-#------------------------------------------------------------
+# -----------------------------------------------------------
 
 
 #------------------------------------------------------

@@ -1,9 +1,9 @@
-#------------------------------------------------------------
+# -----------------------------------------------------------
 #
 # Construction of multidimensional DG derivative matrices
 # based on the (precomputed) 1-D derivative matrix
 #
-#------------------------------------------------------------
+# -----------------------------------------------------------
 
 # Efficiency criticality: HIGH
 # Matrix computations are only performed once, 

@@ -95,7 +95,7 @@ end
 # a specific level and cell in a position (lagrange basis).
 # This function's implementation is multi-dimensional
 function get_position{D}(level::CartesianIndex{D},cell::CartesianIndex{D})
-	xs = [(0.5)^pos(level[i]-2) *(2*cell[i]-1) for i in 1:D]
+	xs = [(2*cell[i]-1)/(1<<max(0, level[i]-2)) for i in 1:D]
 	return xs
 end
 
@@ -168,7 +168,7 @@ function coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
 	for level in CartesianRange(ls)
 		cutoff(level) && continue
 
-		ks = ntuple(i -> 1<<pos(level[i]-3), D)  
+		ks = ntuple(i -> 1<<max(0, level[i]-3), D)  
 		level_coeffs = zeros(Float64, ks)
 		for cell in CartesianRange(ks)
 			x = get_position(level, cell) 

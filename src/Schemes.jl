@@ -20,7 +20,7 @@
 
 function get_cutoff(scheme::String, D::Int, n::Int)
 	if scheme == "sparse"
-		return x -> (csum(x) > n+D)
+		return x -> (sum(x.I) > n+D)
 	elseif scheme == "full"
 		return x -> false
 	else

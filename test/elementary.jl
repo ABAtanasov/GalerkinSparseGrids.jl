@@ -8,16 +8,6 @@ using Cubature
 
 ε = eps(Float64)
 
-import GalerkinSparseGrids.pos
-print("Testing pos function... ")
-for i in -10:0
-	@test pos(i)==0
-end
-for i in 0:10
-	@test pos(i)==i
-end
-println("Tests Passed.")
-
 print("Testing cell_index function... ")
 import GalerkinSparseGrids.cell_index
 for l in 1:5

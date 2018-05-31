@@ -26,7 +26,7 @@ function tensor_construct(D::Int, k::Int, n::Int, coeffArray; scheme="sparse")
 	for level in CartesianRange(ls)
 		cutoff(level) && continue
 
-		ks = ntuple(i -> 1<<pos(level[i]-2), D)  
+		ks = ntuple(i -> 1<<max(0, level[i]-2), D)  
 		level_coeffs = Array{Array{Float64,D}}(ks)
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(ks)

@@ -1,9 +1,9 @@
-#------------------------------------------------------------
+# -----------------------------------------------------------
 #
 # Constructing the matrix elements of the derivative
 # operator in the 1-D DG Basis
 #
-#------------------------------------------------------------
+# -----------------------------------------------------------
 
 # Efficiency criticality: LOW
 # Computations only performed once
@@ -66,8 +66,8 @@ end
 # TODO: There is a way to do this all symbolically, with no use for numerics
 function inner_product1D(f::Function, g::Function, lvl::Int, cell::Int; 
 								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
-	xmin = (cell-1)/(1<<(pos(lvl-1)))
-	xmax = (cell)/(1<<(pos(lvl-1)))
+	xmin = (cell-1)/(1<<max(0, lvl-1))
+	xmax = (cell)/(1<<max(0, lvl-1))
 	h = (x-> f(x)*g(x))
 	(val, err) = hquadrature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)
 	return val 
@@ -124,7 +124,7 @@ function vDv(k::Int, lvl1::Int, cell1::Int, mode1::Int, lvl2::Int, cell2::Int, m
 			return 2*legendreDlegendre(mode1, mode2)
 		end
 		if cell1 == cell2
-			return hDh(k, mode1, mode2)*(1<<pos(lvl1))
+			return hDh(k, mode1, mode2)*(1<<max(0, lvl1))
 		end
 		return 0.0
 	end

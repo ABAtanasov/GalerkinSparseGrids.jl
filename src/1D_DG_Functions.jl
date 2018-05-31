@@ -1,8 +1,8 @@
-#------------------------------------------------------------
+# -----------------------------------------------------------
 #
 # Evaluating the 1D Galerkin Basis functions
 #
-#------------------------------------------------------------
+# -----------------------------------------------------------
 
 const K_max = 10;
 
@@ -239,7 +239,7 @@ function hier2pos(k::Int, max_level::Int; abs_tol = ABS_TOL)
 	J = Int[]
 	V = Float64[]
 	for level in 0:max_level
-		for cell in 1:(1<<pos(level-1))
+		for cell in 1:(1<<max(0, level-1))
 			for mode in 1:k
 				ans = hier2pos(k, max_level, level, cell, mode)
 				for i in 1:length(ans)

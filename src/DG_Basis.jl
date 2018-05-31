@@ -1,8 +1,8 @@
-#------------------------------------------------------------
+# -----------------------------------------------------------
 #
 # Constructing the Hierarchical Discontinuous Galerkin Basis
 #
-#------------------------------------------------------------
+# -----------------------------------------------------------
 
 # Efficiency criticality: LOW
 # Computations only performed once
@@ -97,9 +97,9 @@ end
 # so that I can avoid any numerical error in this process
 
 
-#------------------------------------------------------------
+# -----------------------------------------------------------
 # Making a basis of functions have the first k moments vanish
-#------------------------------------------------------------
+# -----------------------------------------------------------
 
 function orthogonalize_1{T<:Real}(Q_initial::Array{Array{T,1},1})
 	n = length(Q_initial[1])

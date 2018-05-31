@@ -1,0 +1,11 @@
+# EditorConfig for better formatting on github
+# This file is irrelevant to the functionality of the project itself
+
+root = true
+
+[*.jl]
+charset = utf-8
+indent_style = tab
+indent_size = 4
+trim_trailing_whitespace = true
+

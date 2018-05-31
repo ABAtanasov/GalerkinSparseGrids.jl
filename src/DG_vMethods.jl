@@ -1,4 +1,4 @@
-#-------------------------------------------------------------------
+# ------------------------------------------------------------------
 # It is advantageous to have the coeffs as
 # one single vector in order to make use of BLAS
 # and related libraries when defining operators on 
@@ -25,7 +25,7 @@
 # The entire script culminates in a final result: a matrix 
 # representation of the derivative operator 
 # (both in full and sparse bases)
-#-------------------------------------------------------------------
+# ------------------------------------------------------------------
 
 
 # Calculates the exact dimension of interpolating
@@ -39,7 +39,7 @@ function get_size(D::Int, k::Int, n::Int; scheme="sparse")
 	for level in CartesianRange(ls)
 		cutoff(level) && continue
 
-		ks = ntuple(q -> 1<<pos(level[q]-2), D)
+		ks = ntuple(q -> 1<<max(0, level[q]-2), D)
 		size += prod(ks)*k^D
 	end
 	return size
@@ -59,7 +59,7 @@ function D2V{d,T<:Real}(D::Int, k::Int, n::Int,
 	for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
 		cutoff(level) && continue
 
-		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
+		ks = ntuple(q -> 1<<max(0, level[q]-2), D)  #This sets up a specific k+1 vector
 		for cell in CartesianRange(ks)
 			for mode in CartesianRange(modes)
 				vect[j] = coeffs[level][cell][mode]
@@ -80,7 +80,7 @@ function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 	for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
 		cutoff(level) && continue
 
-		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
+		ks = ntuple(q -> 1<<max(0, level[q]-2), D)  #This sets up a specific k+1 vector
 		level_coeffs = Array{Array{Float64}}(ks) #all the coefficients at this level
 		for cell in CartesianRange(ks)
 			cell_coeffs = Array{Float64}(modes)
@@ -105,7 +105,7 @@ function D2Vref(D::Int, k::Int, n::Int; scheme="sparse")
 	for level in CartesianRange(ls)
 		cutoff(level) && continue
 
-		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
+		ks = ntuple(q -> 1<<max(0, level[q]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(ks)
 			for mode in CartesianRange(modes)
@@ -127,7 +127,7 @@ function V2Dref(D::Int, k::Int, n::Int; scheme = "sparse")
 	for level in CartesianRange(ls)
 		cutoff(level) && continue
 
-		ks = ntuple(q -> 1<<pos(level[q]-2), D)  #This sets up a specific k+1 vector
+		ks = ntuple(q -> 1<<max(0, level[q]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(ks)
 			for mode in CartesianRange(modes)
@@ -157,7 +157,7 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 	for level in CartesianRange(ls)     # This really goes from 0 to l_i for each i,
 		cutoff(level) && continue
 
-		ks = ntuple(i -> 1<<pos(level[i]-2), D)  #This sets up a specific k+1 vector
+		ks = ntuple(i -> 1<<max(0, level[i]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(ks)
 			for mode in CartesianRange(modes)
