@@ -12,9 +12,9 @@
 # Critical for accurate PDE evolution
 
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # 1-D Derivatives
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function dLegendreP(k,x)
 	k<=K_max || throw(DomainError())
@@ -39,9 +39,9 @@ function dbasis(level::Int, cell::Int, mode::Int)
 	return x->dbasis(level, cell, mode, x)
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Shifted and scaled derivatives: v
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function dv(k::Int, level::Int, cell::Int, mode::Int, x::Real)
 	if level==0 # At the base level, we are not discontinuous, and we simply
@@ -59,9 +59,9 @@ function dv(k::Int, level::Int, cell::Int, mode::Int)
 end
 
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Numerical Inner Product
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # TODO: There is a way to do this all symbolically, with no use for numerics
 function inner_product1D(f::Function, g::Function, lvl::Int, cell::Int; 
@@ -73,9 +73,9 @@ function inner_product1D(f::Function, g::Function, lvl::Int, cell::Int;
 	return val 
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Taking Derivative of Array Representing Polynomial
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function symbolic_diff{T<:Real}(v::Array{T})
 	n=length(v)
@@ -93,9 +93,9 @@ function symbolic_diff{T<:Real}(v::Array{T})
 	return ans
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # < f_1 | D | f_2 > matrix elements
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # Matrix element of legendre basis on [-1, 1]
 function legendreDlegendre(mode1::Int, mode2::Int)
@@ -143,9 +143,9 @@ function vDv(k::Int, lvl1::Int, cell1::Int, mode1::Int, lvl2::Int, cell2::Int, m
 
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # < f_1 | D | f_2 > for a specific f_2 over all f_1
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function diff_basis_DG(k::Int, level::Int, cell::Int, mode::Int)
 	dcoeffs = Array{Float64}((level+1, k))

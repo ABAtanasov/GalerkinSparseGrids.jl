@@ -1,9 +1,9 @@
-#------------------------------------------------------
+# -----------------------------------------------------
 #
 # This script contains all methods involving the 
 # original non-Galerkin hat basis of Griebel et al. 
 #
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # Efficiency criticality: MEDIUM
 # Important for calculating error for testing package
@@ -12,9 +12,9 @@
 # from hcubature with more efficient method
 
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Defining the Hat Functions
-#------------------------------------------------------
+# -----------------------------------------------------
 
 #Our original function which we will shift and scale
 function hat(x::Real)
@@ -60,9 +60,9 @@ function delta{D,T<:Real}(ls::NTuple{D,Int}, is::NTuple{D,Int}, xs::NTuple{D,T})
 end
 
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Lagrange Basis
-#------------------------------------------------------
+# -----------------------------------------------------
 function standard_coeffs{D}(f::Function, ls::NTuple{D,Int})
 	positions = ntuple(i -> (1<<ls[i])+1,D)
 	coeffs = zeros(Float64, positions)
@@ -84,10 +84,10 @@ function standard_reconstruct{D,T<:Real}(coefficients::AbstractArray, ls::NTuple
 end
 
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Methods for obtaining position (lagrange basis) 
 # coefficients
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # Given a level and cell describing a sub-interval
 # gives the x-coordinate for the center of that sub-interval.
@@ -156,9 +156,9 @@ function get_coefficient{D,T<:Real}(f::Function,
 	end
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Sparse Coefficients in n-D
-#------------------------------------------------------
+# -----------------------------------------------------
 function coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
 	
 	cutoff = get_cutoff(scheme, D, n)
@@ -179,9 +179,9 @@ function coeffs_hat(D::Int, n::Int, f::Function; scheme = "sparse")
 	return coeffs
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Reconstructing from Coefficients in n-D
-#------------------------------------------------------
+# -----------------------------------------------------
 # this will work for both sparse and full cases
 # it also generalizes decently nicely to the DG case
 function reconstruct_hat{D,T<:Real}(coefficients::Dict{CartesianIndex{D},

@@ -140,10 +140,10 @@ function V2Dref(D::Int, k::Int, n::Int; scheme = "sparse")
 end
 
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Let's now make the coefficient operators work on
 # and return vectors
-#------------------------------------------------------
+# -----------------------------------------------------
 function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 								rel_tol = REL_TOL, abs_tol = ABS_TOL,
 								max_evals=MAX_EVALS,

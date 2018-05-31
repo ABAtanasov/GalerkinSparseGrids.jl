@@ -5,7 +5,7 @@
 
 This [Julia language](https://julialang.org/) package is intended for accurately and efficiently solving hyperbolic partial differential equations in higher dimensions, where the curse of dimensionality restricts the computational feasibility of discretization of space using regular grid methods. Instead, we employ the sparse grid construction as in [Bungartz & Griebel](http://wissrech.ins.uni-bonn.de/research/pub/griebel/sparsegrids.pdf).
 
-The ambitious long-term goal of this package is the efficient and accurate numerical solution of Einstein's equations in full 3+1 dimensional space under conditions of very low to no symmetry. Such simulations would be a great step forward in many diverse areas of strong gravity, including the modeling of dark matter, dark energy, and gravitational wave cosmology. We are not there yet, but already progress has been made in the simple cases such as wave evolution and initial condition interpolation. 
+The ambitious long-term goal of this package is the efficient and accurate numerical solution of Einstein's equations in full 3+1 dimensional space under conditions of very low to no symmetry. Such simulations would be a great step forward in many diverse areas of strong gravity, including the modeling of dark matter, dark energy, and gravitational wave cosmology. We are not there yet, but we have already made progress in the simpler cases of transport and wave equation evolution and high-dimensional interpolation of initial conditions. 
 
 In order to make full anisotropic gravitational evolution a reality, several necessary additions are in the progress of being implemented:
 
@@ -155,10 +155,10 @@ VD[10]
 Conversely, If we wanted to see what index we should look at to get the coefficient for `(level, cell, mode) = ((4,4), (1,2), (2, 3))`, the code would be
 
 ```julia
-level 	= CartesianIndex{2}((4, 4))
-cell 	= CartesianIndex{2}((1, 2))
-mode 	= CartesianIndex{2}((2, 3))
-DV 	= D2Vref(D, k, n; scheme="sparse")
+level	= CartesianIndex{2}((4, 4))
+cell	= CartesianIndex{2}((1, 2))
+mode	= CartesianIndex{2}((2, 3))
+DV  	= D2Vref(D, k, n; scheme="sparse")
 index	= DV[(level, cell, mode)]
 ```
 

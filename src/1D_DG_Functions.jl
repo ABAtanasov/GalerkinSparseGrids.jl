@@ -68,11 +68,11 @@ function h(k, mode)
 	return array2poly((dg_coeffs[k])[mode])
 end
 
-#-----------------------------------------------
+# ----------------------------------------------
 #
 # Methods relating to the 1D Position Basis:
 #
-#-----------------------------------------------
+# ----------------------------------------------
 
 # Legendre polynomial on [0, 1]
 function leg{T<:Real}(mode::Int, x::T)
@@ -111,9 +111,9 @@ function pos_vcoeffs_DG(k::Int, level::Int, f::Function;
 	return vcoeffs
 end
 
-#-----------------------------------------------
+# ----------------------------------------------
 # Building the hier2pos matrix:
-#-----------------------------------------------
+# ----------------------------------------------
 
 # Given an array of the type above, of coefficients
 # for both both x^k and |x|^k, then given a choice of

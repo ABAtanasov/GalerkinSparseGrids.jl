@@ -8,9 +8,9 @@
 # Computations only performed once
 
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Defining the Inner Product
-#------------------------------------------------------
+# -----------------------------------------------------
 
 
 
@@ -59,9 +59,9 @@ function inner_product{T<:Real}(v1::Array{T},j::Int) #we consider x^(j-1)
     return value
 end
 
-#-------------------------------------------------------
+# ------------------------------------------------------
 # Defining Gram-Schmidt and forming Legendre Polynomials
-#-------------------------------------------------------
+# ------------------------------------------------------
 
 # The gram schmidt process on a set of vectors
 # I think using an array of arrays is easiest here
@@ -120,9 +120,9 @@ function orthogonalize_1{T<:Real}(Q_initial::Array{Array{T,1},1})
 	return Q_final
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Make some functions have higher vanishing moments
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # This function will make k-1 of the basis vectors orth to x^k, 
 # k-2 to x^k+1  all the way to 1 vector orth to x^2k-2
@@ -168,19 +168,19 @@ function gram_schmidt_rev{T<:Real}(Q_initial::Array{Array{T,1},1})
 	return Q_final
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # TODO: Lastly, perform a rotation so that there
 # is only one 'dicontinuous' basis element,
 # namely the last one
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function rotate_discontinuity{T<:Real}(Q_initial::Array{Array{T,1},1}) 
 	# To be implemented
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # All together, for the final result:
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function dg_basis(k::Int)
 	Q = [[j==(i-k)?1.0:0.0 for i in 1:2*k] for j in 1:k]

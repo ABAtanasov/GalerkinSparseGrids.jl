@@ -11,18 +11,18 @@ const REL_TOL = 1.0e-8
 const ABS_TOL = 1.0e-12
 const MAX_EVALS = 1000
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Here we have all our methods for
 # taking a function and returning an appropriate list
 # of DG coefficients.
 #
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # Efficiency criticality: HIGH
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # 1-D Basis
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function v{T<:Real}(k::Int, level::Int, cell::Int, mode::Int, x::T)
 	if level==0 # At the base level, we are not discontinuous, and we simply
@@ -39,9 +39,9 @@ function v(k::Int, level::Int, cell::Int, mode::Int)
 	return (xs-> v(k,level,cell,mode,xs))
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Tensor Product Construction
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # Returns the value of the function at x
 function V{D,T<:Real}(k::Int, level::NTuple{D,Int},
@@ -60,9 +60,9 @@ function V{D}(k, level::NTuple{D,Int},
 	return (xs-> V(k, level, cell, mode, xs))
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Methods for obtaining the coefficients
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # Given a 1-D position and level, this tells us which cell 
 # that position belongs to, at that level resolution
@@ -113,9 +113,9 @@ end
 
 
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Full or Sparse Galerkin Coefficients in n-D
-#------------------------------------------------------
+# -----------------------------------------------------
 function coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")
 	cutoff	= get_cutoff(scheme, D, n)
 	coeffs	= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()

@@ -1,9 +1,9 @@
-#------------------------------------------------------
+# -----------------------------------------------------
 # This script gives the methods for maniupulating the
 # Cartesian indices corresponding to multilevels that
 # are either kept or cut in various schemes of
 # "sparsification"
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # Efficiency Criticality: LOW
 # This is not evaluated very often

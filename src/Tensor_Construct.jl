@@ -1,10 +1,10 @@
-#--------------------------------------------------
+# -------------------------------------------------
 #
 # An explicit tensor constructor of the coefficients
 # for \prod_i f_i (x_i) given the coefficients of
 # each f(x_i). 
 #
-#--------------------------------------------------
+# -------------------------------------------------
 
 # This is a useful way to reduce a difficult O(N log^(d-1) N)
 # space of integrations down to O(N d) 

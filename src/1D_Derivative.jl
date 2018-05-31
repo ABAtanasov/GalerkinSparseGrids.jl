@@ -43,10 +43,10 @@ function D_matrix(k::Int, level::Int)
 	return sparse(I, J, V, k * (1<<level), k * (1<<level), +)
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Lax-Friedrichs flux matrix element on Legendre basis
 # For now, use alpha = 0 only
-#------------------------------------------------------
+# -----------------------------------------------------
 
 # Periodic boundary term:
 function periodic_legvLFv(level::Int, cell1::Int, mode1::Int,
@@ -99,11 +99,11 @@ function periodic_LF_matrix(k::Int, level::Int; alpha::Real = 0)
 	return sparse(I, J, V, k * (1<<level), k * (1<<level), +)
 end
 
-#----------------------------------------------------------
+# ---------------------------------------------------------
 # We can now build the full derivative matrix  
 # in both the position and hierarchical basis
 # with some help from the hier2pos change of basis matrix
-#----------------------------------------------------------
+# ---------------------------------------------------------
 
 function periodic_pos_DLF_Matrix(k::Int, max_level::Int; alpha = 0)
 	A = -D_matrix(k, max_level) + periodic_LF_matrix(k, max_level; alpha = alpha)

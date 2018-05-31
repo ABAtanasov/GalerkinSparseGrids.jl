@@ -107,18 +107,13 @@ function eval_points_1D(k::Int, max_level::Int, level::Int, cell::Int, mode::Int
 	i = 1
 	I = Int[]
 	V = Float64[]
-
-	# level 0:
-	for x in 0:(1/(k-1)):1
-		val = v_nodal(k, level, cell, mode, x)
-		(val != zero(x)) && (push!(I, i); push!(V, val))
-		i+=1
-	end
-	# subsequent levels:
-	for l in 1:max_level
+	for l in 0:max_level
+		l == 0 ? (node_range = 0:(1/(k-1)):1) : 
+				 (node_range = 1/(2*(k-1)):1/(k-1):(1-1/(2*(k-1))))
+		
 		for c in 1:1<<max(0, l-1)
-			for node in 1/(2*(k-1)):1/(k-1):(1-1/(2*(k-1)))
-				x = (c - 1 + node)/(1<<(l-1))
+			for node in node_range
+				x = (c - 1 + node)/(1<<max(0, l-1))
 				val = v_nodal(k, level, cell, mode, x)
 				(val != zero(x)) && (push!(I, i); push!(V, val))
 				i += 1
@@ -135,18 +130,12 @@ function nodal2points_1D(k::Int, max_level::Int)
 	J = Int[]
 	V = Float64[]
 	j = 1
-	for mode in 1:k
-		coeffs = eval_points_1D(k, max_level, 0, 1, mode)
-		for (i, val) in zip(findnz(coeffs)...)
-			push!(I, i);
-			push!(J, j)
-			push!(V, val)
-		end
-		j += 1
-	end
-	for level in 1:max_level
+
+	for level in 0:max_level
+		level == 0 ? (mode_range = 1:k) : (mode_range = 1:(k-1))
+		
 		for cell in 1:1<<max(0, level-1)
-			for mode in 1:(k-1)
+			for mode in mode_range
 				coeffs = eval_points_1D(k, max_level, level, cell, mode)
 				for (i, val) in zip(findnz(coeffs)...)
 					push!(I, i)
@@ -171,7 +160,7 @@ end
 
 # Converts a given nodal basis element to a sum in the standard 
 # hieararchical DG scheme
-function nodal2heir_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10, abs_tol=1e-12, max_evals=1500)
+function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10, abs_tol=1e-12, max_evals=1500)
 	I = Int[]
 	V = Float64[]
 	i = 1
@@ -194,7 +183,7 @@ function nodal2heir_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10, 
 	return dropzeros!(sparsevec(I, V))
 end
 
-function nodal2heir_1D(k::Int, max_level::Int; rel_tol=1e-10, abs_tol=1e-12, max_evals=1500)
+function nodal2modal_1D(k::Int, max_level::Int; rel_tol=1e-10, abs_tol=1e-12, max_evals=1500)
 	I = Int[]
 	J = Int[]
 	V = Float64[]
@@ -205,7 +194,7 @@ function nodal2heir_1D(k::Int, max_level::Int; rel_tol=1e-10, abs_tol=1e-12, max
 		nodal_cells = 1<<max(0, nodal_level-1)
 		for nodal_cell in 1:nodal_cells
 			for nodal_mode in 1:num_nodes
-				coeffs = nodal2heir_1D(k, nodal_level, nodal_cell, nodal_mode;
+				coeffs = nodal2modal_1D(k, nodal_level, nodal_cell, nodal_mode;
 										rel_tol=rel_tol,
 										abs_tol=abs_tol,
 										max_evals=max_evals)
@@ -231,23 +220,19 @@ end
 
 # Evaluates a given hierarchical basis function at
 # all collocation points
-function hier2points_1D(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
+function modal2points_1D(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
 	i = 1
 	I = Int[]
 	V = Float64[]
-
-	# level 0:
-	for x in 0:(1/(k-1)):1
-		val = eval_v(k, level, cell, mode, x)
-		(abs(val) != zero(x)) && (push!(I, i); push!(V, val))
-		i+=1
-	end
 	
 	# subsequent levels:
-	for l in 1:max_level
+	for l in 0:max_level
+		l == 0 ? (node_range = 0:(1/(k-1)):1) : 
+				 (node_range = 1/(2*(k-1)):1/(k-1):(1-1/(2*(k-1))))
+		
 		for c in 1:1<<max(0, l-1)
-			for node in 1/(2*(k-1)):1/(k-1):(1-1/(2*(k-1)))
-				x = (c - 1 + node)/(1<<(l-1))
+			for node in node_range
+				x = (c - 1 + node)/(1<<max(0, l-1))
 				val = eval_v(k, level, cell, mode, x)
 				(abs(val) != 0) && (push!(I, i); push!(V, val))
 				i += 1
@@ -259,24 +244,16 @@ end
 
 # Constructs the sparse matrix to convert from the 
 # hierarchical basis to the point basis
-function hier2points_1D(k::Int, max_level::Int)
+function modal2points_1D(k::Int, max_level::Int)
 	I = Int[]
 	J = Int[]
 	V = Float64[]
 	j = 1
-	for mode in 1:k
-		coeffs = hier2points_1D(k, max_level, 0, 1, mode)
-		for (i, val) in zip(findnz(coeffs)...)
-			push!(I, i)
-			push!(J, j)
-			push!(V, val)
-		end
-		j += 1
-	end
+
 	for level in 0:max_level
 		for cell in 1:1<<max(0, level-1)
 			for mode in 1:k
-				coeffs = hier2points_1D(k, max_level, level, cell, mode)
+				coeffs = modal2points_1D(k, max_level, level, cell, mode)
 				for (i, val) in zip(findnz(coeffs)...)
 					push!(I, i)
 					push!(J, j)
@@ -291,9 +268,9 @@ end
 
 # Inverts the above construction by factoring through
 # the nodal space
-function points2hier_1D(k::Int, max_level::Int)
+function points2modal_1D(k::Int, max_level::Int)
 	p2n = points2nodal_1D(k, max_level)
-	n2h = nodal2heir_1D(k, max_level)
+	n2h = nodal2modal_1D(k, max_level)
 	return threshold(n2h*p2n)
 end
 

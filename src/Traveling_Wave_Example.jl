@@ -10,12 +10,12 @@
 # -----------------------------------------------------------
 
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Generates the coefficients for a traveling wave 
 # A cos(\vec{k} \cdot \vec{x} + \phi), \vec{k} = 2 \pi \vec{m}
 # with sparse interpolation of type (k,n) 
 # using periodic boundary conditions in D-dimensionss
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function cos_coeffs(k::Int, n::Int, m::Array{Int,1};
 					scheme="sparse", phase = 0.0, A = 1.0)
@@ -50,19 +50,19 @@ function cos_coeffs(k::Int, n::Int, m::Array{Int,1};
 	return A * ansVect
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # The same as above, but using sin
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function sin_coeffs(k::Int, n::Int, m::Array{Int,1};
 					scheme="sparse", phase=0.0, A=1.0)
 	return cos_coeffs(k, n, m; scheme=scheme, phase=phase-pi/2, A=A)
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Returns the data for a traveling wave 
 # using the above methods
-#------------------------------------------------------
+# -----------------------------------------------------
 
 function traveling_wave(k::Int, n::Int, m::Array{Int,1};
 						scheme="sparse", phase=0.0, A=1.0)
@@ -76,11 +76,11 @@ function traveling_wave(k::Int, n::Int, m::Array{Int,1};
 	return (u0_coeffs, v0_coeffs, u0, v0)
 end
 
-#------------------------------------------------------
+# -----------------------------------------------------
 # Evolves a traveling wave using the above methods
 # between time0 and time1
 # using an ODE solver of type 'order' (default 45)
-#------------------------------------------------------
+# -----------------------------------------------------
 function traveling_wave_solver(k::Int, n::Int, m::Array{Int,1}, time0::Real, time1::Real; 
 								scheme="sparse", phase=0.0, A=1.0, order="45", kwargs...)
 	D = length(m)
