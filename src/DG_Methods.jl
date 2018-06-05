@@ -83,17 +83,11 @@ end
 # appropriately, depending on the level
 function inner_product{D}(f::Function, g::Function, lvl::NTuple{D,Int}, cell::CartesianIndex{D};
 								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
-	if D < 2
-		xmin = (cell[1]-1)/(1<<max(0,lvl[1]-1))
-		xmax = (cell[1])/(1<<max(0,lvl[1]-1))
-		h = (x-> f([x])*g([x]))
-		val = hquadrature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
-	else
-		xmin = ntuple(i-> (cell[i]-1)/(1<<max(0,lvl[i]-1)), D)
-		xmax = ntuple(i-> (cell[i])/(1<<max(0,lvl[i]-1)), D)
-		h = (x-> f(x)*g(x))
-		val = hcubature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
-	end
+								
+	h = (x-> f(x)*g(x))
+	xmin = ntuple(i-> (cell[i]-1)/(1<<max(0,lvl[i]-1)), D)
+	xmax = ntuple(i-> (cell[i])/(1<<max(0,lvl[i]-1)), D)
+	val = hcubature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
 	return val 
 end
 
@@ -116,7 +110,10 @@ end
 # -----------------------------------------------------
 # Full or Sparse Galerkin Coefficients in n-D
 # -----------------------------------------------------
-function coeffs_DG(D::Int, k::Int, n::Int, f::Function; scheme="sparse")
+function coeffs_DG(D::Int, k::Int, n::Int, f::Function; 
+										rel_tol = REL_TOL, abs_tol = ABS_TOL,
+										max_evals=MAX_EVALS,
+										scheme="sparse")
 	cutoff	= get_cutoff(scheme, D, n)
 	coeffs	= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
 	modes	= ntuple(i-> k, D)

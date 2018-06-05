@@ -20,6 +20,7 @@ include("1D_Derivative.jl")				# Constructing ideal 1D derivative matrix using b
 include("Multidim_Derivative.jl")		# Multidimensional DG Derivatives in full & sparse bases
 include("PDEs.jl")						# Solving the n-D wave equation with periodic boundary
 include("1D_Nodal_Basis.jl")			# Construct 1D nodal basis for multiplication
+include("Multidim_Nodal_Basis.jl")		# Construct Multidimensional nodal basis for multiplication
 
 include("Error_Measure.jl")				# Monte Carlo Methods to measure error
 include("Tensor_Construct.jl")			# Quickly calculates coeffs of simple tensors of functions

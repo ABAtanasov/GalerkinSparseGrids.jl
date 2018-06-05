@@ -52,7 +52,7 @@ function D_matrix{D}(i::Int, k::Int, n::Int,
 		end
 	end
 	# dropzeros! does not seem helpful for this matrix:
-	return sparse(I, J, V, len, len, +)
+	return threshold(sparse(I, J, V, len, len, +))
 end
 
 

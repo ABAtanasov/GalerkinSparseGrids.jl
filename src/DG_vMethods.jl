@@ -145,7 +145,7 @@ end
 # and return vectors
 # -----------------------------------------------------
 function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
-								rel_tol = REL_TOL, abs_tol = ABS_TOL,
+								rel_tol=REL_TOL, abs_tol=ABS_TOL,
 								max_evals=MAX_EVALS,
 								scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)

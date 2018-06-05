@@ -14,6 +14,7 @@ precomputed_diffs = Dict{NTuple{4, Int}, Array{Float64, 2}}()
 function precompute_diffs()
 	if length(precomputed_diffs) == 0
 		print("Precomputing 1D derivative matrix elements... ")
+		flush(STDOUT)
 		for k in 1:KMAX
 			for level in 0:LMAX
 			    for cell in 1:(1<<max(0, level-1)) 
@@ -24,6 +25,7 @@ function precompute_diffs()
 			end
 		end
 		println("done.")
+		flush(STDOUT)
 		return true
 	end
 	return false
