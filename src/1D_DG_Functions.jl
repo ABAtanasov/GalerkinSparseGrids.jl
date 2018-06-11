@@ -132,7 +132,7 @@ end
 # Gives the polynomial array corresponding to p(x/c)
 function scale_polyarray{T<:Real}(v::Array{T,1}, c::T)
 	n = length(v)
-	return [(1./c)^(i-1)*v[i] for i in 1:n]
+	return [v[i]/c^(i-1) for i in 1:n]
 end
 
 # Gives the polynomial array corresponding to p(x-a)
@@ -164,25 +164,25 @@ end
 # hierarchical basis against the legendre polynomials
 # defining the position basis:
 function hier2pos(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
-	
+
 	ans = Float64[]
-	
-	# Compute the support and discontinuity 
+
+	# Compute the support and discontinuity
 	# of the hierarchical basis element
-	left_point = (cell-1)/(1<<(level-1))
-	mid_point = (cell-0.5)/(1<<(level-1))
+	left_point  = (cell-1)/(1<<(level-1))
+	mid_point   = (cell-0.5)/(1<<(level-1))
 	right_point = cell/(1<<(level-1))
-	
+
 	# Level 0 of the hierarchical basis is a continous
 	# Legendre polynomial
 	if level == 0
 		vl = vr = sqrt(2.0)*shift_polyarray(
-								scale_polyarray(leg_coeffs[mode][1:k], 
+								scale_polyarray(leg_coeffs[mode][1:k],
 											0.5),
 										0.5)
-	
-	# The higher DG levels are given by two polynomials 
-	# defined on neighboring (right & left) intervals of size h/2, 
+
+	# The higher DG levels are given by two polynomials
+	# defined on neighboring (right & left) intervals of size h/2,
 	# which would need to be integrated against individually
 	else
 		h = 1./(1<<(level-1))
@@ -192,7 +192,7 @@ function hier2pos(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
 							0.5),
 						0.5)
 		vl = shift_polyarray(scale_polyarray(vl, h), (cell-1)*h)*sqrt(1<<(level))
-		
+
 		vr = shift_polyarray(
 				scale_polyarray(
 					convert_polyarray(dg_coeffs[k][mode], "right"),
@@ -209,7 +209,7 @@ function hier2pos(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
 				push!(ans, 0)
 				continue
 			end
-			
+
 			# Obtain the polynomial array for the position basis function
 			unit_leg = shift_polyarray(
 							scale_polyarray(leg_coeffs[p][1:k], 0.5), 0.5)
@@ -217,7 +217,7 @@ function hier2pos(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
 								scale_polyarray(unit_leg, h), (i-1)*h)
 			pos_element *= (2.0)^((max_level+1)/2)
 
-			# Perform symbolic integration depending on which 
+			# Perform symbolic integration depending on which
 			# interval the position basis function overlaps with the
 			# DG basis element
 			if (i-1)*h < mid_point
@@ -231,6 +231,7 @@ function hier2pos(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
 	return ans
 end
 
+
 # Construct the change of basis matrix from hierarchical 
 # to position basis
 function hier2pos(k::Int, max_level::Int; abs_tol = ABS_TOL)
@@ -241,7 +242,7 @@ function hier2pos(k::Int, max_level::Int; abs_tol = ABS_TOL)
 	for level in 0:max_level
 		for cell in 1:(1<<max(0, level-1))
 			for mode in 1:k
-				ans = hier2pos(k, max_level, level, cell, mode)
+				ans = pos_vcoeffs_DG(k, max_level, v(k, level, cell, mode))
 				for i in 1:length(ans)
 					if abs(ans[i]) > ABS_TOL
 						push!(I, i)

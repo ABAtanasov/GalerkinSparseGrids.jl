@@ -61,9 +61,9 @@ function periodic_legvLFv(level::Int, cell1::Int, mode1::Int,
 	right2 = basis(level, cell1, mode1, point2+tiny)
 
 	(cell2 == (1<<level)) && (right2 = basis(level, cell1, mode1, 0.0+tiny))
-	(cell2 == 1)		   && (left1  = basis(level, cell1, mode1, 1.0-tiny))
+	(cell2 == 1)		  && (left1  = basis(level, cell1, mode1, 1.0-tiny))
 
-	LF1 = 0.5 *(left1 + right1) + alpha * (right1 - left1)
+	LF1 = 0.5 * (left1 + right1) + alpha * (right1 - left1)
 	LF2 = 0.5 * (left2 + right2) + alpha * (right2 - left2)
 
 	val1 = basis(level, cell2, mode2, point1+tiny)
