@@ -27,7 +27,7 @@ function wave_data{A<:AbstractArray, T<:Real}(laplac::A,
 	
 	I = Int[]
 	J = Int[]
-	V = Float64[]
+	V = T[]
 	for col = 1:len
 		for i in nzrange(laplac, col)
 			row = rows[i]
@@ -43,7 +43,7 @@ function wave_data{A<:AbstractArray, T<:Real}(laplac::A,
 		push!(V, 1.0)
 	end
 	RHS = sparse(I, J, V, 2*len, 2*len, +)
-	y0 = Array{Float64}([i<=len ? f0coeffs[i] : v0coeffs[i-len] for i in 1:2*len])
+	y0 = Array{T}([i<=len ? f0coeffs[i] : v0coeffs[i-len] for i in 1:2*len])
 	return RHS, y0
 end
 
@@ -52,43 +52,55 @@ end
 # bases agree for wave PDE evolution
 function wave_evolve_1D(k::Int, max_level::Int,
 							f0::Function, v0::Function,
-							time0::Real, time1::Real; base = "hier", order = "45")
-	if base == "pos"
+							time0::Real, time1::Real; basis="hier", order = "45",
+							kwargs...)
+	if basis == "pos"
 		f0coeffs = pos_vcoeffs_DG(k, max_level, f0)
 		v0coeffs = pos_vcoeffs_DG(k, max_level, v0)
-	elseif base == "hier"
+	elseif basis == "hier"
 		f0coeffs = vcoeffs_DG(1, k, max_level, f0)
 		v0coeffs = vcoeffs_DG(1, k, max_level, v0)
+	elseif basis == "nodal"
+		throw(MethodError("Nodal basis wave evolution not yet implemented"))
+	elseif basis == "point"
+		m2p = modal2points_1D(k, max_level)
+		f0coeffs = m2p*vcoeffs_DG(1, k, max_level, f0)
+		v0coeffs = m2p*vcoeffs_DG(1, k, max_level, v0)
 	else
-		throw(ArgumentError(:base))
+		throw(ArgumentError(:basis))
 	end
 
-	D_op = periodic_DLF_Matrix(k, max_level; base=base)
+	D_op = periodic_DLF_matrix(k, max_level; basis=basis)
 	laplac= *(D_op,D_op)
 	
 	RHS, y0 = wave_data(laplac, f0coeffs, v0coeffs)
 	if order == "45"
-		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1])
+		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1]; kwargs...)
 	elseif order == "78"
-		soln = ode78((t,x)->*(RHS,x), y0, [time0,time1])
+		soln = ode78((t,x)->*(RHS,x), y0, [time0,time1]; kwargs...)
 	else
 		throw(ArgumentError(:order))
 	end
 	return soln
 end
 
-function norm_squared{T<:Real}(coeffs::Array{T})
-	return sum(i^2 for i in coeffs)
+function norm_squared{T<:Real}(coeffs::Array{T}; basis="hier")
+
+	if basis=="hier" || basis=="pos"
+		return sum(i^2 for i in coeffs)
+	else
+		throw(MethodError("Nodal and point basis norms not yet implemented"))
+	end
 end
 
-function energy_func_1D(k, level,
-						soln::Tuple{Array{Float64,1},Array{Array{Float64,1},1}};
-						base = "hier")
+function energy_func_1D{T<:Real}(k, level,
+						soln::Tuple{Array{T,1},Array{Array{T,1},1}};
+						basis = "hier")
 	len			= length(soln[1])
 	num_coeffs	= Int(round(length(soln[2][1])/2))
 	times		= copy(soln[1])
-	energies	= Array{Float64}(len)
-	D_op		= periodic_DLF_Matrix(k, level; base=base)
+	energies	= Array{T}(len)
+	D_op		= periodic_DLF_matrix(k, level; basis=basis)
 
 	for i in 1:len
 		ux   = *(D_op, soln[2][i][1:num_coeffs])
@@ -102,7 +114,7 @@ end
 function wave_evolve(D::Int, k::Int, n::Int,
 							  f0::Function, v0::Function,
 							  time0::Real, time1::Real;
-							  order = "45", scheme="sparse", kwargs...)
+							  order="45", scheme="sparse", kwargs...)
 
 	f0coeffs = vcoeffs_DG(D, k, n, f0; scheme=scheme)
 	v0coeffs = vcoeffs_DG(D, k, n, v0; scheme=scheme)

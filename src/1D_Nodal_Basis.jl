@@ -50,17 +50,17 @@ function lag_nodal(k::Int, mode::Int, x::Real)
 		mode == 1 && return max(zero(x), x)
 		mode == 2 && return max(zero(x), 1-x)
 	elseif k == 3
-		mode == 1 && return (x < 0 || x > 1) ? zero(x) : 2 * (x-1) * (x - 1/2)
-		mode == 2 && return (x < 0 || x > 1) ? zero(x) : 2 * x * (x - 1/2)
+		mode == 1 && return (x < 0 || x > 1) ? zero(x) : 2 * (x-1) * (x - 1//2)
+		mode == 2 && return (x < 0 || x > 1) ? zero(x) : 2 * x * (x - 1//2)
 		mode == 3 && return (x < 0 || x > 1) ? zero(x) : -4 * x * (x-1)
 	elseif k == 4 
 		throw(MethodError("k = 4 not implemented"))
 	elseif k == 5
-		mode == 1 && return (x > 1 || x < 0) ? zero(x) : 32/3 * (x - 1/4) * (x - 1/2) * (x - 3/4) * (x - 1)
-		mode == 2 && return (x > 1 || x < 0) ? zero(x) : -128/3 * x * (x - 1) * (x - 1/2) * (x - 3/4)
-		mode == 3 && return (x > 1 || x < 0) ? zero(x) : 64 * x * (x - 1) * (x - 1/4) * (x - 3/4)
-		mode == 4 && return (x > 1 || x < 0) ? zero(x) : -128/3 * x * (x - 1) * (x - 1/2) * (x - 1/4)
-		mode == 5 && return (x > 1 || x < 0) ? zero(x) : 32/3 * x * (x - 1/4) * (x - 1/2) * (x - 3/4)
+		mode == 1 && return (x > 1 || x < 0) ? zero(x) : 32//3 * (x - 1//4) * (x - 1//2) * (x - 3//4) * (x - 1)
+		mode == 2 && return (x > 1 || x < 0) ? zero(x) : -128//3 * x * (x - 1) * (x - 1//2) * (x - 3//4)
+		mode == 3 && return (x > 1 || x < 0) ? zero(x) : 64 * x * (x - 1) * (x - 1//4) * (x - 3//4)
+		mode == 4 && return (x > 1 || x < 0) ? zero(x) : -128//3 * x * (x - 1) * (x - 1//2) * (x - 1//4)
+		mode == 5 && return (x > 1 || x < 0) ? zero(x) : 32//3 * x * (x - 1//4) * (x - 1//2) * (x - 3//4)
 	end
 end
 
@@ -77,10 +77,10 @@ function h_nodal(k::Int, mode::Int, x::Real)
 	elseif k == 4
 		throw(MethodError("k = 4 not implemented"))
 	elseif k == 5
-		mode == 1 && return (x < -1 || x > 0) ? zero(x) : -128/3 * x * (x + 1) * (x + 1/2) * (x + 1/4)
-		mode == 2 && return (x < -1 || x > 0) ? zero(x) : -128/3 * x * (x + 1) * (x + 1/2) * (x + 3/4)
-		mode == 3 && return (x > 1  || x < 0) ? zero(x) : -128/3 * x * (x - 1) * (x - 1/2) * (x - 3/4)
-		mode == 4 && return (x > 1  || x < 0) ? zero(x) : -128/3 * x * (x - 1) * (x - 1/2) * (x - 1/4)
+		mode == 1 && return (x < -1 || x > 0) ? zero(x) : -128//3 * x * (x + 1) * (x + 1//2) * (x + 1//4)
+		mode == 2 && return (x < -1 || x > 0) ? zero(x) : -128//3 * x * (x + 1) * (x + 1//2) * (x + 3//4)
+		mode == 3 && return (x > 1  || x < 0) ? zero(x) : -128//3 * x * (x - 1) * (x - 1//2) * (x - 3//4)
+		mode == 4 && return (x > 1  || x < 0) ? zero(x) : -128//3 * x * (x - 1) * (x - 1//2) * (x - 1//4)
 	end
 end
 
@@ -108,12 +108,12 @@ function eval_points_1D(k::Int, max_level::Int, level::Int, cell::Int, mode::Int
 	I = Int[]
 	V = Float64[]
 	for l in 0:max_level
-		l == 0 ? (node_range = 0:(1/(k-1)):1) : 
-				 (node_range = 1/(2*(k-1)):1/(k-1):(1-1/(2*(k-1))))
+		l == 0 ? (node_range = 0:(1//(k-1)):1) : 
+				 (node_range = 1//(2*(k-1)):1//(k-1):(1-1//(2*(k-1))))
 		
 		for c in 1:1<<max(0, l-1)
 			for node in node_range
-				x = (c - 1 + node)/(1<<max(0, l-1))
+				x = (c - 1 + node)//(1<<max(0, l-1))
 				val = v_nodal(k, level, cell, mode, x)
 				(val != zero(x)) && (push!(I, i); push!(V, val))
 				i += 1
@@ -160,7 +160,7 @@ end
 
 # Converts a given nodal basis element to a sum in the standard 
 # hieararchical DG scheme
-function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10, abs_tol=1e-12, max_evals=1500)
+function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10, abs_tol=1e-15, max_evals=1500)
 	I = Int[]
 	V = Float64[]
 	i = 1
@@ -169,13 +169,13 @@ function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10,
 		hier_cells = 1<<max(0, hier_level-1)
 		for hier_cell in 1:hier_cells
 			for hier_mode in 1:k
-				x_min = (hier_cell-1)/hier_cells
-				x_max = (hier_cell)/hier_cells
+				x_min = (hier_cell-1)//hier_cells
+				x_max = (hier_cell)//hier_cells
 				val = hquadrature(x->v_nodal(k, level, cell, mode, x)*
 									v(k, hier_level, hier_cell, hier_mode, x),
 									x_min, x_max,
 									reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
-				(abs(val) > eps(Float64)) && (push!(I, i); push!(V, val))
+				(abs(val) > eps(abs_tol)) && (push!(I, i); push!(V, val))
 				i += 1
 			end
 		end
@@ -183,7 +183,7 @@ function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10,
 	return dropzeros!(sparsevec(I, V))
 end
 
-function nodal2modal_1D(k::Int, max_level::Int; rel_tol=1e-10, abs_tol=1e-12, max_evals=1500)
+function nodal2modal_1D(k::Int, max_level::Int; rel_tol=1e-10, abs_tol=1e-15, max_evals=1500)
 	I = Int[]
 	J = Int[]
 	V = Float64[]
@@ -215,6 +215,8 @@ end
 function eval_v(k, level, cell, mode, x)
 	xl = max(x - 1e-16, 0)
 	xr = min(x + 1e-16, 1)
+	(xl == 0) && (xl = 1 - 1e-16)
+	(xr == 1) && (xr = 1e-16)
 	return 0.5 * (v(k, level, cell, mode, xl) + v(k, level, cell, mode, xr))
 end
 
@@ -266,13 +268,67 @@ function modal2points_1D(k::Int, max_level::Int)
 	return dropzeros!(sparse(I, J, V))
 end
 
-# Inverts the above construction by factoring through
-# the nodal space
-function points2modal_1D(k::Int, max_level::Int)
-	p2n = points2nodal_1D(k, max_level)
-	n2h = nodal2modal_1D(k, max_level)
-	return threshold(n2h*p2n)
+function nodal2pos_1D(k, max_level, nodal_level, nodal_cell, nodal_mode; 
+				   rel_tol=1e-10, abs_tol=1e-15, max_evals=1500)
+	I = Int[]
+	V = Float64[]
+	i = 1
+
+	nodal_min = (nodal_cell-1)/(1<<max(0, nodal_level-1))
+	nodal_max = (nodal_cell)/(1<<max(0, nodal_level-1))
+	for c in 1:1<<max_level
+		pos_min = (c-1)/(1<<max_level)
+		pos_max = c/(1<<max_level)
+
+		if (pos_min > nodal_max) || (pos_max < nodal_min)
+			i += k
+			continue
+		end
+		for m in 1:k
+			val = hquadrature(x->v_nodal(k, nodal_level, nodal_cell, nodal_mode, x)*basis(max_level, c, m, x), 
+							  pos_min, pos_max,
+							  reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
+			(abs(val) > eps(abs_tol)) && (push!(I, i); push!(V, val))
+			i += 1
+		end
+	end
+	return sparsevec(I, V)
+end
+
+function nodal2pos_1D(k, max_level; rel_tol=1e-10, abs_tol=1e-15, max_evals=1500)
+	I = Int[]
+	J = Int[]
+	V = Float64[]
+	j = 1
+
+	for nodal_level in 0:max_level
+		nodal_level == 0 ? num_nodes = k : num_nodes = k-1
+		nodal_cells = 1<<max(0, nodal_level-1)
+		for nodal_cell in 1:nodal_cells
+			for nodal_mode in 1:num_nodes
+				coeffs = nodal2pos_1D(k, max_level, nodal_level, nodal_cell, nodal_mode;
+										rel_tol=rel_tol,
+										abs_tol=abs_tol,
+										max_evals=max_evals)
+				for (i, val) in zip(findnz(coeffs)...)
+					push!(I, i)
+					push!(J, j)
+					push!(V, val)
+				end
+				j += 1
+			end
+		end
+	end
+	return sparse(I, J, V)
 end
 
 
-
+# Inverts the above construction by factoring through
+# Essentially all the different spaces
+# TODO: Make this more direct!!
+function points2modal_1D(k::Int, max_level::Int)
+	p2n = points2nodal_1D(k, max_level)
+	n2pos = nodal2pos_1D(k, max_level)
+	pos2m = pos2hier(k, max_level)
+	return threshold(pos2m*n2pos*p2n)
+end

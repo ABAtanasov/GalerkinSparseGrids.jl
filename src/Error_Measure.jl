@@ -20,10 +20,10 @@ end
 
 function monte_carlo2(f::Function, D::Int; batch = 50, Z = 1.0)
     
-    means = Float64[]
+    means = Real[]
 
     while true
-        points = Float64[]
+        points = Real[]
         for i in 1:batch
             x = ntuple(i -> rand(), D)
             push!(points, f(x))

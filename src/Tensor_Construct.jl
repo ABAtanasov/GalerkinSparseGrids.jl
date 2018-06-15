@@ -13,29 +13,38 @@
 # Efficiency criticality: MEDIUM
 
 # Accuracy criticality: LOW
-# Most accuracy it dependent on functions 
+# Most of the accuracy dependent on functions 
 # called from other scripts
 
-function tensor_construct(D::Int, k::Int, n::Int, coeffArray; scheme="sparse")
+function tensor_construct{T<:Real}(D::Int, k::Int, n::Int, 
+						  coeff_array::Array{Dict{CartesianIndex{1}, Array{Array{T,1},1}}, 1}; 
+						  scheme="sparse")
 	cutoff = get_cutoff(scheme, D, n)
-	coeffs = Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
-	nD_coeffs = zeros(Float64, D)
-	modes = ntuple(i-> k, D)
-	ls = ntuple(i-> (n+1), D)
+	coeffs = Dict{CartesianIndex{D}, Array{Array{T,D},D}}()
+	# nD_coeffs = zeros(T, D)
+	ls::NTuple{D, Int}    = ntuple(i-> (n+1), D)
+	modes::NTuple{D, Int} = ntuple(i-> k, D)
 	
 	for level in CartesianRange(ls)
 		cutoff(level) && continue
 
-		ks = ntuple(i -> 1<<max(0, level[i]-2), D)  
-		level_coeffs = Array{Array{Float64,D}}(ks)
-		lvl = ntuple(i -> level[i]-1,D)
-		for cell in CartesianRange(ks)
-			cell_coeffs=Array{Float64}(modes)
+		cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, level[i]-2), D)  
+		level_coeffs = Array{Array{T,D}}(cells)
+		for cell in CartesianRange(cells)
+			cell_coeffs = Array{T}(modes)
 			for mode in CartesianRange(modes)
-				nD_coeffs = [(coeffArray[i])[CartesianIndex{1}((level[i],))][cell[i]][mode[i]] for i in 1:D]
-				cell_coeffs[mode] = prod(nD_coeffs)
+				val = one(T)
+				for d in 1:D
+					coeff = coeff_array[d]
+					tup::NTuple{1, Int} = (level[d],) # This is somehow still slow
+					l = CartesianIndex{1}(tup);
+					c = cell[d];
+					m = mode[d]
+					val *= coeff[l][c][m]
+				end
+				cell_coeffs[mode] = val
 			end
-			level_coeffs[cell]=cell_coeffs
+			level_coeffs[cell] = cell_coeffs
 		end
 		coeffs[level] = level_coeffs
 	end

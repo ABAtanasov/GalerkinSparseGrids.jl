@@ -18,16 +18,16 @@ function D_matrix{D}(i::Int, k::Int, n::Int,
 							scheme="sparse")
 	
 	cutoff = get_cutoff(scheme, D, n)
-	
+
 	V2D_1D = V2Dref(1,k,n)
 	D2V_1D = D2Vref(1,k,n)
-	Dmat_1D = periodic_DLF_Matrix(k, n)
-	
+	Dmat_1D = periodic_DLF_matrix(k, n)
+
 	len = length(srefVD[:,1])
 	I = Int[]
 	J = Int[]
 	V = Float64[]
-	
+
 	for c1 in 1:len
 		lpf = srefVD[c1]
 		l = lpf[1][i]
@@ -35,7 +35,7 @@ function D_matrix{D}(i::Int, k::Int, n::Int,
 		f = lpf[3][i]
 		vc1 = D2V_1D[(CartesianIndex(l),CartesianIndex(p),CartesianIndex(f))]
 		dvc1s = view(Dmat_1D,:, vc1)
-		
+
 		for j in 1:length(dvc1s)
 			lpf2 = V2D_1D[j]
 			# using tuple constructor independent of

@@ -40,8 +40,8 @@ function cos_coeffs(k::Int, n::Int, m::Array{Int,1};
 		sign = num_sines%4==0?1:-1
 		# may want to add an if-statement for if any n[i] == 0
 
-		coeffArray = [SCs[i]==1?cosine_dicts[i]:sine_dicts[i] for i in 1:D]
-		productDict = tensor_construct(D, k, n, coeffArray; scheme=scheme)
+		coeff_array = [SCs[i]==1?cosine_dicts[i]:sine_dicts[i] for i in 1:D]
+		productDict = tensor_construct(D, k, n, coeff_array; scheme=scheme)
 		productVect = D2V(D, k, n, productDict; scheme=scheme)
 
 		ansVect += sign * productVect

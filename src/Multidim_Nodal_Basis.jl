@@ -147,7 +147,7 @@ function modal2points{D}(k::Int, n::Int,
 	point_mat_1D = full(modal2points_1D(k, n))
 	I = Int[]
 	J = Int[]
-	V = Float64[]
+	V = Real[]
 	for c1 in 1:len
 		lcm   = srefVD[c1]
 		level = lcm[1]
@@ -206,7 +206,7 @@ function points2nodal(D::Int, k::Int, n::Int; scheme="sparse")
 	inv_mat_1D = full(points2nodal_1D(k, n))
 	I = Int[]
 	J = Int[]
-	V = Float64[]
+	V = Real[]
 
 	c1 = 1
 	for l in CartesianRange(ls)
@@ -267,7 +267,7 @@ function nodal2modal{D}(k::Int, n::Int,
 	inv_point_mat_1D = full(nodal2modal_1D(k, n))
 	I = Int[]
 	J = Int[]
-	V = Float64[]
+	V = Real[]
 
 	c1 = 1
 	for l in CartesianRange(ls)

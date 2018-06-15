@@ -148,7 +148,7 @@ end
 # -----------------------------------------------------
 
 function diff_basis_DG(k::Int, level::Int, cell::Int, mode::Int)
-	dcoeffs = Array{Float64}((level+1, k))
+	dcoeffs = Array{Real}((level+1, k))
 	p = cell
 	for l in level:-1:0
 		for f_n in 1:k

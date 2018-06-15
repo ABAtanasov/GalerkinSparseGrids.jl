@@ -1,6 +1,6 @@
 module GalerkinSparseGrids
 
-# The prerequisite packages as of March 2017 are Cubature.jl and ODE.jl
+# The prerequisite packages as of May 2018 are Cubature.jl and ODE.jl
 
 using Cubature
 using ODE
@@ -9,7 +9,7 @@ using ODE
 
 include("Schemes.jl")					# CartesianIndex Manipulation Methods
 include("Additional_Tools.jl")			# Helper functions not specific to any part of the package
-include("Hat_Methods.jl")				# Using non-galerkin elementary 'hat' basis functions
+# include("Hat_Methods.jl")				# Using non-galerkin elementary 'hat' basis functions
 include("DG_Basis.jl")					# Gram-Schmidt procedure for DG basis functions in 1-D
 include("1D_DG_Functions.jl") 			# Explicitly building the 1-D Galerkin Basis
 include("DG_Methods.jl")				# Multidimensional hierarchical & sparse coefficients
@@ -27,10 +27,10 @@ include("Tensor_Construct.jl")			# Quickly calculates coeffs of simple tensors o
 include("Traveling_Wave_Example.jl")	# Construct and evolve traveling waves
 
 export
-standard_coeffs,
-standard_reconstruct,
-coeffs_hat,
-reconstruct_hat,
+# standard_coeffs,
+# standard_reconstruct,
+# coeffs_hat,
+# reconstruct_hat,
 
 coeffs_DG,
 reconstruct_DG,

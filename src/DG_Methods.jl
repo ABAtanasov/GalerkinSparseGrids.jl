@@ -123,10 +123,10 @@ function coeffs_DG(D::Int, k::Int, n::Int, f::Function;
 		cutoff(level) && continue
 		
 		cells = ntuple(i -> 1<<max(0, level[i]-2), D)
-		level_coeffs = Array{Array{Float64,D}}(cells)
+		level_coeffs = Array{Array{Real,D}}(cells)
 		lvl = ntuple(i -> level[i]-1,D)
 		for cell in CartesianRange(cells)
-			cell_coeffs = Array{Float64}(modes)
+			cell_coeffs = Array{Real}(modes)
 			for mode in CartesianRange(modes)
 				cell_coeffs[mode] = get_coefficient_DG(k, lvl, cell, mode, f)
 			end
@@ -143,17 +143,17 @@ end
 # coefficients
 # -----------------------------------------------------------
 
-function reconstruct_DG{D,T<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{Float64,D},D}},
-									xs::Array{T,1})
+function reconstruct_DG{D,T1<:Real,T2<:Real}(coeffs::Dict{CartesianIndex{D}, Array{Array{T1,D},D}},
+									xs::Array{T2,1})
 	
-	value	= zero(T)
+	value	= zero(T2)
 	k		= size(first(values(coeffs))[1])[1]
 	modes	= ntuple(i-> k ,D)
 
 	for key in keys(coeffs)
 		level = ntuple(i->key[i]-1,D)
 		cell = CartesianIndex{D}(ntuple(i->cell_index(xs[i],level[i]),D))
-		coeff = coeffs[key][cell]::Array{T,D}
+		coeff = coeffs[key][cell]::Array{T1,D}
 		@inbounds for mode in CartesianRange(modes)
 			value += coeff[mode]*V(k, level, cell, mode, xs)
 		end

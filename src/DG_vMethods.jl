@@ -52,7 +52,7 @@ function D2V{d,T<:Real}(D::Int, k::Int, n::Int,
 	(d != D) && throw(TypeError(:coeffs))
 	cutoff		= get_cutoff(scheme, D, n)
 	size		= get_size(D, k, n; scheme=scheme)
-	vect		= Array{Float64}(size)
+	vect		= Array{T}(size)
 	modes	= ntuple(i-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
@@ -73,7 +73,7 @@ end
 
 function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
-	coeffs		= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
+	coeffs		= Dict{CartesianIndex{D}, Array{Array{T,D},D}}()
 	modes		= ntuple(q-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
@@ -81,9 +81,9 @@ function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 		cutoff(level) && continue
 
 		ks = ntuple(q -> 1<<max(0, level[q]-2), D)  #This sets up a specific k+1 vector
-		level_coeffs = Array{Array{Float64}}(ks) #all the coefficients at this level
+		level_coeffs = Array{Array{T}}(ks) #all the coefficients at this level
 		for cell in CartesianRange(ks)
-			cell_coeffs = Array{Float64}(modes)
+			cell_coeffs = Array{T}(modes)
 			for mode in CartesianRange(modes)
 				cell_coeffs[mode] = vect[j]
 				j += 1

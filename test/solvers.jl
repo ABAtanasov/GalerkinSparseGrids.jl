@@ -20,8 +20,8 @@ k = 4
 level = 4
 f0 = x->sin(2*pi*x[1])
 v0 = x->2*pi*cos(2*pi*x[1])
-pos_soln = wave_evolve_1D(k, level, f0, v0, 0, 1; base="pos", order="45")
-energy_soln = energy_func_1D(k, level, pos_soln; base="pos")
+pos_soln = wave_evolve_1D(k, level, f0, v0, 0, 1; basis="pos", order="45")
+energy_soln = energy_func_1D(k, level, pos_soln; basis="pos")
 for i in 1:length(energy_soln[2])
     @test sqrt(energy_soln[2][i]) ≈ 2*pi atol=1.0e-7
 end
@@ -32,8 +32,8 @@ println("Test Passed.")
 
 print("Testing wave equation solver 1-D hierarchical DG basis... ")
 
-hier_soln  = wave_evolve_1D(k, level, f0, v0, 0, 1; base="hier", order="45")
-energy_soln = energy_func_1D(k, level, hier_soln; base="hier")
+hier_soln  = wave_evolve_1D(k, level, f0, v0, 0, 1; basis="hier", order="45")
+energy_soln = energy_func_1D(k, level, hier_soln; basis="hier")
 for i in 1:length(energy_soln[2])
     @test sqrt(energy_soln[2][i]) ≈ 2*pi atol=1.0e-7
 end

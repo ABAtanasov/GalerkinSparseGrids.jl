@@ -5,7 +5,6 @@ using ODE
 
 tests = [
 	"elementary.jl",
-	"hat_basis.jl",
 	"hier_DG.jl",
 	"vhier_DG.jl",
 	"differentiation.jl",
