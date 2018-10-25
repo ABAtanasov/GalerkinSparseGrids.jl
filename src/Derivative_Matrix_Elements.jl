@@ -27,11 +27,11 @@ function dh(k,mode,x)
 	return array2poly(symbolic_diff((dg_coeffs[k])[mode]),x)
 end
 
-function dleg{T<:Real}(mode::Int, x::T)
+function dleg(mode::Int, x::T) where T <: Real
 	return sqrt(2.0)*dLegendreP(mode-1, 2*x-1) *2
 end
 
-function dbasis{T<:Real}(level::Int, cell::Int, mode::Int, x::T)
+function dbasis(level::Int, cell::Int, mode::Int, x::T) where T <: Real
 	return dleg(mode, (1<<level)*x - (cell-1)) * (2.0)^(level/2) * (1<<level)
 end
 
@@ -64,20 +64,20 @@ end
 # -----------------------------------------------------
 
 # TODO: There is a way to do this all symbolically, with no use for numerics
-function inner_product1D(f::Function, g::Function, lvl::Int, cell::Int; 
+function inner_product1D(f::Function, g::Function, lvl::Int, cell::Int;
 								rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals=MAX_EVALS)
 	xmin = (cell-1)/(1<<max(0, lvl-1))
 	xmax = (cell)/(1<<max(0, lvl-1))
 	h = (x-> f(x)*g(x))
 	(val, err) = hquadrature(h, xmin, xmax; reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)
-	return val 
+	return val
 end
 
 # -----------------------------------------------------
 # Taking Derivative of Array Representing Polynomial
 # -----------------------------------------------------
 
-function symbolic_diff{T<:Real}(v::Array{T})
+function symbolic_diff(v::Array{T}) where T <: Real
 	n=length(v)
 	k=div(n,2)
 	ans = zeros(T,n)
@@ -148,7 +148,7 @@ end
 # -----------------------------------------------------
 
 function diff_basis_DG(k::Int, level::Int, cell::Int, mode::Int)
-	dcoeffs = Array{Real}((level+1, k))
+	dcoeffs = Array{Real}(undef, (level+1, k))
 	p = cell
 	for l in level:-1:0
 		for f_n in 1:k

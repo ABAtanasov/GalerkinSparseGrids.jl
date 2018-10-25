@@ -1,6 +1,8 @@
 using GalerkinSparseGrids
-using Base.Test
-using Cubature
+using Test
+using HCubature
+using SparseArrays
+
 
 #---------------------------------------
 # Testing regular hier DG reconstruction

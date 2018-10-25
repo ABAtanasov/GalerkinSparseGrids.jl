@@ -1,7 +1,8 @@
 using GalerkinSparseGrids
-using Base.Test
-using Cubature
+using Test
+using HCubature
 using ODE
+using SparseArrays
 
 #--------------------------------------
 # Testing PDE solvers
@@ -76,7 +77,7 @@ println("Test Passed.")
 print("Testing traveling wave example in 2-D... ")
 
 m = [1, 2]
-truesoln = x -> cos(2*pi*(vecdot(m,x) - sqrt(vecdot(m,m))*0.54))
+truesoln = x -> cos(2*pi*(dot(m,x) - sqrt(dot(m,m))*0.54))
 
 D = length(m)
 k_used = 3

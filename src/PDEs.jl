@@ -14,17 +14,18 @@
 # other script files
 
 # Accuracy criticality: LOW
-# The accuracy is limited only by functions in other scripts 
+# The accuracy is limited only by functions in other scripts
 # and ODE.jl
 
-# Construct the time evolution matrix given a laplacian and 
+# Construct the time evolution matrix given a laplacian and
 # initial data given f0, v0
-function wave_data{A<:AbstractArray, T<:Real}(laplac::A, 
-							f0coeffs::Array{T,1}, v0coeffs::Array{T,1})
+function wave_data(laplac::A, f0coeffs::Array{T, 1},
+	v0coeffs::Array{T, 1}) where {A <: AbstractArray, T <: Real}
+
 	len = length(f0coeffs)
 	rows = rowvals(laplac)
 	vals = nonzeros(laplac)
-	
+
 	I = Int[]
 	J = Int[]
 	V = T[]
@@ -43,11 +44,11 @@ function wave_data{A<:AbstractArray, T<:Real}(laplac::A,
 		push!(V, 1.0)
 	end
 	RHS = sparse(I, J, V, 2*len, 2*len, +)
-	y0 = Array{T}([i<=len ? f0coeffs[i] : v0coeffs[i-len] for i in 1:2*len])
+	y0 = Array{T}(undef, [i<=len ? f0coeffs[i] : v0coeffs[i-len] for i in 1:2*len])
 	return RHS, y0
 end
 
-# The reason we have a wave evolution in 1D is to test 
+# The reason we have a wave evolution in 1D is to test
 # that the standard "position" and multiresolution "heirarchical"
 # bases agree for wave PDE evolution
 function wave_evolve_1D(k::Int, max_level::Int,
@@ -72,7 +73,7 @@ function wave_evolve_1D(k::Int, max_level::Int,
 
 	D_op = periodic_DLF_matrix(k, max_level; basis=basis)
 	laplac= *(D_op,D_op)
-	
+
 	RHS, y0 = wave_data(laplac, f0coeffs, v0coeffs)
 	if order == "45"
 		soln = ode45((t,x)->*(RHS,x), y0, [time0,time1]; kwargs...)
@@ -84,7 +85,7 @@ function wave_evolve_1D(k::Int, max_level::Int,
 	return soln
 end
 
-function norm_squared{T<:Real}(coeffs::Array{T}; basis="hier")
+function norm_squared(coeffs::Array{T},; basis = "hier") where T <: Real
 
 	if basis=="hier" || basis=="pos"
 		return sum(i^2 for i in coeffs)
@@ -93,13 +94,13 @@ function norm_squared{T<:Real}(coeffs::Array{T}; basis="hier")
 	end
 end
 
-function energy_func_1D{T<:Real}(k, level,
-						soln::Tuple{Array{T,1},Array{Array{T,1},1}};
-						basis = "hier")
+function energy_func_1D(k, level, soln::Tuple{Array{T, 1}, Array{Array{T, 1}, 1}};
+	basis = "hier") where T <: Real
+
 	len			= length(soln[1])
 	num_coeffs	= Int(round(length(soln[2][1])/2))
 	times		= copy(soln[1])
-	energies	= Array{T}(len)
+	energies	= Array{T}(undef, len)
 	D_op		= periodic_DLF_matrix(k, level; basis=basis)
 
 	for i in 1:len
@@ -131,14 +132,13 @@ function wave_evolve(D::Int, k::Int, n::Int,
 	return soln
 end
 
-function energy_func{T<:Real}(D::Int, k::Int, n::Int,
-					 soln::Tuple{Array{T,1},Array{Array{T,1},1}};
-					 scheme = "sparse")
+function energy_func(D::Int, k::Int, n::Int, soln::Tuple{Array{T, 1}, Array{Array{T, 1}, 1}};
+		scheme = "sparse") where T <: Real
 
 	len 		= length(soln[1])
 	num_coeffs	= Int(round(length(soln[2][1])/2))
 	times 		= copy(soln[1])
-	energies	= Array{T}(len)
+	energies	= Array{T}(undef, len)
 	D_ops		= grad_matrix(D, k, n; scheme=scheme)
 
 	for i in 1:len

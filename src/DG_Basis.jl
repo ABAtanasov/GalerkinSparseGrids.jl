@@ -15,17 +15,17 @@
 
 
 # The coordinate convention here is to have vectors of length n even
-# The first half has component i is the respective coefficient of x^i 
+# The first half has component i is the respective coefficient of x^i
 # THe second half has component n/2 + i is the coefficient of sgn(x)*x^i
 
-function product_matrix(i::Int, j::Int, n::Int) 
-    # This is the inner product of <x^i, x^j> when i,j < n/2 
+function product_matrix(i::Int, j::Int, n::Int)
+    # This is the inner product of <x^i, x^j> when i,j < n/2
     # or the appropriate reflection when they are >=
     # Exact expressions only. No NIntegrations
     k= Int(round(n/2))
     if i < k && j < k
         return (1 + (-1)^(i + j))/(1 + i + j)
-    elseif i >= k && j< k 
+    elseif i >= k && j< k
 		return (1 - (-1)^((i-k) + (j)))/(1 + (i-k) + (j))
 	elseif i < k && j >= k
 		return product_matrix(j, i, n)
@@ -34,13 +34,13 @@ function product_matrix(i::Int, j::Int, n::Int)
     end
 end
 
-function inner_product{T<:Real}(v1::Array{T},v2::Array{T}) 
+function inner_product(v1::Array{T}, v2::Array{T}) where T <: Real
 	value=zero(eltype(v1)) #Get 0 of the same type as v1
 	n=length(v1)
 	for i in 1:n
 		for j in 1:n
             if v1[i]==0 || v2[j]==0
-                continue 
+                continue
             else
                 value += product_matrix(i-1,j-1,n)*v1[i]*v2[j]
             end
@@ -49,7 +49,7 @@ function inner_product{T<:Real}(v1::Array{T},v2::Array{T})
     return value
 end
 
-function inner_product{T<:Real}(v1::Array{T},j::Int) #we consider x^(j-1)
+function inner_product(v1::Array{T}, j::Int) where T <: Real #we consider x^(j-1)
 	value=zero(eltype(v1)) #Get 0 of the same type as v1
 	n=length(v1)
 	for i in 1:n
@@ -65,7 +65,7 @@ end
 
 # The gram schmidt process on a set of vectors
 # I think using an array of arrays is easiest here
-function gram_schmidt{T<:Real}(Q_initial::Array{Array{T,1},1})
+function gram_schmidt(Q_initial::Array{Array{T, 1}, 1}) where T <: Real
 	n = length(Q_initial[1])
 	k = Int(round(n/2))
 	# n = 2k, k polys of degree up to k-1 and then k polys according to f
@@ -75,7 +75,7 @@ function gram_schmidt{T<:Real}(Q_initial::Array{Array{T,1},1})
 		for j = 1:i-1
 			proj = inner_product(Q_initial[i],Q_final[j])/inner_product(Q_final[j], Q_final[j])
 			#This gives us the number corresponding to the projection along Q_final[j]
-			Q_final[i] -= proj * Q_final[j]   
+			Q_final[i] -= proj * Q_final[j]
 			#This subtracts it out from Q_final[i] to orthogonalize
 		end
         Q_final[i] /= sqrt(inner_product(Q_final[i], Q_final[i]))
@@ -86,7 +86,7 @@ end
 
 #We can now form the Legendre polynomials
 function legendre(k::Int)
-	Q = [[i==j?1.0:0.0 for i = 1:2*(k+1)] for j = 1:(k+1)]
+	Q = [[i==j ? 1.0 : 0.0 for i = 1:2*(k+1)] for j = 1:(k+1)]
 	#start with just the x^i basis for i = 0 to k
 	Q = gram_schmidt(Q)
 	#Orthgonalize, and now we have the Legendre polynomials
@@ -101,13 +101,13 @@ end
 # Making a basis of functions have the first k moments vanish
 # -----------------------------------------------------------
 
-function orthogonalize_1{T<:Real}(Q_initial::Array{Array{T,1},1})
+function orthogonalize_1(Q_initial::Array{Array{T, 1}, 1}) where T <: Real
 	n = length(Q_initial[1])
-	k = Int(round(n/2)) 
+	k = Int(round(n/2))
 	# n = 2k, because basis includes the f(j,x) functions in addition to x^j
 	Q_final = deepcopy(Q_initial)
 	# As before
-	legendre_polys=legendre(k-1) 
+	legendre_polys=legendre(k-1)
 	# We need an orthogonal basis for 1..x^(k-1) for the projection to work
 	for i = 1:k
 		for j in 1:k
@@ -124,10 +124,10 @@ end
 # Make some functions have higher vanishing moments
 # -----------------------------------------------------
 
-# This function will make k-1 of the basis vectors orth to x^k, 
+# This function will make k-1 of the basis vectors orth to x^k,
 # k-2 to x^k+1  all the way to 1 vector orth to x^2k-2
 
-function orthogonalize_2{T<:Real}(Q_initial::Array{Array{T,1},1})
+function orthogonalize_2(Q_initial::Array{Array{T, 1}, 1}) where T <: Real
     n = length(Q_initial[1])
     k = Int(round(n/2))
     Q_final = deepcopy(Q_initial)
@@ -146,20 +146,20 @@ function orthogonalize_2{T<:Real}(Q_initial::Array{Array{T,1},1})
 end
 
 
-# Standard gram-schmidt process, starting at the end 
-# (this is important, because the last function is orthogonal to a lot of higher 
-# polynomials, and we don't want to do anything other than normalize it, 
-# with similar reasoning for the penultimate, etc. functions) 
+# Standard gram-schmidt process, starting at the end
+# (this is important, because the last function is orthogonal to a lot of higher
+# polynomials, and we don't want to do anything other than normalize it,
+# with similar reasoning for the penultimate, etc. functions)
 
-function gram_schmidt_rev{T<:Real}(Q_initial::Array{Array{T,1},1}) 
+function gram_schmidt_rev(Q_initial::Array{Array{T, 1}, 1}) where T <: Real
 	n = length(Q_initial[1])
 	k = Int(round(n/2))
 	Q_final = [[0.0 for i in 1:n] for j in 1:k]
-	for i = k:-1:1    #note we're going in reverse 
+	for i = k:-1:1    #note we're going in reverse
 		fi = copy(Q_initial[i])  #we won't modify the original, so we copy
 		Q_final[i] = fi          #start with Q_final = f_i, and we'll subtract projections
 		for j = i+1:k #because we're going in reverse
-			proj = inner_product(fi,Q_final[j])/inner_product(Q_final[j], Q_final[j]) 
+			proj = inner_product(fi,Q_final[j])/inner_product(Q_final[j], Q_final[j])
 			#find the projection
 			Q_final[i] -= proj * Q_final[j]    #project out direction j
 		end
@@ -174,7 +174,7 @@ end
 # namely the last one
 # -----------------------------------------------------
 
-function rotate_discontinuity{T<:Real}(Q_initial::Array{Array{T,1},1}) 
+function rotate_discontinuity(Q_initial::Array{Array{T, 1}, 1}) where T <: Real
 	# To be implemented
 end
 
@@ -183,11 +183,9 @@ end
 # -----------------------------------------------------
 
 function dg_basis(k::Int)
-	Q = [[j==(i-k)?1.0:0.0 for i in 1:2*k] for j in 1:k]
+	Q = [[j==(i-k) ? 1.0 : 0.0 for i in 1:2*k] for j in 1:k]
 	Q = orthogonalize_1(Q)
-	Q = orthogonalize_2(Q) 
+	Q = orthogonalize_2(Q)
 	Q = gram_schmidt_rev(Q)
 	return Q
 end
-
-

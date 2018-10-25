@@ -1,7 +1,8 @@
 using GalerkinSparseGrids
-using Base.Test
-using Cubature
+using Test
+using HCubature
 using ODE
+using SparseArrays
 
 tests = [
 	"elementary.jl",
@@ -10,10 +11,11 @@ tests = [
 	"differentiation.jl",
 	"solvers.jl"
 ]
-
-for filename in tests
-	name = first(splitext(filename))
-	@testset "$name" begin
-		include(filename)
+@testset "GalerkinSparseGrids" begin
+	for filename in tests
+		name = first(splitext(filename))
+		@testset "$name" begin
+			include(filename)
+		end
 	end
 end

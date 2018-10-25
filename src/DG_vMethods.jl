@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------
 # It is advantageous to have the coeffs as
 # one single vector in order to make use of BLAS
-# and related libraries when defining operators on 
+# and related libraries when defining operators on
 # our space of functions
 #
 # In this script, we "vectorize" our functions,
@@ -10,20 +10,20 @@
 #
 # The main difficulty with this is that, unlike with dictionaries
 # there is no easy way to go from (level, cell, mode) to a
-# corresponding index in a 1-D vector. 
+# corresponding index in a 1-D vector.
 #
 # For this, we have the reference functions:
-# full/sparse_referenceV2D/D2V 
+# full/sparse_referenceV2D/D2V
 # D2V generates a dict that, upon input of a level, cell, mode
 # gives the corresponding index in a vector
 # V2D generates a vector, with row i having the three numbers
 # level, cell, mode corresponding to index i in the vector
-# 
-# These methods work in all dimensions, and there are ones for both
-# full and sparse grids. 
 #
-# The entire script culminates in a final result: a matrix 
-# representation of the derivative operator 
+# These methods work in all dimensions, and there are ones for both
+# full and sparse grids.
+#
+# The entire script culminates in a final result: a matrix
+# representation of the derivative operator
 # (both in full and sparse bases)
 # ------------------------------------------------------------------
 
@@ -46,13 +46,13 @@ function get_size(D::Int, k::Int, n::Int; scheme="sparse")
 end
 
 
-function D2V{d,T<:Real}(D::Int, k::Int, n::Int,
-						coeffs::Dict{CartesianIndex{d}, Array{Array{T,d},d}};
-						scheme="sparse")
+function D2V(D::Int, k::Int, n::Int, coeffs::Dict{CartesianIndex{d}, Array{Array{T, d}, d}};
+	scheme = "sparse") where {d, T <: Real}
+
 	(d != D) && throw(TypeError(:coeffs))
 	cutoff		= get_cutoff(scheme, D, n)
 	size		= get_size(D, k, n; scheme=scheme)
-	vect		= Array{T}(size)
+	vect		= Array{T}(undef, size)
 	modes	= ntuple(i-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
@@ -71,7 +71,7 @@ function D2V{d,T<:Real}(D::Int, k::Int, n::Int,
 end
 
 
-function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
+function V2D(D::Int, k::Int, n::Int, vect::Array{T}; scheme = "sparse") where T
 	cutoff		= get_cutoff(scheme, D, n)
 	coeffs		= Dict{CartesianIndex{D}, Array{Array{T,D},D}}()
 	modes		= ntuple(q-> k, D)
@@ -83,7 +83,7 @@ function V2D{T<:Real}(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse")
 		ks = ntuple(q -> 1<<max(0, level[q]-2), D)  #This sets up a specific k+1 vector
 		level_coeffs = Array{Array{T}}(ks) #all the coefficients at this level
 		for cell in CartesianRange(ks)
-			cell_coeffs = Array{T}(modes)
+			cell_coeffs = Array{T}(undef, modes)
 			for mode in CartesianRange(modes)
 				cell_coeffs[mode] = vect[j]
 				j += 1
@@ -120,17 +120,17 @@ end
 function V2Dref(D::Int, k::Int, n::Int; scheme = "sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	size		= get_size(D, k, n; scheme=scheme)
-	vect		= Array{NTuple{3,CartesianIndex{D}}}(size)
+	vect		= Array{NTuple{3,CartesianRange{D}}}(size)
 	modes	= ntuple(q-> k, D)
 	ls			= ntuple(i->(n+1), D)
-	j = 1	
-	for level in CartesianRange(ls)
+	j = 1
+	for level in ls
 		cutoff(level) && continue
 
 		ks = ntuple(q -> 1<<max(0, level[q]-2), D)  #This sets up a specific k+1 vector
 		lvl = ntuple(i -> level[i]-1,D)
-		for cell in CartesianRange(ks)
-			for mode in CartesianRange(modes)
+		for cell in ks
+			for mode in modes
 				vect[j] = (level, cell, mode)
 				j += 1
 			end
@@ -150,7 +150,7 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 								scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
 	len			= get_size(D, k, n; scheme=scheme)
-	coeffs		= Array{Float64}(len)
+	coeffs		= Array{Float64}(undef, len)
 	modes		= ntuple(i-> k, D)
 	ls			= ntuple(i-> (n+1), D)
 	j = 1
@@ -162,7 +162,7 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 		for cell in CartesianRange(ks)
 			for mode in CartesianRange(modes)
 				coeffs[j] = get_coefficient_DG(k, lvl, cell, mode, f;
-												rel_tol=rel_tol, abs_tol=abs_tol, 
+												rel_tol=rel_tol, abs_tol=abs_tol,
 												max_evals=max_evals)
 				j += 1
 			end
@@ -170,4 +170,3 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 	end
 	return coeffs
 end
-

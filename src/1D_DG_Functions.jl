@@ -9,11 +9,11 @@ const K_max = 10;
 # Efficiency criticality: HIGH
 # Central to the efficiency of the package
 
-# Performing fastmath on an array of coefficients  
+# Performing fastmath on an array of coefficients
 # of x^k and |x|^k, giving the value at a specified point
 # supported on [-1, 1]
-@fastmath function array2poly{T<:Real}(v::Array{T,1}, x::Real)
-	if abs(x)>1 
+@fastmath function array2poly(v::Array{T, 1}, x::Real) where T <: Real
+	if abs(x)>1
 		return zero(T)
 	end
 	n = length(v)
@@ -22,14 +22,14 @@ const K_max = 10;
 	xi = one(T)
 	sgn = sign(x)
 	@inbounds for i in k:-1:1
-		# Using Horner's method 
+		# Using Horner's method
 		s *= x
 		s += v[i] + flipsign(v[i+k], x)#v[i+k]*sign(x)#
 	end
 	return s
 end
 
-function array2poly{T<:Real}(v::Array{T,1})
+function array2poly(v::Array{T, 1}) where T <: Real
 	return (x-> array2poly(v,x))
 end
 
@@ -49,8 +49,8 @@ end
 
 # precomputing the DG functions
 # TODO Make this a 2D array:
-dg_coeffs = Array{Array{Array{Float64,1},1}}(K_max)
-
+#dg_coeffs = Array{Array{Array{Float64,1},1}}(K_max)
+dg_coeffs = Array{Vector{Vector{Float64}}}(undef, K_max) # Thanks to Alex Arslan for this
 
 for i in 1:K_max
 	dg_coeffs[i] = dg_basis(i)
@@ -75,15 +75,15 @@ end
 # ----------------------------------------------
 
 # Legendre polynomial on [0, 1]
-function leg{T<:Real}(mode::Int, x::T)
-	return sqrt(2.0)*LegendreP(mode-1, 2*x-1) 
+function leg(mode::Int, x::T) where T <: Real
+	return sqrt(2.0)*LegendreP(mode-1, 2*x-1)
 end
 
 # level >= 1
 # cell in 1:1<<level
 # mode in 1:k
 # Legendre polynomial on [(cell-1)*h, cell*h] with h = 1/(1<<level)
-function basis{T<:Real}(level::Int, cell::Int, mode::Int, x::T)
+function basis(level::Int, cell::Int, mode::Int, x::T) where T <: Real
 	return leg(mode, (1<<level)*x - (cell-1)) * (2.0)^(level/2)
 end
 
@@ -97,7 +97,7 @@ end
 # using only the position basis, never going through heir
 function pos_vcoeffs_DG(k::Int, level::Int, f::Function;
 						rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals = MAX_EVALS)
-	vcoeffs = Array{Float64}((1<<level)*(k))
+	vcoeffs = Array{Float64}(undef, (1<<level)*(k))
 	i = 1
 	for cell in 1:(1<<level)
 		for mode in 1:k
@@ -119,7 +119,7 @@ end
 # for both both x^k and |x|^k, then given a choice of
 # side (right vs. left) this becomes just a pure
 # polynomial array of half the length
-function convert_polyarray{T<:Real}(v::Array{T,1}, side="left")
+function convert_polyarray(v::Array{T, 1}, side = "left") where T <: Real
     n = Int(length(v)//2)
 	if side == "left"
 		return [v[i]-v[n+i] for i in 1:n]
@@ -130,13 +130,13 @@ function convert_polyarray{T<:Real}(v::Array{T,1}, side="left")
 end
 
 # Gives the polynomial array corresponding to p(x/c)
-function scale_polyarray{T<:Real}(v::Array{T,1}, c::Real)
+function scale_polyarray(v::Array{T, 1}, c::Real) where T <: Real
 	n = length(v)
 	return [v[i] * (1//c^(i-1)) for i in 1:n]
 end
 
 # Gives the polynomial array corresponding to p(x-a)
-function shift_polyarray{T<:Real}(v::Array{T,1}, a::Real)
+function shift_polyarray(v::Array{T, 1}, a::Real) where T <: Real
 	n = length(v)
 	v_new = zeros(v)
 	for i::Int in 1:n
@@ -147,9 +147,9 @@ function shift_polyarray{T<:Real}(v::Array{T,1}, a::Real)
 	return v_new
 end
 
-# Performs symbolic integration of the polynomials 
+# Performs symbolic integration of the polynomials
 # represented by v and w on the interval [a, b]
-function integrate_polyarray{T<:Real}(v::Array{T,1}, w::Array{T,1}; a::Real=0, b::Real=1)
+function integrate_polyarray(v::Array{T, 1}, w::Array{T, 1}; a::Real = 0, b::Real = 1) where T <: Real
 	ans = zero(T)
 	for i::Int in 1:length(v)
 		for j::Int in 1:length(w)
@@ -160,7 +160,7 @@ function integrate_polyarray{T<:Real}(v::Array{T,1}, w::Array{T,1}; a::Real=0, b
 end
 
 # With a bit of case work, we can do an explicit
-# symbolic integration of the elements in the 
+# symbolic integration of the elements in the
 # hierarchical basis against the legendre polynomials
 # defining the position basis:
 function hier2pos(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
@@ -232,7 +232,7 @@ function hier2pos(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
 end
 
 
-# Construct the change of basis matrix from hierarchical 
+# Construct the change of basis matrix from hierarchical
 # to position basis
 function hier2pos(k::Int, max_level::Int; abs_tol=ABS_TOL)
 	j = 1
