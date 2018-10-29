@@ -34,7 +34,7 @@ function product_matrix(i::Int, j::Int, n::Int)
     end
 end
 
-function inner_product(v1::Array{T}, v2::Array{T}) where T <: Real
+function inner_product(v1::AbstractArray{T}, v2::AbstractArray{T}) where T <: Real
 	value=zero(eltype(v1)) #Get 0 of the same type as v1
 	n=length(v1)
 	for i in 1:n
@@ -49,7 +49,7 @@ function inner_product(v1::Array{T}, v2::Array{T}) where T <: Real
     return value
 end
 
-function inner_product(v1::Array{T}, j::Int) where T <: Real #we consider x^(j-1)
+function inner_product(v1::AbstractArray{T}, j::Int) where T <: Real #we consider x^(j-1)
 	value=zero(eltype(v1)) #Get 0 of the same type as v1
 	n=length(v1)
 	for i in 1:n

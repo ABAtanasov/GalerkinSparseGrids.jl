@@ -1,13 +1,14 @@
 using GalerkinSparseGrids
 using Test
 using HCubature
+using StaticArrays
 using SparseArrays
 
 #--------------------------------------
 # Testing Differentiation
 #--------------------------------------
 
-@testset "differentiation.jl" begin 
+@testset "differentiation.jl" begin
     @testset "Testing differentiation 1-D DG basis... " begin
         k=3
         for l in 2:5
@@ -19,7 +20,7 @@ using SparseArrays
             dict= V2D(1, k, l, vcoeffs; scheme="full")
             ddict = V2D(1, k, l, dvcoeffs; scheme="full")
             err = x->(reconstruct_DG(ddict,[x[1]])+2*pi*sin(2*pi*x[1]))^2
-            @test hquadrature(err, 0, 1, abstol=1.0e-10, maxevals=500)[1] < 1/(1<<(k+l-2))
+            @test hquadrature(err, 0, 1, atol=1.0e-10, maxevals=500)[1] < 1/(1<<(k+l-2))
         end
     end
 
@@ -33,7 +34,7 @@ using SparseArrays
             dict= V2D(D, k, l, vcoeffs; scheme="full")
             ddict = V2D(D, k, l, dvcoeffs; scheme="full")
             err = x->(reconstruct_DG(ddict,[x[1],x[2]])+2*pi*sin(2*pi*x[1])*cos(2*pi*x[2]))^2
-            @test hcubature(err, [0,0], [1,1], abstol=1.0e-10, maxevals=500)[1] < 1/(1<<(k+l-2))
+            @test hcubature(err, [0,0], [1,1], atol=1.0e-10, maxevals=500)[1] < 1/(1<<(k+l-2))
         end
     end
 end

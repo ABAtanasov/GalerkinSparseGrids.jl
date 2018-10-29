@@ -14,8 +14,6 @@ tests = [
 @testset "GalerkinSparseGrids" begin
 	for filename in tests
 		name = first(splitext(filename))
-		@testset "$name" begin
 			include(filename)
-		end
 	end
 end

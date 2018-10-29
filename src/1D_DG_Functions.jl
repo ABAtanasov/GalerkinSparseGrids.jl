@@ -12,7 +12,7 @@ const K_max = 10;
 # Performing fastmath on an array of coefficients
 # of x^k and |x|^k, giving the value at a specified point
 # supported on [-1, 1]
-@fastmath function array2poly(v::Array{T, 1}, x::Real) where T <: Real
+@fastmath function array2poly(v::AbstractArray{T, 1}, x::Real) where T <: Real
 	if abs(x)>1
 		return zero(T)
 	end
@@ -29,7 +29,7 @@ const K_max = 10;
 	return s
 end
 
-function array2poly(v::Array{T, 1}) where T <: Real
+function array2poly(v::AbstractArray{T, 1}) where T <: Real
 	return (x-> array2poly(v,x))
 end
 
@@ -50,7 +50,7 @@ end
 # precomputing the DG functions
 # TODO Make this a 2D array:
 #dg_coeffs = Array{Array{Array{Float64,1},1}}(K_max)
-dg_coeffs = Array{Vector{Vector{Float64}}}(undef, K_max) # Thanks to Alex Arslan for this
+dg_coeffs = Vector{Vector{Vector{Float64}}}(undef, K_max) # Thanks to Alex Arslan for this
 
 for i in 1:K_max
 	dg_coeffs[i] = dg_basis(i)
@@ -96,7 +96,7 @@ end
 # Never used except if user demands to evolve wave equation
 # using only the position basis, never going through heir
 function pos_vcoeffs_DG(k::Int, level::Int, f::Function;
-						rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals = MAX_EVALS)
+						rtol = REL_TOL, atol = ABS_TOL, maxevals = MAX_EVALS)
 	vcoeffs = Array{Float64}(undef, (1<<level)*(k))
 	i = 1
 	for cell in 1:(1<<level)
@@ -104,7 +104,7 @@ function pos_vcoeffs_DG(k::Int, level::Int, f::Function;
 			fcn			= x->(basis(level, cell, mode,x)*f(x))
 			left_bound  = (cell-1)/(1<<level)
 			right_bound = (cell)/(1<<level)
-			vcoeffs[i]  = hquadrature(fcn, left_bound, right_bound; abstol=abs_tol)[1]
+			vcoeffs[i]  = hquadrature(fcn, left_bound, right_bound; atol=atol)[1]
 			i += 1
 		end
 	end
@@ -119,7 +119,7 @@ end
 # for both both x^k and |x|^k, then given a choice of
 # side (right vs. left) this becomes just a pure
 # polynomial array of half the length
-function convert_polyarray(v::Array{T, 1}, side = "left") where T <: Real
+function convert_polyarray(v::AbstractArray{T, 1}, side = "left") where T <: Real
     n = Int(length(v)//2)
 	if side == "left"
 		return [v[i]-v[n+i] for i in 1:n]
@@ -130,13 +130,13 @@ function convert_polyarray(v::Array{T, 1}, side = "left") where T <: Real
 end
 
 # Gives the polynomial array corresponding to p(x/c)
-function scale_polyarray(v::Array{T, 1}, c::Real) where T <: Real
+function scale_polyarray(v::AbstractArray{T, 1}, c::Real) where T <: Real
 	n = length(v)
 	return [v[i] * (1//c^(i-1)) for i in 1:n]
 end
 
 # Gives the polynomial array corresponding to p(x-a)
-function shift_polyarray(v::Array{T, 1}, a::Real) where T <: Real
+function shift_polyarray(v::AbstractArray{T, 1}, a::Real) where T <: Real
 	n = length(v)
 	v_new = zeros(v)
 	for i::Int in 1:n
@@ -149,7 +149,7 @@ end
 
 # Performs symbolic integration of the polynomials
 # represented by v and w on the interval [a, b]
-function integrate_polyarray(v::Array{T, 1}, w::Array{T, 1}; a::Real = 0, b::Real = 1) where T <: Real
+function integrate_polyarray(v::AbstractArray{T, 1}, w::AbstractArray{T, 1}; a::Real = 0, b::Real = 1) where T <: Real
 	ans = zero(T)
 	for i::Int in 1:length(v)
 		for j::Int in 1:length(w)
@@ -234,7 +234,7 @@ end
 
 # Construct the change of basis matrix from hierarchical
 # to position basis
-function hier2pos(k::Int, max_level::Int; abs_tol=ABS_TOL)
+function hier2pos(k::Int, max_level::Int; atol=ABS_TOL)
 	j = 1
 	I = Int[]
 	J = Int[]
@@ -244,7 +244,7 @@ function hier2pos(k::Int, max_level::Int; abs_tol=ABS_TOL)
 			for mode in 1:k
 				ans = pos_vcoeffs_DG(k, max_level, v(k, level, cell, mode))
 				for i in 1:length(ans)
-					if abs(ans[i]) > abs_tol
+					if abs(ans[i]) > atol
 						push!(I, i)
 						push!(J, j)
 						push!(V, ans[i])
@@ -257,6 +257,6 @@ function hier2pos(k::Int, max_level::Int; abs_tol=ABS_TOL)
 	return sparse(I, J, V, k * (1<<max_level), k * (1<<max_level), +)
 end
 
-function pos2hier(k::Int, max_level::Int; abs_tol=ABS_TOL)
-	return hier2pos(k, max_level; abs_tol=abs_tol)'
+function pos2hier(k::Int, max_level::Int; atol=ABS_TOL)
+	return hier2pos(k, max_level; atol=atol)'
 end

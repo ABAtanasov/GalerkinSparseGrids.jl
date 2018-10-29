@@ -17,8 +17,8 @@
 # using periodic boundary conditions in D-dimensionss
 # -----------------------------------------------------
 
-function cos_coeffs(k::Int, n::Int, m::Array{Int,1};
-					scheme="sparse", phase = 0.0, A = 1.0)
+function cos_coeffs(k::Int, n::Int, m::AbstractArray{T,1};
+					scheme="sparse", phase = 0.0, A = 1.0) where T
 	D = length(m)
 	wavenumber = 2*pi*m
 
@@ -32,7 +32,7 @@ function cos_coeffs(k::Int, n::Int, m::Array{Int,1};
 
 	ansVect = zeros(get_size(D, k, n; scheme=scheme))
 
-	for SCs in CartesianRange(ntuple(q->2, D))
+	for SCs in CartesianIndices(ntuple(q->2, D))
 		num_sines = sum([SCs[i]-1 for i in 1:D])
 		if num_sines % 2 == 1
 			continue

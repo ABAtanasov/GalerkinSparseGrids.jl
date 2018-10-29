@@ -1,10 +1,10 @@
 # -----------------------------------------------------------
 #
-# Implementing a nodal basis for DG sparse grids 
+# Implementing a nodal basis for DG sparse grids
 #
 # -----------------------------------------------------------
 
-#= 
+#=
 
 We begin by defining analogues of our DG functions
 to satisfy the following conditions:
@@ -16,15 +16,15 @@ to satisfy the following conditions:
 	3) Third constraint?
 
 To do this, we _restrict_ to the continuous part of the DG basis, and focus
-on piecewise polynomials that vanish on their boundaries. We then pick the 
+on piecewise polynomials that vanish on their boundaries. We then pick the
 collocation points to be exactly at these boundaries.
 
-For this, it is useful to define lagrange polynomials, and moreover 
-use k=2, 3, 5. 
-The k=2 case has our basis is exactly the hat function basis constructed 
+For this, it is useful to define lagrange polynomials, and moreover
+use k=2, 3, 5.
+The k=2 case has our basis is exactly the hat function basis constructed
 previously.
 
-For k=2, the coarsest level has nodal points at {0, 1}, 
+For k=2, the coarsest level has nodal points at {0, 1},
 	the next level (the first hat) has nodal point at 0.5
 	the next level has two cells with points at 0.25, 0.75 etc.
 
@@ -53,7 +53,7 @@ function lag_nodal(k::Int, mode::Int, x::Real)
 		mode == 1 && return (x < 0 || x > 1) ? zero(x) : 2 * (x-1) * (x - 1//2)
 		mode == 2 && return (x < 0 || x > 1) ? zero(x) : 2 * x * (x - 1//2)
 		mode == 3 && return (x < 0 || x > 1) ? zero(x) : -4 * x * (x-1)
-	elseif k == 4 
+	elseif k == 4
 		throw(MethodError("k = 4 not implemented"))
 	elseif k == 5
 		mode == 1 && return (x > 1 || x < 0) ? zero(x) : 32//3 * (x - 1//4) * (x - 1//2) * (x - 3//4) * (x - 1)
@@ -98,7 +98,7 @@ function v_nodal(k::Int, level::Int, cell::Int, mode::Int)
 end
 
 # -----------------------------------------------------------
-# Next we define the sparse matrices transforming between 
+# Next we define the sparse matrices transforming between
 # the heirarchical, nodal, and point bases
 # -----------------------------------------------------------
 
@@ -108,9 +108,9 @@ function eval_points_1D(k::Int, max_level::Int, level::Int, cell::Int, mode::Int
 	I = Int[]
 	V = Float64[]
 	for l in 0:max_level
-		l == 0 ? (node_range = 0:(1//(k-1)):1) : 
+		l == 0 ? (node_range = 0:(1//(k-1)):1) :
 				 (node_range = 1//(2*(k-1)):1//(k-1):(1-1//(2*(k-1))))
-		
+
 		for c in 1:1<<max(0, l-1)
 			for node in node_range
 				x = (c - 1 + node)//(1<<max(0, l-1))
@@ -133,7 +133,7 @@ function nodal2points_1D(k::Int, max_level::Int)
 
 	for level in 0:max_level
 		level == 0 ? (mode_range = 1:k) : (mode_range = 1:(k-1))
-		
+
 		for cell in 1:1<<max(0, level-1)
 			for mode in mode_range
 				coeffs = eval_points_1D(k, max_level, level, cell, mode)
@@ -155,16 +155,16 @@ end
 # TODO: Allow for this to handle discontinuity across cells
 function points2nodal_1D(k::Int, max_level::Int)
     Q = nodal2points_1D(k, max_level)
-    return threshold(inv(full(Q)), abs_tol=1e-15)
+    return threshold(inv(full(Q)), atol=1e-15)
 end
 
-# Converts a given nodal basis element to a sum in the standard 
+# Converts a given nodal basis element to a sum in the standard
 # hieararchical DG scheme
-function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10, abs_tol=1e-15, max_evals=1500)
+function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rtol=1e-10, atol=1e-15, maxevals=1500)
 	I = Int[]
 	V = Float64[]
 	i = 1
-	
+
 	for hier_level in 0:level
 		hier_cells = 1<<max(0, hier_level-1)
 		for hier_cell in 1:hier_cells
@@ -174,8 +174,8 @@ function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10,
 				val = hquadrature(x->v_nodal(k, level, cell, mode, x)*
 									v(k, hier_level, hier_cell, hier_mode, x),
 									x_min, x_max,
-									reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
-				(abs(val) > eps(abs_tol)) && (push!(I, i); push!(V, val))
+									rtol=rtol, atol=atol, maxevals=maxevals)[1]
+				(abs(val) > eps(atol)) && (push!(I, i); push!(V, val))
 				i += 1
 			end
 		end
@@ -183,21 +183,21 @@ function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rel_tol=1e-10,
 	return dropzeros!(sparsevec(I, V))
 end
 
-function nodal2modal_1D(k::Int, max_level::Int; rel_tol=1e-10, abs_tol=1e-15, max_evals=1500)
+function nodal2modal_1D(k::Int, max_level::Int; rtol=1e-10, atol=1e-15, maxevals=1500)
 	I = Int[]
 	J = Int[]
 	V = Float64[]
 	j = 1
-	
+
 	for nodal_level in 0:max_level
 		nodal_level == 0 ? num_nodes = k : num_nodes = k-1
 		nodal_cells = 1<<max(0, nodal_level-1)
 		for nodal_cell in 1:nodal_cells
 			for nodal_mode in 1:num_nodes
 				coeffs = nodal2modal_1D(k, nodal_level, nodal_cell, nodal_mode;
-										rel_tol=rel_tol,
-										abs_tol=abs_tol,
-										max_evals=max_evals)
+										rtol=rtol,
+										atol=atol,
+										maxevals=maxevals)
 				for (i, val) in zip(findnz(coeffs)...)
 					push!(I, i)
 					push!(J, j)
@@ -226,12 +226,12 @@ function modal2points_1D(k::Int, max_level::Int, level::Int, cell::Int, mode::In
 	i = 1
 	I = Int[]
 	V = Float64[]
-	
+
 	# subsequent levels:
 	for l in 0:max_level
-		l == 0 ? (node_range = 0:(1/(k-1)):1) : 
+		l == 0 ? (node_range = 0:(1/(k-1)):1) :
 				 (node_range = 1/(2*(k-1)):1/(k-1):(1-1/(2*(k-1))))
-		
+
 		for c in 1:1<<max(0, l-1)
 			for node in node_range
 				x = (c - 1 + node)/(1<<max(0, l-1))
@@ -244,7 +244,7 @@ function modal2points_1D(k::Int, max_level::Int, level::Int, cell::Int, mode::In
 	return dropzeros!(sparsevec(I, V))
 end
 
-# Constructs the sparse matrix to convert from the 
+# Constructs the sparse matrix to convert from the
 # hierarchical basis to the point basis
 function modal2points_1D(k::Int, max_level::Int)
 	I = Int[]
@@ -268,8 +268,8 @@ function modal2points_1D(k::Int, max_level::Int)
 	return dropzeros!(sparse(I, J, V))
 end
 
-function nodal2pos_1D(k, max_level, nodal_level, nodal_cell, nodal_mode; 
-				   rel_tol=1e-10, abs_tol=1e-15, max_evals=1500)
+function nodal2pos_1D(k, max_level, nodal_level, nodal_cell, nodal_mode;
+				   rtol=1e-10, atol=1e-15, maxevals=1500)
 	I = Int[]
 	V = Float64[]
 	i = 1
@@ -285,17 +285,17 @@ function nodal2pos_1D(k, max_level, nodal_level, nodal_cell, nodal_mode;
 			continue
 		end
 		for m in 1:k
-			val = hquadrature(x->v_nodal(k, nodal_level, nodal_cell, nodal_mode, x)*basis(max_level, c, m, x), 
+			val = hquadrature(x->v_nodal(k, nodal_level, nodal_cell, nodal_mode, x)*basis(max_level, c, m, x),
 							  pos_min, pos_max,
-							  reltol=rel_tol, abstol=abs_tol, maxevals=max_evals)[1]
-			(abs(val) > eps(abs_tol)) && (push!(I, i); push!(V, val))
+							  rtol=rtol, atol=atol, maxevals=maxevals)[1]
+			(abs(val) > eps(atol)) && (push!(I, i); push!(V, val))
 			i += 1
 		end
 	end
 	return sparsevec(I, V)
 end
 
-function nodal2pos_1D(k, max_level; rel_tol=1e-10, abs_tol=1e-15, max_evals=1500)
+function nodal2pos_1D(k, max_level; rtol=1e-10, atol=1e-15, maxevals=1500)
 	I = Int[]
 	J = Int[]
 	V = Float64[]
@@ -307,9 +307,9 @@ function nodal2pos_1D(k, max_level; rel_tol=1e-10, abs_tol=1e-15, max_evals=1500
 		for nodal_cell in 1:nodal_cells
 			for nodal_mode in 1:num_nodes
 				coeffs = nodal2pos_1D(k, max_level, nodal_level, nodal_cell, nodal_mode;
-										rel_tol=rel_tol,
-										abs_tol=abs_tol,
-										max_evals=max_evals)
+										rtol=rtol,
+										atol=atol,
+										maxevals=maxevals)
 				for (i, val) in zip(findnz(coeffs)...)
 					push!(I, i)
 					push!(J, j)

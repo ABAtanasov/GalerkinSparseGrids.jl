@@ -20,7 +20,6 @@ function D_matrix(i::Int, k::Int, n::Int, srefVD::Array{NTuple{3, CartesianIndex
 	V2D_1D = V2Dref(1,k,n)
 	D2V_1D = D2Vref(1,k,n)
 	Dmat_1D = periodic_DLF_matrix(k, n)
-
 	len = length(srefVD[:,1])
 	I = Int[]
 	J = Int[]
@@ -54,9 +53,8 @@ function D_matrix(i::Int, k::Int, n::Int, srefVD::Array{NTuple{3, CartesianIndex
 end
 
 
-function wave_data(laplac::A, f0coeffs::Array{T, 1},
-		v0coeffs::Array{T, 1}) where {A <: AbstractArray, T <: Real}
-		
+function D_matrix(D::Int, i::Int, k::Int, n::Int; scheme="sparse")
+
 	# Precompute the 1D derivatve matrix elements as global variables
 	# if they are not yet formed
 	precompute_diffs()

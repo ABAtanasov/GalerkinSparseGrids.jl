@@ -54,8 +54,8 @@ end
 
 function inner_loop_to_points(c2::Int, k::Int, l::CartesianIndex{D},
 			level::CartesianIndex{D}, cell::CartesianIndex{D},
-			mode::CartesianIndex{D}, I::Array{Int, 1}, V::Array{T, 1},
-			base_indices::Array{Int, 1}, point_mat_1D::Array{T, 2}) where {D, T <: Real}
+			mode::CartesianIndex{D}, I::Array{Int, 1}, V::AbstractArray{T, 1},
+			base_indices::Array{Int, 1}, point_mat_1D::AbstractArray{T, 2}) where {D, T <: Real}
 
 	cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l[i]-2), D)
 	modes::NTuple{D, Int} = ntuple(i->l[i]==1 ? k : k-1, D)
@@ -80,8 +80,8 @@ function inner_loop_to_points(c2::Int, k::Int, l::CartesianIndex{D},
 end
 
 function inner_loop_to_modal(c2::Int, k::Int, l::CartesianIndex{D}, level::CartesianIndex{D},
-			cell::CartesianIndex{D}, mode::CartesianIndex{D}, I::Array{Int, 1}, V::Array{T, 1},
-			base_indices::Array{Int, 1}, point_mat_1D::Array{T, 2}) where {D, T <: Real}
+			cell::CartesianIndex{D}, mode::CartesianIndex{D}, I::Array{Int, 1}, V::AbstractArray{T, 1},
+			base_indices::Array{Int, 1}, point_mat_1D::AbstractArray{T, 2}) where {D, T <: Real}
 
 	cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l[i]-2), D)
 	modes::NTuple{D, Int} = ntuple(i -> k, D)
@@ -111,7 +111,7 @@ end
 # on all the points of the corresponding sparse grid
 function eval_points(k::Int, n::Int, level::CartesianIndex{D},
 				cell::CartesianIndex{D}, mode::CartesianIndex{D},
-				modal_indices::Array{Int, 1}, point_mat_1D::Array{T, 2};
+				modal_indices::Array{Int, 1}, point_mat_1D::AbstractArray{T, 2};
 				scheme = "sparse") where {D, T <: Real}
 
 	cutoff = get_cutoff(scheme, D, n)
@@ -172,7 +172,7 @@ end
 # combination of nodal basis functions that vanish on all collcation points but that one
 function eval_nodal(k::Int, n::Int, level::CartesianIndex{D},
 		cell::CartesianIndex{D}, mode::CartesianIndex{D},
-		inv_mat_1D::Array{T, 2}; scheme = "sparse") where {D, T <: Real}
+		inv_mat_1D::AbstractArray{T, 2}; scheme = "sparse") where {D, T <: Real}
 
 	cutoff = get_cutoff(scheme, D, n)
 	ls::NTuple{D, Int} = ntuple(i->(n+1),D)
@@ -228,7 +228,7 @@ end
 function eval_DG(k::Int, n::Int, level::CartesianIndex{D},
 		cell::CartesianIndex{D}, mode::CartesianIndex{D},
 		hier_ref::Dict{NTuple{3, CartesianIndex{1}}, Int},
-		inv_nodal_mat_1D::Array{T, 2}; scheme = "sparse") where {D, T <: Real}
+		inv_nodal_mat_1D::AbstractArray{T, 2}; scheme = "sparse") where {D, T <: Real}
 
 	nodal_indices = [get_point_index(k, level[d]-1, cell[d], mode[d]) for d in 1:D]
 	cutoff = get_cutoff(scheme, D, n)

@@ -19,8 +19,8 @@
 
 # Construct the time evolution matrix given a laplacian and
 # initial data given f0, v0
-function wave_data(laplac::A, f0coeffs::Array{T, 1},
-	v0coeffs::Array{T, 1}) where {A <: AbstractArray, T <: Real}
+function wave_data(laplac::A, f0coeffs::AbstractArray{T, 1},
+	v0coeffs::AbstractArray{T, 1}) where {A <: AbstractArray, T <: Real}
 
 	len = length(f0coeffs)
 	rows = rowvals(laplac)
@@ -44,7 +44,7 @@ function wave_data(laplac::A, f0coeffs::Array{T, 1},
 		push!(V, 1.0)
 	end
 	RHS = sparse(I, J, V, 2*len, 2*len, +)
-	y0 = Array{T}(undef, [i<=len ? f0coeffs[i] : v0coeffs[i-len] for i in 1:2*len])
+	y0 = Array{T}([i<=len ? f0coeffs[i] : v0coeffs[i-len] for i in 1:2*len])
 	return RHS, y0
 end
 
@@ -85,7 +85,7 @@ function wave_evolve_1D(k::Int, max_level::Int,
 	return soln
 end
 
-function norm_squared(coeffs::Array{T},; basis = "hier") where T <: Real
+function norm_squared(coeffs::AbstractArray{T},; basis = "hier") where T <: Real
 
 	if basis=="hier" || basis=="pos"
 		return sum(i^2 for i in coeffs)

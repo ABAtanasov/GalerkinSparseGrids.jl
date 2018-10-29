@@ -45,7 +45,7 @@ end
 
 # Returns the value of the function at x
 function V(k::Int, level::NTuple{D, Int}, cell::CartesianIndex{D},
-	mode::CartesianIndex{D}, xs::Array{T, 1}) where {D, T <: Real}
+	mode::CartesianIndex{D}, xs::AbstractArray{T}) where {D,T}
 	ans = one(T)
 	for i = 1:D
 		ans *= v(k, level[i], cell[i], mode[i], xs[i])
@@ -82,12 +82,12 @@ end
 # is only concerned with a specific region in the grid, we restrict to that
 # appropriately, depending on the level
 function inner_product(f::Function, g::Function, lvl::NTuple{D, Int},
-	cell::CartesianIndex{D}; rel_tol = REL_TOL, abs_tol = ABS_TOL, max_evals = MAX_EVALS) where D
+	cell::CartesianIndex{D}; rtol = REL_TOL, atol = ABS_TOL, maxevals = MAX_EVALS) where D
 
-	h = (x-> f(x)*g(x))
+	_h = (x-> f(x)*g(x))
 	xmin = ntuple(i-> (cell[i]-1)/(1<<max(0,lvl[i]-1)), D)
 	xmax = ntuple(i-> (cell[i])/(1<<max(0,lvl[i]-1)), D)
-	val = hcubature(h, xmin, xmax; rtol=rel_tol, atol=abs_tol, maxevals=max_evals)[1]
+	val = hcubature(_h, xmin, xmax; rtol=rtol, atol=atol, maxevals=maxevals)[1]
 	return val
 end
 
@@ -96,12 +96,12 @@ end
 function get_coefficient_DG(k::Int, lvl::NTuple{D, Int}, cell::CartesianIndex{D},
 	 mode::CartesianIndex{D},
 	 f::Function;
-	 rel_tol = REL_TOL,
-	 abs_tol = ABS_TOL,
-	 max_evals = MAX_EVALS) where D
+	 rtol = REL_TOL,
+	 atol = ABS_TOL,
+	 maxevals = MAX_EVALS) where D
 
 	return inner_product(f, V(k,lvl,cell,mode),lvl,cell;
-							rel_tol = rel_tol, abs_tol = abs_tol, max_evals=max_evals)
+							rtol = rtol, atol = atol, maxevals=maxevals)
 end
 
 
@@ -110,23 +110,23 @@ end
 # Full or Sparse Galerkin Coefficients in n-D
 # -----------------------------------------------------
 function coeffs_DG(D::Int, k::Int, n::Int, f::Function;
-										rel_tol = REL_TOL, abs_tol = ABS_TOL,
-										max_evals=MAX_EVALS,
+										rtol = REL_TOL, atol = ABS_TOL,
+										maxevals=MAX_EVALS,
 										scheme="sparse")
 	cutoff	= get_cutoff(scheme, D, n)
 	coeffs	= Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
 	modes	= ntuple(i-> k, D)
 	ls		= ntuple(i->(n+1),D)
 
-	for level in CartesianRange(ls) #This really goes from 0 to l_i for each i
+	for level in CartesianIndices(ls) #This really goes from 0 to l_i for each i
 		cutoff(level) && continue
 
 		cells = ntuple(i -> 1<<max(0, level[i]-2), D)
 		level_coeffs = Array{Array{Float64,D}}(undef, cells)
 		lvl = ntuple(i -> level[i]-1,D)
-		for cell in CartesianRange(cells)
+		for cell in CartesianIndices(cells)
 			cell_coeffs = Array{Float64}(undef,modes)
-			for mode in CartesianRange(modes)
+			for mode in CartesianIndices(modes)
 				cell_coeffs[mode] = get_coefficient_DG(k, lvl, cell, mode, f)
 			end
 			level_coeffs[cell]=cell_coeffs
@@ -143,7 +143,7 @@ end
 # -----------------------------------------------------------
 
 function reconstruct_DG(coeffs::Dict{CartesianIndex{D}, Array{Array{T1, D}, D}},
-	xs::Array{T2, 1}) where {D, T1 <: Real, T2 <: Real}
+	xs::AbstractArray{T2, 1}) where {D, T1 <: Real, T2 <: Real}
 
 	value	= zero(T2)
 	k		= size(first(values(coeffs))[1])[1]
@@ -152,8 +152,8 @@ function reconstruct_DG(coeffs::Dict{CartesianIndex{D}, Array{Array{T1, D}, D}},
 	for key in keys(coeffs)
 		level = ntuple(i->key[i]-1,D)
 		cell = CartesianIndex{D}(ntuple(i->cell_index(xs[i],level[i]),D))
-		coeff = coeffs[key][cell]::Array{T1,D}
-		@inbounds for mode in CartesianRange(modes)
+		coeff = coeffs[key][cell]::AbstractArray{T1,D}
+		@inbounds for mode in CartesianIndices(modes)
 			value += coeff[mode]*V(k, level, cell, mode, xs)
 		end
 	end

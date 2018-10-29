@@ -1,6 +1,7 @@
 using GalerkinSparseGrids
 using Test
 using HCubature
+using StaticArrays
 using SparseArrays
 
 #--------------------------------------

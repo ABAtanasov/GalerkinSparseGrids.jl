@@ -3,6 +3,7 @@ module GalerkinSparseGrids
 # The prerequisite packages as of May 2018 are Cubature.jl and ODE.jl
 
 using HCubature
+using StaticArrays
 using ODE
 using SparseArrays
 
