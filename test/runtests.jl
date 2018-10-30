@@ -3,6 +3,7 @@ using Test
 using HCubature
 using ODE
 using SparseArrays
+using LinearAlgebra
 
 tests = [
 	"elementary.jl",

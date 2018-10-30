@@ -141,9 +141,7 @@ end
 # Reconstruction (full and sparse) in n-D from a Dict of
 # coefficients
 # -----------------------------------------------------------
-
-function reconstruct_DG(coeffs::Dict{CartesianIndex{D}, Array{Array{T1, D}, D}},
-	xs::AbstractArray{T2, 1}) where {D, T1 <: Real, T2 <: Real}
+function reconstruct_DG(coeffs::Dict{CartesianIndex{D}, <:AbstractArray{<:AbstractArray{T1, D}, D}}, xs::Array{T2, 1}) where {D, T1 <: Real, T2 <: Real}
 
 	value	= zero(T2)
 	k		= size(first(values(coeffs))[1])[1]
@@ -152,7 +150,7 @@ function reconstruct_DG(coeffs::Dict{CartesianIndex{D}, Array{Array{T1, D}, D}},
 	for key in keys(coeffs)
 		level = ntuple(i->key[i]-1,D)
 		cell = CartesianIndex{D}(ntuple(i->cell_index(xs[i],level[i]),D))
-		coeff = coeffs[key][cell]::AbstractArray{T1,D}
+		coeff = coeffs[key][cell]::Array{T1,D}
 		@inbounds for mode in CartesianIndices(modes)
 			value += coeff[mode]*V(k, level, cell, mode, xs)
 		end

@@ -46,7 +46,7 @@ function get_size(D::Int, k::Int, n::Int; scheme="sparse")
 end
 
 
-function D2V(D::Int, k::Int, n::Int, coeffs::Dict{CartesianIndex{d}, AbstractArray{AbstractArray{T, d},d}};
+function D2V(D::Int, k::Int, n::Int, coeffs::Dict{CartesianIndex{d}, <:AbstractArray{<:AbstractArray{T, d},d}};
 	scheme = "sparse") where {d, T <: Real}
 
 	(d != D) && throw(TypeError(:coeffs))
@@ -71,9 +71,9 @@ function D2V(D::Int, k::Int, n::Int, coeffs::Dict{CartesianIndex{d}, AbstractArr
 end
 
 
-function V2D(D::Int, k::Int, n::Int, vect::AbstractArray{T}; scheme = "sparse") where T
+function V2D(D::Int, k::Int, n::Int, vect::Array{T}; scheme = "sparse") where T <: Real
 	cutoff		= get_cutoff(scheme, D, n)
-	coeffs		= Dict{CartesianIndex{D}, AbstractArray{AbstractArray{T,D},D}}()
+	coeffs		= Dict{CartesianIndex{D}, Array{Array{T,D},D}}()
 	modes		= ntuple(q-> k, D)
 	ls			= ntuple(i->(n+1), D)
 	j = 1
@@ -149,7 +149,7 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 								maxevals=MAX_EVALS,
 								scheme="sparse")
 	cutoff		= get_cutoff(scheme, D, n)
-	len			= get_size(D, k, n; scheme="sparse")
+	len			= get_size(D, k, n; scheme=scheme)
 	coeffs		= Array{Float64}(undef, len)
 	modes		= ntuple(i-> k, D)
 	ls			= ntuple(i-> (n+1), D)

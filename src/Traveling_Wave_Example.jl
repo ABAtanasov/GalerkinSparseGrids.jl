@@ -16,7 +16,7 @@
 # with sparse interpolation of type (k,n)
 # using periodic boundary conditions in D-dimensionss
 # -----------------------------------------------------
-
+using LinearAlgebra
 function cos_coeffs(k::Int, n::Int, m::AbstractArray{T,1};
 					scheme="sparse", phase = 0.0, A = 1.0) where T
 	D = length(m)

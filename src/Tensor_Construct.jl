@@ -25,14 +25,14 @@ function tensor_construct(D::Int, k::Int, n::Int, coeff_array::Array{Dict{Cartes
 	ls::NTuple{D, Int}    = ntuple(i-> (n+1), D)
 	modes::NTuple{D, Int} = ntuple(i-> k, D)
 
-	for level in CartesianRange(ls)
+	for level in CartesianIndices(ls)
 		cutoff(level) && continue
 
 		cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, level[i]-2), D)
-		level_coeffs = Array{Array{T,D}}(cells)
-		for cell in CartesianRange(cells)
+		level_coeffs = Array{Array{T,D}}(undef, cells)
+		for cell in CartesianIndices(cells)
 			cell_coeffs = Array{T}(undef, modes)
-			for mode in CartesianRange(modes)
+			for mode in CartesianIndices(modes)
 				val = one(T)
 				for d in 1:D
 					coeff = coeff_array[d]

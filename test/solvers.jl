@@ -21,8 +21,8 @@ import GalerkinSparseGrids.energy_func
 
     global k = 4
     global level = 4
-    global const f0 = x->sin(2*pi*x[1])
-    global const v0 = x->2*pi*cos(2*pi*x[1])
+    global f0 = x->sin(2*pi*x[1])
+    global v0 = x->2*pi*cos(2*pi*x[1])
     pos_soln = wave_evolve_1D(k, level, f0, v0, 0, 1; basis="pos", order="45") #problem is here
     energy_soln = energy_func_1D(k, level, pos_soln; basis="pos")
     @testset "Wave equation solver 1D position DG basis" begin
