@@ -6,23 +6,20 @@
 # -----------------------------------------------------------
 
 # Efficiency criticality: HIGH
-# Matrix computations are only performed once, 
+# Matrix computations are only performed once,
 # but this can be the main bottleneck if not done right
 
 # Accuracy criticality: HIGH
 # Critical for accurate PDE evolution
 
-function D_matrix{D}(i::Int, k::Int, n::Int,
-							srefVD::Array{NTuple{3,CartesianIndex{D}},1},
-							srefDV::Dict{NTuple{3,CartesianIndex{D}},Int};
-							scheme="sparse")
-	
+function D_matrix(i::Int, k::Int, n::Int, srefVD::Array{NTuple{3, CartesianIndex{D}}, 1},
+		srefDV::Dict{NTuple{3, CartesianIndex{D}}, Int}; scheme = "sparse") where D
+
 	cutoff = get_cutoff(scheme, D, n)
 
 	V2D_1D = V2Dref(1,k,n)
 	D2V_1D = D2Vref(1,k,n)
 	Dmat_1D = periodic_DLF_matrix(k, n)
-
 	len = length(srefVD[:,1])
 	I = Int[]
 	J = Int[]
@@ -42,7 +39,7 @@ function D_matrix{D}(i::Int, k::Int, n::Int,
 			# Julia's metaprogramming:
 			level2 = make_cartesian_index(i, lpf2[1][1], lpf[1])
 			cutoff(level2) && continue
-			
+
 			cell2 = make_cartesian_index(i, lpf2[2][1], lpf[2])
 			mode2 = make_cartesian_index(i, lpf2[3][1], lpf[3])
 			c2 = srefDV[(level2, cell2, mode2)]
@@ -57,6 +54,7 @@ end
 
 
 function D_matrix(D::Int, i::Int, k::Int, n::Int; scheme="sparse")
+
 	# Precompute the 1D derivatve matrix elements as global variables
 	# if they are not yet formed
 	precompute_diffs()
@@ -70,7 +68,7 @@ function grad_matrix(D::Int, k::Int, n::Int; scheme="sparse")
 end
 
 function laplacian_matrix(D::Int, k::Int, n::Int; scheme="sparse")
-	len = get_size(D, k, n; scheme=scheme)	
+	len = get_size(D, k, n; scheme=scheme)
 	laplac = spzeros(len, len)
 	for i in 1:D
 		D_op = D_matrix(D, i, k, n; scheme=scheme)

@@ -4,11 +4,15 @@ os:
   - linux
   - osx
 julia:
-  - 0.6
+  - 1.0
+  - nightly
+matrix:
+  allow_failures:
+    - julia: nightly
 notifications:
   email: false
-script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone(pwd()); Pkg.build("GalerkinSparseGrids"); Pkg.test("GalerkinSparseGrids"; coverage=true)'
 after_success:
-  - julia -e 'cd(Pkg.dir("GalerkinSparseGrids")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
+  # push coverage results to Coveralls
+  - julia -e 'using Pkg; Pkg.dir("GalerkinSparseGrids"); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  # push coverage results to Codecov
+- julia -e 'using Pkg; Pkg.dir("GalerkinSparseGrids"); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
