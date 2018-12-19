@@ -23,9 +23,10 @@ Authors: Alex Atanasov (alex.atanasov@yale.edu) & Erik Schnetter (eschnetter@per
 
 Prerequisites for using this package are:
 
-	Julia-0.6 (Latest Release)
+	Julia-1.0 (Latest Release)
 	ODE.jl	(For running the timesteps to solve the sparse dynamical evolution)
 	Cubature.jl (working to remove this prerequisite)
+	StaticArrays (new, trying this out - could produce large speedup)
 
 They can be added using the Julia package manager. Source documentation is [here](<https://github.com/JuliaLang/ODE.jl>) for ODE.jl and [here](<https://github.com/stevengj/Cubature.jl>) for Cubature.jl.
 

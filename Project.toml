@@ -1,0 +1,20 @@
+authors = ["Alex Atanasov <atanasov@g.harvard.edu>"]
+license = ["MIT"]
+name = "GalerkinSparseGrids"
+uuid = "80c1f70c-0245-11e9-2eb4-cddde2415614"
+version = "0.1.0"
+
+[deps]
+HCubature = "19dc6840-f33b-545b-b366-655c7e3ffd49"
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+ODE = "c030b06c-0b6d-57c2-b091-7029874bd033"
+
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
