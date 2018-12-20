@@ -9,12 +9,14 @@ tests = [
 	"elementary.jl",
 	"hier_DG.jl",
 	"vhier_DG.jl",
+	"transformations.jl",
 	"differentiation.jl",
 	"solvers.jl"
 ]
+
 @testset "GalerkinSparseGrids" begin
 	for filename in tests
 		name = first(splitext(filename))
-			include(filename)
+		include(filename)
 	end
 end

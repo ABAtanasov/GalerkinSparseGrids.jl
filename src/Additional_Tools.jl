@@ -14,7 +14,7 @@
 end
 
 # Threshold method for full matrices, producing a sparse one
-function threshold(mat::AbstractArray{T, 2},; atol = eps(T)) where T <: Real
+function threshold(mat::AbstractArray{T, 2}, atol = eps(T)) where T <: Real
 	for i in eachindex(mat)
 		val = mat[i]
 		if abs(val) < atol
@@ -25,7 +25,7 @@ function threshold(mat::AbstractArray{T, 2},; atol = eps(T)) where T <: Real
 end
 
 # Threshold method for sparse matrices
-function threshold(mat::SparseMatrixCSC{T, Int},; atol = eps(T)) where T <: Real
+function threshold(mat::SparseMatrixCSC{T, Int}, atol = eps(T)) where T <: Real
 	(I, J, V) = findnz(mat)
 	for (index, val) in enumerate(V)
 		if abs(val) < atol

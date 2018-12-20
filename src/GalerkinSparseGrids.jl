@@ -29,10 +29,6 @@ include("Tensor_Construct.jl")			# Quickly calculates coeffs of simple tensors o
 include("Traveling_Wave_Example.jl")	# Construct and evolve traveling waves
 
 export
-# standard_coeffs,
-# standard_reconstruct,
-# coeffs_hat,
-# reconstruct_hat,
 
 coeffs_DG,
 reconstruct_DG,
@@ -43,6 +39,8 @@ D2V,
 V2Dref,
 D2Vref,
 vcoeffs_DG,
+
+transform_1D,
 
 D_matrix,
 grad_matrix,

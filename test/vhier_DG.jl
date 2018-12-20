@@ -11,6 +11,7 @@ using SparseArrays
 @info "Testing full DG reconstruction 1-D with vector coefficients... "
 
 @testset "vhier_DC.jl" begin
+	@info "Testing full DG reconstruction with vector coefficients in 1D"
     @testset "Full DG reconstruction 1D with vector coefficients" begin
         for k in 1:5
             for l in 1:6

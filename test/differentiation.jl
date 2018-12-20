@@ -5,11 +5,12 @@ using StaticArrays
 using SparseArrays
 
 #--------------------------------------
-# Testing Differentiation
+# Testing differentiation
 #--------------------------------------
 
 @testset "differentiation.jl" begin
-    @testset "Testing differentiation 1-D DG basis... " begin
+	@info "Testing differentiation 1-D DG basis... "
+    @testset "1D DG Differentiation" begin
         k=3
         for l in 2:5
             frefVD = V2Dref(1, k, l);
@@ -24,7 +25,8 @@ using SparseArrays
         end
     end
 
-    @testset "Testing differentiation 2-D full DG basis... " begin
+	@info "Testing differentiation 2-D full DG basis... "
+    @testset "2D Full DG Differentiation" begin
         D = 2
         k = 3
         for l in 2:5
