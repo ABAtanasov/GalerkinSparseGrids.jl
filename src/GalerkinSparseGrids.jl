@@ -40,7 +40,7 @@ V2Dref,
 D2Vref,
 vcoeffs_DG,
 
-transform_1D,
+transform,
 
 D_matrix,
 grad_matrix,

@@ -25,10 +25,10 @@ function relevant_cell_1D(k::Int, level1::Int, cell1::Int, level2::Int, cell2::I
 end
 
 # Multidimensional version of the above
-function relevant_cell(k::Int, level1::CartesianIndex{D},
-	 	cell1::CartesianIndex{D}, level2::CartesianIndex{D},
-	 	cell2::CartesianIndex{D}) where D
-
+function relevant_cell(k::Int, level1::CartesianIndex{D}, 
+							   cell1 ::CartesianIndex{D}, 
+							   level2::CartesianIndex{D}, 
+							   cell2 ::CartesianIndex{D}) where D
 	bool = true
 	for d in 1:D
 		bool &= relevant_cell_1D(k, level1[d]-1, cell1[d], level2[d]-1, cell2[d])
@@ -36,65 +36,29 @@ function relevant_cell(k::Int, level1::CartesianIndex{D},
 	return bool
 end
 
-# Takes an input (level, cell, mode) and yielding the
-# corresponding index in the vector of coefficients for the nodal/point basis
-function get_point_index(k::Int, l::Int, c::Int, m::Int)
-	if l == 0
-		return m
-	end
-	return k + (k-1) * (1<<(l-1) - 1) + (k-1) * (c-1) + m
-end
 
-function get_modal_index(k::Int, l::Int, c::Int, m::Int)
-	if l == 0
-		return m
-	end
-	return k * (1<<(l-1) + (c-1) ) + m
-end
-
-function inner_loop_to_points(c2::Int, k::Int, l::CartesianIndex{D},
-			level::CartesianIndex{D}, cell::CartesianIndex{D},
-			mode::CartesianIndex{D}, I::Array{Int, 1}, V::AbstractArray{T, 1},
-			base_indices::Array{Int, 1}, point_mat_1D::AbstractArray{T, 2}) where {D, T <: Real}
-
-	cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l[i]-2), D)
-	modes::NTuple{D, Int} = ntuple(i->l[i]==1 ? k : k-1, D)
-	cellrange = CartesianIndex(cells)
-	moderange = CartesianIndex(modes)
-	for c in cellrange
-		!relevant_cell(k, l, c, level, cell) && (c2 += prod(modes); continue)
-
-		for m in moderange
-			val = one(T)
-			for d in 1:D
-				index = get_point_index(k, l[d]-1, c[d], m[d])
-				val *= point_mat_1D[index, base_indices[d]]
-			end
-			(abs(val) < eps(T)) && (c2 += 1; continue)
-			push!(I, c2)
-			push!(V, val)
-			c2 += 1
-		end
-	end
-	return c2
-end
-
-function inner_loop_to_modal(c2::Int, k::Int, l::CartesianIndex{D}, level::CartesianIndex{D},
-			cell::CartesianIndex{D}, mode::CartesianIndex{D}, I::Array{Int, 1}, V::AbstractArray{T, 1},
-			base_indices::Array{Int, 1}, point_mat_1D::AbstractArray{T, 2}) where {D, T <: Real}
-
+function inner_loop(c2::Int, k::Int, l::CartesianIndex{D}, 
+									 level::CartesianIndex{D},
+									 cell::CartesianIndex{D},
+									 mode::CartesianIndex{D},
+									 I::Array{Int, 1},
+									 V::Array{T, 1},
+									 base_indices::Array{Int, 1},
+									 mat_1D::Array{T, 2}) where {D, T<:Real}
 	cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l[i]-2), D)
 	modes::NTuple{D, Int} = ntuple(i -> k, D)
-	cellrange = CartesianIndex(cells)
-	moderange = CartesianIndex(modes)
+	cellrange = CartesianIndices(cells)
+	moderange = CartesianIndices(modes)
 	for c in cellrange
 		!relevant_cell(k, l, c, level, cell) && (c2 += prod(modes); continue)
 
 		for m in moderange
 			val = one(T)
+			#val = multiply_across(mat_1D, base_indices, k, l, c, m)
 			for d in 1:D
-				index = get_modal_index(k, l[d]-1, c[d], m[d])
-				val *= point_mat_1D[index, base_indices[d]]
+				index = get_index_1D(k, l[d]-1, c[d], m[d])
+				val *= mat_1D[index, base_indices[d]]
+				val == 0 && break
 			end
 			(abs(val) < eps(T)) && (c2 += 1; continue)
 			push!(I, c2)
@@ -106,110 +70,45 @@ function inner_loop_to_modal(c2::Int, k::Int, l::CartesianIndex{D}, level::Carte
 end
 
 
-
-# Evaluates a given multidimensional basis element in the modal (DG Sparse) basis
-# on all the points of the corresponding sparse grid
-function eval_points(k::Int, n::Int, level::CartesianIndex{D},
-				cell::CartesianIndex{D}, mode::CartesianIndex{D},
-				modal_indices::Array{Int, 1}, point_mat_1D::AbstractArray{T, 2};
-				scheme = "sparse") where {D, T <: Real}
-
+function make_column(k::Int, n::Int, level::CartesianIndex{D}, 
+								cell::CartesianIndex{D}, 
+								mode::CartesianIndex{D},
+								mat_1D::Array{T, 2};
+								scheme="sparse") where {D, T<:Real}
 	cutoff = get_cutoff(scheme, D, n)
-	ls::NTuple{D, Int} = ntuple(i->(n+1),D)
-	I  = Int[]
-	V  = T[]
-	c2 = 1
-
-	for l in CartesianRange(ls)
-		cutoff(l) && continue
-
-		c2 = inner_loop_to_points(c2, k, l, level, cell, mode, I, V, modal_indices, point_mat_1D)
-	end
-	return sparsevec(I, V)
-end
-
-# Using the above method, builds the transformation matrix
-# From the modal sparse basis to
-# the "point basis" of values of a given function at the points on the sparse grid
-function modal2points(k::Int, n::Int, srefVD::Array{NTuple{3, CartesianIndex{D}}, 1};
-	 	scheme = "sparse") where D
-
-	cutoff = get_cutoff(scheme, D, n)
-	len = get_size(D, k, n; scheme=scheme)
-	modal_ref = D2Vref(1, k, n)
-	point_mat_1D = full(modal2points_1D(k, n))
-	I = Int[]
-	J = Int[]
-	V = Real[]
-	for c1 in 1:len
-		lcm   = srefVD[c1]
-		level = lcm[1]
-		cell  = lcm[2]
-		mode  = lcm[3]
-		modal_indices = [modal_ref[(CartesianIndex{1}(level[d],),
-								  CartesianIndex{1}(cell[d],),
-								  CartesianIndex{1}(mode[d],))] for d in 1:D]
-		basis_eval = eval_points(k, n, level, cell, mode,
-									modal_indices,
-									point_mat_1D;
-									scheme=scheme)
-		for (c2, val) in zip(findnz(basis_eval)...)
-			push!(I, c2)
-			push!(J, c1)
-			push!(V, val)
-		end
-	end
-	return sparse(I, J, V)
-end
-
-# Version of the above function with simpler arguments
-function modal2points(D::Int, k::Int, n::Int; scheme="sparse")
-	VD = V2Dref(D, k, n; scheme=scheme)
-	return modal2points(k, n, VD; scheme=scheme)
-end
-
-# Given a specific collocation point, this constructs the corresponding
-# combination of nodal basis functions that vanish on all collcation points but that one
-function eval_nodal(k::Int, n::Int, level::CartesianIndex{D},
-		cell::CartesianIndex{D}, mode::CartesianIndex{D},
-		inv_mat_1D::AbstractArray{T, 2}; scheme = "sparse") where {D, T <: Real}
-
-	cutoff = get_cutoff(scheme, D, n)
-	ls::NTuple{D, Int} = ntuple(i->(n+1),D)
-	point_indices = [get_point_index(k, level[d]-1, cell[d], mode[d]) for d in 1:D]
+	ls = ntuple(i->(n+1), D)::NTuple{D, Int}
+	base_indices = [get_index_1D(k, level[d]-1, cell[d], mode[d]) for d in 1:D]::Array{Int, 1}
 
 	I = Int[]
 	V = T[]
 	c2 = 1
-	for l in CartesianRange(ls)
+	for l in CartesianIndices(ls)
 		cutoff(l) && continue
 
-		c2 = inner_loop_to_points(c2, k, l, level, cell, mode, I, V, point_indices, inv_mat_1D)
+		c2 = inner_loop(c2, k, l, level, cell, mode, I, V, base_indices, mat_1D)
 	end
 	return sparsevec(I, V)
 end
 
-# Using the above, this gives the transformation to go from the point basis
-# to the nodal basis of functions
-function points2nodal(D::Int, k::Int, n::Int; scheme="sparse")
+
+function transform(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", atol=1e-14) where {T<:Real}
 	cutoff = get_cutoff(scheme, D, n)
 	ls	   = ntuple(i->(n+1),D)
+	modes  = ntuple(i -> k, D)
 	hier_ref = D2Vref(1, k, n)
-	inv_mat_1D = full(points2nodal_1D(k, n))
 	I = Int[]
 	J = Int[]
-	V = Real[]
-
+	V = Float64[]
+	
 	c1 = 1
-	for l in CartesianRange(ls)
+	for l in CartesianIndices(ls)
 		cutoff(l) && continue
 
 		cells = ntuple(i -> 1<<max(0, l[i]-2), D)
-		modes = ntuple(i->l[i]==1 ? k : (k-1) ,D)
-		for c in CartesianRange(cells)
-			for m in CartesianRange(modes)
-				coeffs = eval_nodal(k, n, l, c, m,
-									inv_mat_1D;
+		for c in CartesianIndices(cells)
+			for m in CartesianIndices(modes)
+				coeffs = make_column(k, n, l, c, m,  
+									mat_1D; 
 									scheme=scheme)
 				for (c2, val) in zip(findnz(coeffs)...)
 					push!(I, c2)
@@ -220,77 +119,17 @@ function points2nodal(D::Int, k::Int, n::Int; scheme="sparse")
 			end
 		end
 	end
-	return dropzeros!(sparse(I, J, V))
+	return threshold(sparse(I, J, V), atol)
 end
 
-
-# Given a nodal basis function, this expresses it in terms of the (sparse) DG Basis
-function eval_DG(k::Int, n::Int, level::CartesianIndex{D},
-		cell::CartesianIndex{D}, mode::CartesianIndex{D},
-		hier_ref::Dict{NTuple{3, CartesianIndex{1}}, Int},
-		inv_nodal_mat_1D::AbstractArray{T, 2}; scheme = "sparse") where {D, T <: Real}
-
-	nodal_indices = [get_point_index(k, level[d]-1, cell[d], mode[d]) for d in 1:D]
-	cutoff = get_cutoff(scheme, D, n)
-	#len = get_size(D, k, n; scheme=scheme)
-	I = Int[]
-	V = T[]
-	ls::NTuple{D, Int} = ntuple(i->(n+1),D)
-
-	c2 = 1
-	for l in CartesianRange(ls)
-		cutoff(l) && continue
-
-		c2 = inner_loop_to_modal(c2, k, l, level, cell, mode, I, V, nodal_indices, inv_nodal_mat_1D)
+function transform(D::Int, k::Int, n::Int, from::String, to::String; scheme="sparse", atol=1e-14)
+	if Set{String}([from, to]) == Set{String}(["modal", "points"])
+		T1 = transform(D, k, n, from, "nodal"; scheme=scheme, atol=atol)
+		T2 = transform(D, k, n, "nodal", to; scheme=scheme, atol=atol)
+		return threshold(T2 * T1, atol)
+	else
+		mat_1D = Matrix(transform_1D(k, n, from, to))
+		return transform(D, k, n, mat_1D; scheme=scheme, atol=atol)
 	end
-	return sparsevec(I, V)
 end
 
-# This gives the transformation matrix between the (sparse) nodal basis
-# and the (sparse) DG basis already developed in the previous paper
-function nodal2modal(k::Int, n::Int, srefVD::Array{NTuple{3, CartesianIndex{D}}, 1};
-		scheme = "sparse") where D
-
-	cutoff = get_cutoff(scheme, D, n)
-	ls     = ntuple(i->(n+1), D)
-	hier_ref = D2Vref(1, k, n)
-	inv_point_mat_1D = full(nodal2modal_1D(k, n))
-	I = Int[]
-	J = Int[]
-	V = Real[]
-
-	c1 = 1
-	for l in CartesianRange(ls)
-		cutoff(l) && continue
-
-		cells = ntuple(i -> 1<<max(0, l[i]-2), D)
-		modes = ntuple(i->l[i]==1 ? k : k-1, D)
-		for c in CartesianRange(cells)
-			for m in CartesianRange(modes)
-				coeffs = eval_DG(k, n, l, c, m,
-									hier_ref,
-									# srefVD,
-									inv_point_mat_1D;
-									scheme=scheme)
-				for (c2, val) in zip(findnz(coeffs)...)
-					push!(I, c2)
-					push!(J, c1)
-					push!(V, val)
-				end
-				c1 += 1
-			end
-		end
-	end
-
-	return dropzeros!(sparse(I, J, V))
-end
-
-# Version of the above function with simpler arguments
-function nodal2modal(D::Int, k::Int, n::Int; scheme="sparse")
-	VD = V2Dref(D, k, n; scheme=scheme)
-	return nodal2modal(k, n, VD; scheme=scheme)
-end
-
-function points2modal(D::Int, k::Int, n::Int)
-	return nodal2modal(D, k, n)*points2nodal(D, k, n)
-end

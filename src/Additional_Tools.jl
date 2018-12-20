@@ -13,6 +13,11 @@
 	end
 end
 
+# Get the vector index for a 1D (level, cell, mode)
+function get_index_1D(k::Int, l::Int, c::Int, m::Int)
+	return k * (1<<(l-1) + (c-1)) + m
+end
+
 # Threshold method for full matrices, producing a sparse one
 function threshold(mat::AbstractArray{T, 2}, atol = eps(T)) where T <: Real
 	for i in eachindex(mat)
