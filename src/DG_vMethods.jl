@@ -34,7 +34,7 @@
 # with multi-resolution up to n
 function get_size(D::Int, k::Int, n::Int; scheme="sparse")
 	cutoff	= get_cutoff(scheme, D, n)
-	ls		= ntuple(i->(n+1), D)
+	ls  	= ntuple(i->(n+1), D)
 	size	= 0
 	for level in CartesianIndices(ls)
 		cutoff(level) && continue
@@ -59,7 +59,7 @@ function D2V(D::Int, k::Int, n::Int, coeffs::Dict{CartesianIndex{d}, <:AbstractA
 	for level in CartesianIndices(ls) #This really goes from 0 to l_i for each i
 		cutoff(level) && continue
 
-		ks = ntuple(q -> 1<<max(0, level[q]-2), D)  #This sets up a specific k+1 vector
+		ks = ntuple(q -> 1<<max(0, level[q]-2), D) #This sets up a specific k+1 vector
 		for cell in CartesianIndices(ks)
 			for mode in CartesianIndices(modes)
 				vect[j] = coeffs[level][cell][mode]
@@ -154,7 +154,7 @@ function vcoeffs_DG(D::Int, k::Int, n::Int, f::Function;
 	modes		= ntuple(i-> k, D)
 	ls			= ntuple(i-> (n+1), D)
 	j = 1
-	for level in CartesianIndices(ls)     # This really goes from 0 to l_i for each i,
+	for level in CartesianIndices(ls)  # This really goes from 0 to l_i for each i,
 		cutoff(level) && continue
 
 		ks = ntuple(i -> 1<<max(0, level[i]-2), D)  #This sets up a specific k+1 vector

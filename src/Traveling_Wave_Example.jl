@@ -68,8 +68,8 @@ function traveling_wave(k::Int, n::Int, m::Array{Int,1};
 						scheme="sparse", phase=0.0, A=1.0)
 	wavenumber = 2*pi*m
 	frequency = sqrt(dot(wavenumber,wavenumber))
-	u0 = x -> A * cos(dot(wavenumber,x) + phase)
-	v0 = x -> A * frequency * sin(dot(k,x) + phase)
+	# u0 = x -> A * cos(dot(wavenumber,x) + phase)
+	# v0 = x -> A * frequency * sin(dot(k,x) + phase)
 	u0_coeffs = cos_coeffs(k, n, m; scheme=scheme, phase=phase, A=A)
 	v0_coeffs = sin_coeffs(k, n, m; scheme=scheme, phase=phase, A=A*frequency)
 

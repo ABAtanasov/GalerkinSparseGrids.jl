@@ -7,6 +7,7 @@ using LinearAlgebra
 
 tests = [
 	"elementary.jl",
+	"basis_constructor.jl",
 	"hier_DG.jl",
 	"vhier_DG.jl",
 	"transformations.jl",

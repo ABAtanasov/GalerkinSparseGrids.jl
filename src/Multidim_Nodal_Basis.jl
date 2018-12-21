@@ -17,11 +17,11 @@
 
 # Check whether (level1, cell1) overlaps with (level2, cell2)
 function relevant_cell_1D(k::Int, level1::Int, cell1::Int, level2::Int, cell2::Int)
-    left1  = (cell1-1)/(1<<max(0, level1-1))
-    right1 = cell1/(1<<max(0, level1-1))
-    left2  = (cell2-1)/(1<<max(0, level2-1))
-    right2 = cell2/(1<<max(0, level2-1))
-    return (left1 <= left2 && right1 >= right2) || (left1 >= left2 && right1 <= right2)
+	left1  = (cell1-1)/(1<<max(0, level1-1))
+	right1 = cell1/(1<<max(0, level1-1))
+	left2  = (cell2-1)/(1<<max(0, level2-1))
+	right2 = cell2/(1<<max(0, level2-1))
+	return (left1 <= left2 && right1 >= right2) || (left1 >= left2 && right1 <= right2)
 end
 
 # Multidimensional version of the above

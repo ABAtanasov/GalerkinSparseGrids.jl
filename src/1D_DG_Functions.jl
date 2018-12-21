@@ -24,7 +24,7 @@ const K_max = 10;
 	@inbounds for i in k:-1:1
 		# Using Horner's method
 		s *= x
-		s += v[i] + flipsign(v[i+k], x)#v[i+k]*sign(x)#
+		s += v[i] + flipsign(v[i+k], x)
 	end
 	return s
 end
