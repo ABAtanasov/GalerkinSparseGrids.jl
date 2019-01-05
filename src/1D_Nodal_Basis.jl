@@ -177,6 +177,10 @@ end
 # the heirarchical, nodal, and point bases
 # -----------------------------------------------------------
 
+# Huge TODO: 
+# 	Replace all of these for loops and multiple function calls 
+# 	by cleverly using the iterable interface in julia
+
 # Evaluation of a given nodal function along all relevant gridpoints
 function eval_points_1D(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
 	i = 1
@@ -236,15 +240,15 @@ end
 
 # Sparse matrix inverting the above construction
 # Converting a set of values on the collocation points to the DG space
-# in terms of the (for now continuous) nodal basis
-# TODO: Allow for this to handle discontinuity across cells
+# in terms of the nodal basis
 function points2nodal_1D(k::Int, max_level::Int; atol=1e-15)
     n2p = nodal2points_1D(k, max_level)
     return threshold(inv(Matrix(n2p)), atol)
 end
 
-# converts a given nodal basis element to a sum in the standard
+# Converts a given nodal basis element to a sum in the standard
 # hieararchical DG scheme
+# TODO: Remove hquadrature and do this directly
 function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rtol=1e-10, atol=1e-15, max_evals=1500)
 	I = Int[]
 	V = Float64[]
