@@ -373,14 +373,14 @@ function nodal2pos_1D(k, max_level; rtol=1e-10, atol=1e-15, max_evals=1500)
 	return threshold(sparse(I, J, V), atol)
 end
 
-function pos2nodal_1D(k, max_level; rtol=1e-10, atol=1e-15, max_evals=1500)
+function pos2nodal_1D(k, max_level; rtol=1e-10, atol=1e-12, max_evals=1500)
 	n2pos = nodal2pos_1D(k, max_level; rtol=rtol, atol=atol, max_evals=max_evals)
 	return threshold(inv(Matrix(n2pos)), atol)
 end
 
 
 # Final function, combining all of the above:
-function transform_1D(k::Int, n::Int, from::String, to::String; atol=1e-15)
+function transform_1D(k::Int, n::Int, from::String, to::String; atol=1e-12)
 	if from == "nodal" && to == "pos"
 		return nodal2pos_1D(k, n; atol=atol)
 	elseif from == "pos" && to == "nodal"
