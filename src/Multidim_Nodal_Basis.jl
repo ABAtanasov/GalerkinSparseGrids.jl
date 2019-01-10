@@ -40,7 +40,7 @@ end
 function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
 					k::Int, l2::CartesianIndex{D}, 
 					l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
-					base_indices::Array{Int, 1}, mat_1D::Array{T, 2}) where {D, T<:Real}
+					js_1D::Array{Int, 1}, mat_1D::Array{T, 2}) where {D, T<:Real}
 	cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l2[i]-2), D)
 	modes::NTuple{D, Int} = ntuple(i -> k, D)
 	cellrange = CartesianIndices(cells)
@@ -50,10 +50,9 @@ function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array
 
 		for m2 in moderange
 			val = one(T)
-			#val = multiply_across(mat_1D, base_indices, k, l, c, m)
 			for d in 1:D
-				index = get_index_1D(k, l2[d]-1, c2[d], m2[d])
-				val *= mat_1D[index, base_indices[d]]
+				i_1D = get_index_1D(k, l2[d], c2[d], m2[d])
+				val *= mat_1D[i_1D, js_1D[d]]
 				val == 0 && break
 			end
 			(abs(val) < eps(T)) && (i += 1; continue)
@@ -68,25 +67,23 @@ end
 
 
 function make_column(j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
-					 k::Int, n::Int, 
-					 l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
+					 k::Int, n::Int, l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
 					 mat_1D::Array{T, 2}; scheme="sparse") where {D, T<:Real}
+	js_1D = [get_index_1D(k, l1[d], c1[d], m1[d]) for d in 1:D]::Array{Int, 1}
+	levels::NTuple{D, Int} = ntuple(i -> (n+1),D)
 	cutoff = get_cutoff(scheme, D, n)
-	ls = ntuple(i -> (n+1), D)::NTuple{D, Int}
-	base_indices = [get_index_1D(k, l1[d]-1, c1[d], m1[d]) for d in 1:D]::Array{Int, 1}
-
 	i = 1
-	for l2 in CartesianIndices(ls)
+	for l2 in CartesianIndices(levels)
 		cutoff(l2) && continue
-		i = inner_loop(i, j, I, J, V, k, l2, l1, c1, m1, base_indices, mat_1D)
+		i = inner_loop(i, j, I, J, V, k, l2, l1, c1, m1, js_1D, mat_1D)
 	end
 end
 
 
 function transform(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", atol=1e-12) where {T<:Real}
 	cutoff = get_cutoff(scheme, D, n)
-	levels = ntuple(i -> (n+1),D)
-	modes  = ntuple(i -> k, D)
+	levels::NTuple{D, Int} = ntuple(i -> (n+1),D)
+	modes ::NTuple{D, Int} = ntuple(i -> k, D)
 	I = Int[]
 	J = Int[]
 	V = Float64[]
@@ -98,9 +95,11 @@ function transform(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", 
 		cells1 = ntuple(i -> 1<<max(0, l1[i]-2), D)
 		for c1 in CartesianIndices(cells1)
 			for m1 in CartesianIndices(modes)
-				coeffs = make_column(j, I, J, V, k, n, l1, c1, m1, mat_1D; scheme=scheme)
+				make_column(j, I, J, V, k, n, l1, c1, m1, mat_1D; scheme=scheme)
 				j += 1
 			end
+			# Run the garbage collector relatively frequently to prevent major memory usage
+			# sum(c1.I) - D % 3 == 0 && GC.gc() 
 		end
 	end
 	return threshold(sparse(I, J, V), atol)
@@ -122,6 +121,22 @@ function transform(D::Int, k::Int, n::Int, from::String, to::String; scheme="spa
 end
 
 
+function make_modal2point_matrices(D::Int, k::Int, n::Int)
+	println("making modal -> nodal transform (may take a while)")
+	m2n = transform(2*D, k, n, "modal", "nodal")
+	println("making nodal -> points transform")
+	n2p = transform(2*D, k, n, "nodal", "points")
+	return m2n, n2p
+end
+
+function make_point2modal_matrices(D::Int, k::Int, n::Int)
+	println("making points -> nodal transform")
+	p2n = transform(2*D, k, n, "points", "nodal")
+	println("making nodal -> modal transform (may take a while)")
+	n2m = transform(2*D, k, n, "nodal", "modal")
+	return p2n, n2m
+end
+
 # --------------------------------------------------
 # Below this line is for comparison testing only -
 # Not for use 
@@ -137,7 +152,7 @@ function transform2(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse",
 	index::Int = 1
 	
 	levelrange = CartesianIndices(levels); moderange = CartesianIndices(modes)
-	base_indices::Array{Int,1} = zeros(Int, D)
+	js_1D::Array{Int,1} = zeros(Int, D)
 	cells1::Array{Int,1} = zeros(Int, D); 
 	cells2::Array{Int,1} = zeros(Int, D)
 	for l1 in levelrange
@@ -147,7 +162,7 @@ function transform2(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse",
 		for c1 in CartesianIndices((cells1...,))
 			for m1 in moderange
 				#1D indices corresponding to each (l1[d], c1[d], m1[d])
-				base_indices = [get_index_1D(k, l1[d]-1, c1[d], m1[d]) for d in 1:D]
+				js_1D = [get_index_1D(k, l1[d], c1[d], m1[d]) for d in 1:D]
 
 				i = 1
 				for l2 in levelrange
@@ -160,8 +175,8 @@ function transform2(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse",
 						for m2 in moderange
 							val = one(Float64)
 							for d in 1:D
-								index = get_index_1D(k, l2[d]-1, c2[d], m2[d])
-								val *= mat_1D[index, base_indices[d]]
+								i_1D = get_index_1D(k, l2[d], c2[d], m2[d])
+								val *= mat_1D[i_1D, js_1D[d]]
 								val == 0 && break
 							end
 							(abs(val) < eps(T)) && (i += 1; continue)

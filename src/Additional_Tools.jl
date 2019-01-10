@@ -5,8 +5,8 @@
 #
 # The method below is used for building the multi-dimensional
 # derivative matrix:
-@generated function make_cartesian_index(i::Int, arr1::Int, arr2::CartesianIndex{D}) where D
-	levs = [:($q == i ? arr1 : arr2[$q]) for q=1:D]
+@generated function make_cartesian_index(i::Int, arr1::CartesianIndex{1}, arr2::CartesianIndex{D}) where D
+	levs = [:($q == i ? arr1[1] : arr2[$q]) for q=1:D]
 	quote
 		$(Expr(:meta, :inline))
 		CartesianIndex{D}($(levs...))
@@ -14,8 +14,9 @@
 end
 
 # Get the vector index for a 1D (level, cell, mode)
+# Here l starts at 1
 function get_index_1D(k::Int, l::Int, c::Int, m::Int)
-	return k * (1<<(l-1) + (c-1)) + m
+	return k * (1<<(l-2) + (c-1)) + m
 end
 
 # Threshold method for full matrices, producing a sparse one

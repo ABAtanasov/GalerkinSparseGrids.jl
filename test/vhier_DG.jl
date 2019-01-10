@@ -29,7 +29,7 @@ using SparseArrays
 
     @info "Testing D2V and V2D Full Case 2D... "
     @testset "D2V and V2D full case 2D" begin
-        for k in 1:5
+        for k in 1:4
             for l in 1:3
                 dict = coeffs_DG(2, k, l, x->sin(4*x[1]+x[2]); scheme="full")
                 vect = D2V(2, k, l, dict; scheme="full")
@@ -37,7 +37,7 @@ using SparseArrays
             end
         end
 
-        for k in 1:5
+        for k in 1:4
             for l in 1:3
                 vect = vcoeffs_DG(2, k, l, x->sin(4*x[1]+x[2]); scheme="full")
                 dict = V2D(2, k, l, vect; scheme="full")
@@ -50,7 +50,7 @@ using SparseArrays
 
     @info "Testing D2V and V2D Sparse Case 2D... "
     @testset "D2V and V2D sparse case 2D" begin
-        for k in 1:5
+        for k in 1:4
             for l in 1:3
                 dict = coeffs_DG(2, k, l, x->sin(4*x[1]+x[2]); scheme="sparse")
                 vect = D2V(2, k, l, dict; scheme="sparse")
@@ -58,7 +58,7 @@ using SparseArrays
             end
         end
 
-        for k in 1:5
+        for k in 1:4
             for l in 1:3
                 vect = vcoeffs_DG(2, k, l, x->sin(4*x[1]+x[2]); scheme="sparse")
                 dict= V2D(2, k, l, vect; scheme="sparse")

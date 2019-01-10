@@ -1,22 +1,19 @@
 # -----------------------------------------------------------
 #
-# Using boundary terms and integration (summation) by parts
-# to construct more accurate derivative matrices for time
-# evolution using Lax-Friedricks-type fluxes
-#
-# All derivatives are computed here in pos basis first
-# Then conjugated into hier basis
+# An example of contructing the initial data for a traveling
+# wave in D-dimensions using the tensor_construct method
+# and the wave_evolve in PDEs.jl
 #
 # -----------------------------------------------------------
 
+using GalerkinSparseGrids
 
 # -----------------------------------------------------
-# Generates the coefficients for a traveling wave
+# Generates the coefficients for a waveform
 # A cos(\vec{k} \cdot \vec{x} + \phi), \vec{k} = 2 \pi \vec{m}
-# with sparse interpolation of type (k,n)
-# using periodic boundary conditions in D-dimensionss
+# using an interpolation of type (k,n)
+# and periodic boundary conditions in D-dimensionss
 # -----------------------------------------------------
-using LinearAlgebra
 function cos_coeffs(k::Int, n::Int, m::AbstractArray{T,1};
 					scheme="sparse", phase = 0.0, A = 1.0) where T
 	D = length(m)
@@ -38,7 +35,6 @@ function cos_coeffs(k::Int, n::Int, m::AbstractArray{T,1};
 			continue
 		end
 		sign = num_sines%4==0 ? 1 : -1
-		# may want to add an if-statement for if any n[i] == 0
 
 		coeff_array = [SCs[i]==1 ? cosine_dicts[i] : sine_dicts[i] for i in 1:D]
 		productDict = tensor_construct(D, k, n, coeff_array; scheme=scheme)
@@ -53,7 +49,6 @@ end
 # -----------------------------------------------------
 # The same as above, but using sin
 # -----------------------------------------------------
-
 function sin_coeffs(k::Int, n::Int, m::Array{Int,1};
 					scheme="sparse", phase=0.0, A=1.0)
 	return cos_coeffs(k, n, m; scheme=scheme, phase=phase-pi/2, A=A)
@@ -62,39 +57,46 @@ end
 # -----------------------------------------------------
 # Returns the data for a traveling wave
 # using the above methods
-# -----------------------------------------------------
-
+# ----------------------------------------------------
 function traveling_wave(k::Int, n::Int, m::Array{Int,1};
 						scheme="sparse", phase=0.0, A=1.0)
 	wavenumber = 2*pi*m
 	frequency = sqrt(dot(wavenumber,wavenumber))
-	# u0 = x -> A * cos(dot(wavenumber,x) + phase)
-	# v0 = x -> A * frequency * sin(dot(k,x) + phase)
+	
+	# u(x) = A * cos(dot(wavenumber,x) + phase)
+	# v(v) = A * frequency * sin(dot(k,x) + phase)
 	u0_coeffs = cos_coeffs(k, n, m; scheme=scheme, phase=phase, A=A)
 	v0_coeffs = sin_coeffs(k, n, m; scheme=scheme, phase=phase, A=A*frequency)
-
-	return (u0_coeffs, v0_coeffs, u0, v0)
+	return (u0_coeffs, v0_coeffs)
 end
 
 # -----------------------------------------------------
-# Evolves a traveling wave using the above methods
-# between time0 and time1
-# using an ODE solver of type 'order' (default 45)
+# Main routine:
 # -----------------------------------------------------
-function traveling_wave_solver(k::Int, n::Int, m::Array{Int,1}, time0::Real, time1::Real;
-								scheme="sparse", phase=0.0, A=1.0, order="45", kwargs...)
-	D = length(m)
-	f0coeffs, v0coeffs = traveling_wave(k, n, m; scheme=scheme, phase=phase, A=A)
-	laplac = laplacian_matrix(D, k, n; scheme=scheme)
 
-	RHS, y0 = wave_data(laplac, f0coeffs, v0coeffs)
+# Modify m to change the wavenumber.
+# We use integer entries here because of periodic boundary conditions
+m = [1,2,-1]
+truesoln = x -> cos(2*pi*(dot(m,x) - sqrt(dot(m,m))*0.54))
+k_max = 5
+n_max = 6
+D = length(m)
 
-	if order == "78"
-		soln=ode78((t,x)->*(RHS,x), y0, [time0,time1]; kwargs...)
-	elseif order == "45"
-		soln=ode45((t,x)->*(RHS,x), y0, [time0,time1]; kwargs...)
-	else
-		throw(ArgumentError)
+t0 = 0;
+t1 = 0.54;
+
+println("Wave Evolution in ", D, "D.")
+println("Going to k_max = ", k_max, ", n_max = ", n_max, ":")
+
+for k_used in 1:k_max
+	for n_used in 1:n_max
+		f0coeffs, v0coeffs = traveling_wave(k_used, n_used, m)
+		soln = wave_evolve(D, k_used, n_used, f0coeffs, v0coeffs, t0, t1)
+		dict = V2D(D, k_used, n_used, soln[2][end])
+		
+		err = mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D)
+		println("(k = ", k_used, ", n = ", n_used, ") : err = ", err)
 	end
-	return soln
 end
+
+

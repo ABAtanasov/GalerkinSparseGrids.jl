@@ -21,7 +21,6 @@ function tensor_construct(D::Int, k::Int, n::Int, coeff_array::Array{Dict{Cartes
 
 	cutoff = get_cutoff(scheme, D, n)
 	coeffs = Dict{CartesianIndex{D}, Array{Array{T,D},D}}()
-	# nD_coeffs = zeros(T, D)
 	ls::NTuple{D, Int}    = ntuple(i-> (n+1), D)
 	modes::NTuple{D, Int} = ntuple(i-> k, D)
 
@@ -50,3 +49,4 @@ function tensor_construct(D::Int, k::Int, n::Int, coeff_array::Array{Dict{Cartes
 	end
 	return coeffs
 end
+

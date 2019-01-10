@@ -76,21 +76,21 @@ import GalerkinSparseGrids.energy_func
         end
     end
 
-    @info "Testing traveling wave example in 2-D... "
-    @testset "Traveling wave example 2D" begin
-        m = [1, 2]
-        truesoln = x -> cos(2*pi*(dot(m,x) - sqrt(dot(m,m))*0.54))
-
-        D = 2
-        k_used = 3
-        n_used = 6
-
-        soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; order="45")
-        dict = V2D(D, k_used, n_used, soln[2][end]; scheme="sparse")
-        @test mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D) < 0.05
-
-        soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; order="78")
-        dict = V2D(D, k_used, n_used, soln[2][end]; scheme="sparse")
-        @test mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D) < 0.05
-    end
+    # @info "Testing traveling wave example in 2-D... "
+    # @testset "Traveling wave example 2D" begin
+    #     m = [1, 2]
+    #     truesoln = x -> cos(2*pi*(dot(m,x) - sqrt(dot(m,m))*0.54))
+    #
+    #     D = 2
+    #     k_used = 3
+    #     n_used = 6
+    #
+    #     soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; order="45")
+    #     dict = V2D(D, k_used, n_used, soln[2][end]; scheme="sparse")
+    #     @test mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D) < 0.05
+    #
+    #     soln = traveling_wave_solver(k_used, n_used, m, 0, 0.54; order="78")
+    #     dict = V2D(D, k_used, n_used, soln[2][end]; scheme="sparse")
+    #     @test mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D) < 0.05
+    # end
 end

@@ -21,3 +21,10 @@ tests = [
 		include(filename)
 	end
 end
+
+# Later, we will also test the examples:
+
+# include(joinpath(dirname(@__FILE__), "..", "examples", "interpolation.jl"))
+# include(joinpath(dirname(@__FILE__), "..", "examples", "differentiation.jl"))
+# include(joinpath(dirname(@__FILE__), "..", "examples", "traveling_wave.jl"))
+# include(joinpath(dirname(@__FILE__), "..", "examples", "vlasov_evolve.jl"))

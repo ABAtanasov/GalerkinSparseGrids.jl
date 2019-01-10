@@ -1,32 +1,28 @@
 module GalerkinSparseGrids
 
-# The prerequisite packages as of May 2018 are Cubature.jl and ODE.jl
-
 using HCubature
 using StaticArrays
 using ODE
 using SparseArrays
 
-# The following script files are used
+# The following script files are used:
 
-include("Schemes.jl")					# CartesianIndex Manipulation Methods
-include("Additional_Tools.jl")			# Helper functions not specific to any part of the package
-# include("Hat_Methods.jl")				# Using non-galerkin elementary 'hat' basis functions
-include("DG_Basis.jl")					# Gram-Schmidt procedure for DG basis functions in 1-D
-include("1D_DG_Functions.jl") 			# Explicitly building the 1-D Galerkin Basis
-include("DG_Methods.jl")				# Multidimensional hierarchical & sparse coefficients
-include("DG_vMethods.jl")				# Going between a dictionary & a vector of coeffs
-include("Derivative_Matrix_Elements.jl")# 1-D symbolic piecewise derivative
-include("Derivative_Precompute.jl")		# Precomputing derivative matrix for coeff vect
-include("1D_Derivative.jl")				# Constructing ideal 1D derivative matrix using boundary terms
-include("Multidim_Derivative.jl")		# Multidimensional DG Derivatives in full & sparse bases
-include("PDEs.jl")						# Solving the n-D wave equation with periodic boundary
-include("1D_Nodal_Basis.jl")			# Construct 1D nodal basis for multiplication
-include("Multidim_Nodal_Basis.jl")		# Construct Multidimensional nodal basis for multiplication
+include("schemes.jl")					# CartesianIndex Manipulation Methods
+include("additional_tools.jl")			# Helper functions not specific to any part of the package
+include("dg_basis.jl")					# Gram-Schmidt procedure for DG basis functions in 1-D
+include("1D_dg_functions.jl") 			# Explicitly building the 1-D Galerkin Basis
+include("dg_methods.jl")				# Multidimensional hierarchical & sparse coefficients
+include("dg_vmethods.jl")				# Going between a dictionary & a vector of coeffs
+include("derivative_matrix_elements.jl")# 1-D symbolic piecewise derivative
+include("derivative_precompute.jl")		# Precomputing derivative matrix for coeff vect
+include("1d_derivative.jl")				# Constructing ideal 1D derivative matrix using boundary terms
+include("multidim_derivative.jl")		# Multidimensional DG Derivatives in full & sparse bases
+include("pdes.jl")						# Solving the n-D wave equation with periodic boundary
+include("1d_nodal_basis.jl")			# Construct 1D nodal basis for multiplication
+include("multidim_nodal_basis.jl")		# Construct Multidimensional nodal basis for multiplication
 
-include("Error_Measure.jl")				# Monte Carlo Methods to measure error
-include("Tensor_Construct.jl")			# Quickly calculates coeffs of simple tensors of functions
-include("Traveling_Wave_Example.jl")	# Construct and evolve traveling waves
+include("error_measure.jl")				# Monte Carlo Methods to measure error
+include("tensor_construct.jl")			# Quickly calculates coeffs of simple tensors of functions
 
 export
 
@@ -62,7 +58,7 @@ tensor_construct,
 
 cos_coeffs,
 sin_coeffs,
-traveling_wave_solver
+wave_evolve
 
 
 end # module
