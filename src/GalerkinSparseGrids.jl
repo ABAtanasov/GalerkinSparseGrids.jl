@@ -10,7 +10,7 @@ using SparseArrays
 include("schemes.jl")					# CartesianIndex Manipulation Methods
 include("additional_tools.jl")			# Helper functions not specific to any part of the package
 include("dg_basis.jl")					# Gram-Schmidt procedure for DG basis functions in 1-D
-include("1D_dg_functions.jl") 			# Explicitly building the 1-D Galerkin Basis
+include("1d_dg_functions.jl") 			# Explicitly building the 1-D Galerkin Basis
 include("dg_methods.jl")				# Multidimensional hierarchical & sparse coefficients
 include("dg_vmethods.jl")				# Going between a dictionary & a vector of coeffs
 include("derivative_matrix_elements.jl")# 1-D symbolic piecewise derivative
