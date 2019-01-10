@@ -1,26 +1,26 @@
-# Constructs the initial 2D Phase space distribution
-# Would be ideal to obtain these coefficients using TensorConstruct
-# But for D = 2 (4D phase space) this should be fine
-function construct_phi(D::Int, k::Int, n::Int, scheme="sparse")
-	f = r -> 5/3 * (log(1 + r^2) + 2 * atan(r)/r)
-	
-	xcoeffs = vcoeffs_DG(D, k, n, x->f(norm(x[1:D])); scheme=scheme)
-	pcoeffs = get_one_modal(D, k, n)
-	tensor_construct(2*D, k, n, [xcoeffs, pcoeffs])
-end
+# We demonstrate the full power of the sparse grid basis
+# by successfully evolving a 4+1-dimensional PDE corresponding
+# to the phase evolution of some matter distribution. 
+# This is the Vlassov-Poisson or "Collisionless Boltzman" equation
 
+# In astrophysical scenarios, this corresponds to 
 
-
+# The spatial dimension is 2 -> 4D phase space 
+# We will use mode order 5 at 5th level resolution along each axis
+# Higher resolution at the moment requires a supercomputer 
 D = 2; k = 5; n = 5;
+
+# We will evolve from an initial t = 0 to a final t1 = 0.54
 t0 = 0; t1 = 0.54
 
 # Initial distribution function in phase space:
 fx = x -> sqrt(2*pi) * exp(-2 * pi^2 * norm(x.-1/2)^2)
 fv = v -> sqrt(2*pi) * exp(-2 * pi^2 * norm(v)^2)
 f0 = x -> fx(2 * (x[1:D] .- 1/2) ) * fv(2 * (x[(D+1):end] .- 1/2) )
-
 fx_modal = vcoeffs_DG(D, k, n, fx)
 fv_modal = vcoeffs_DG(D, k, n, fx)
+# We use the tensor_construct method as before because of its
+# increased accuracy
 f0_modal = tensor_construct(D, k, n, [fx_modal], [fv_modal])
 
 # Constructing the transformation matrices takes the longest time 
@@ -41,5 +41,12 @@ fr2 = broadcast(F_radial, get_r2_point(D, k, n, m2n, n2p))
 # gives the ith component of the force vector 
 F_point = [get_xi_point(D, i, k, n, m2p) .* fr2 for i in 1:D]
 
-# Finally, we do the full Vlasov evolution:
-vlasov_evolve(D, k, n, m2n, n2p, p2n, n2m, f0_modal, F_point, t0, t1; order="45")
+# Finally, we do the full evolution of the Vlasov equation:
+vlasov_evolve(D, k, n, 
+				m2n, n2p, p2n, n2m, 
+				f0_modal, F_point, 
+				t0, t1; 
+				order="45", points=:specified) 
+# points=:specified only saves the first and last set of coefficients 
+# in the evolution. This is to save memory.
+# If one desires the full set of coefficients, simply remove this keyword arg

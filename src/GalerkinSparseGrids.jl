@@ -42,9 +42,6 @@ D_matrix,
 grad_matrix,
 laplacian_matrix,
 
-wave_evolve_1D,
-wave_evolve,
-
 nodal2points_1D,
 points2nodal_1D,
 nodal2heir_1D,
@@ -56,9 +53,9 @@ mcerr2,
 
 tensor_construct,
 
-cos_coeffs,
-sin_coeffs,
-wave_evolve
+wave_evolve_1D,
+wave_evolve,
+vlasov_evolve
 
 
 end # module
