@@ -2,8 +2,7 @@
 # by successfully evolving a 4+1-dimensional PDE corresponding
 # to the phase evolution of some matter distribution. 
 # This is the Vlassov-Poisson or "Collisionless Boltzman" equation
-
-# In astrophysical scenarios, this corresponds to 
+using GalerkinSparseGrids
 
 # The spatial dimension is 2 -> 4D phase space 
 # We will use mode order 5 at 5th level resolution along each axis
