@@ -2,6 +2,7 @@
 # by successfully evolving a 4+1-dimensional PDE corresponding
 # to the phase evolution of some matter distribution. 
 # This is the Vlassov-Poisson or "Collisionless Boltzman" equation
+using LinearAlgebra
 using GalerkinSparseGrids
 
 # The spatial dimension is 2 -> 4D phase space 
@@ -42,10 +43,10 @@ F_point = [get_xi_point(D, i, k, n, m2p) .* fr2 for i in 1:D]
 
 # Finally, we do the full evolution of the Vlasov equation:
 vlasov_evolve(D, k, n, 
-				m2n, n2p, p2n, n2m, 
-				f0_modal, F_point, 
-				t0, t1; 
-				order="45", points=:specified) 
+                m2n, n2p, p2n, n2m, 
+                f0_modal, F_point, 
+                t0, t1; 
+                order="45", points=:specified) 
 # points=:specified only saves the first and last set of coefficients 
 # in the evolution. This is to save memory.
 # If one desires the full set of coefficients, simply remove this keyword arg
