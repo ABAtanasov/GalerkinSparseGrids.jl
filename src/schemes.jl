@@ -19,11 +19,11 @@
 # Bungartz and Griebel
 
 function get_cutoff(scheme::String, D::Int, n::Int)
-	if scheme == "sparse"
-		return x -> (sum(x.I) > n+D)
-	elseif scheme == "full"
-		return x -> false
-	else
-		throw(ArgumentError)
-	end
+    if scheme == "sparse"
+        return x -> (sum(x.I) > n+D)
+    elseif scheme == "full"
+        return x -> false
+    else
+        throw(ArgumentError)
+    end
 end

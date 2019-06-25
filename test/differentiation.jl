@@ -9,7 +9,7 @@ using SparseArrays
 #--------------------------------------
 
 @testset "differentiation.jl" begin
-	@info "Testing differentiation 1-D DG basis... "
+    @info "Testing differentiation 1-D DG basis... "
     @testset "1D DG Differentiation" begin
         k=3
         for l in 2:5
@@ -25,7 +25,7 @@ using SparseArrays
         end
     end
 
-	@info "Testing differentiation 2-D full DG basis... "
+    @info "Testing differentiation 2-D full DG basis... "
     @testset "2D Full DG Differentiation" begin
         D = 2
         k = 3

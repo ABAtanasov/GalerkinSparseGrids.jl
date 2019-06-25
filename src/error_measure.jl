@@ -12,9 +12,9 @@
 function monte_carlo(f::Function, D::Int; count = 1000)
     total = 0.0
     for iter in 1:count
-		x = ntuple(i -> rand(), D)
+        x = ntuple(i -> rand(), D)
         total += f(x)
-	end
+    end
     total /= count
 end
 
@@ -41,5 +41,5 @@ function mcerr(f::Function, g::Function, D::Int; count = 1000)
 end
 
 function mcerr2(f::Function, g::Function, D::Int; batch = 50, Z = 1.0)
-	return sqrt(monte_carlo2(x->(f(x)-g(x))^2, D; batch = batch, Z = Z))
+    return sqrt(monte_carlo2(x->(f(x)-g(x))^2, D; batch = batch, Z = Z))
 end
