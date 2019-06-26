@@ -4,7 +4,7 @@
 # This is the Vlassov-Poisson or "Collisionless Boltzman" equation
 using GalerkinSparseGrids
 
-# The spatial dimension is 2 -> 4D phase space 
+# The spatial dimension is 2, meaning a 4D phase space 
 # We will use mode order 5 at 5th level resolution along each axis
 # Higher resolution at the moment requires a supercomputer 
 D = 2; k = 5; n = 5;
@@ -13,14 +13,14 @@ D = 2; k = 5; n = 5;
 t0 = 0; t1 = 0.54
 
 # Initial distribution function in phase space:
-fx = x -> sqrt(2*pi) * exp(-2 * pi^2 * norm(x.-1/2)^2)
-fv = v -> sqrt(2*pi) * exp(-2 * pi^2 * norm(v)^2)
-f0 = x -> fx(2 * (x[1:D] .- 1/2) ) * fv(2 * (x[(D+1):end] .- 1/2) )
-fx_modal = vcoeffs_DG(D, k, n, fx)
-fv_modal = vcoeffs_DG(D, k, n, fx)
+fx = x -> exp(-2 * pi^2 * norm(x.-1/2)^2)
+fv = v -> exp(-2 * pi^2 * norm(v)^2)
+fx_modal = coeffs_DG(1, k, n, fx)
+fv_modal = coeffs_DG(1, k, n, fv)
 # We use the tensor_construct method as before because of its
 # increased accuracy
-f0_modal = tensor_construct(D, k, n, [fx_modal], [fv_modal])
+f0_modal_array = [i <= D ? fx_modal : fv_modal for i in 1:2*D]
+f0_modal = 2*pi*D2V(2*D,k,n,tensor_construct(2*D, k, n, f0_modal_array))
 
 # Constructing the transformation matrices takes the longest time 
 # and most memory by far. 
@@ -28,8 +28,8 @@ f0_modal = tensor_construct(D, k, n, [fx_modal], [fv_modal])
 # matrices can forever be used at a given (D, k, n)
 # It would therefore be advantageous to load these in from some
 # external file rather than computing them (likely multiple times over)
-m2n, n2p = make_modal2point_matrices(D, k, n)
-p2n, n2m = make_point2modal_matrices(D, k, n)
+m2n, n2p = make_modal2point_matrices(2*D, k, n)
+p2n, n2m = make_point2modal_matrices(2*D, k, n)
 
 # the force as a fucntion of r^2:
 # (We use r^2) here because |r| is dicontinuous at the origin and gives
