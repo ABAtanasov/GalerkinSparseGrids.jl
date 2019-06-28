@@ -37,7 +37,7 @@ function tensor_construct(D::Int, k::Int, n::Int, coeff_array::Array{Dict{Cartes
                     coeff = coeff_array[d]
                     tup::NTuple{1, Int} = (level[d],) # This is somehow still slow
                     l = CartesianIndex{1}(tup);
-                    c = cell[d];
+                    c = cell[d]
                     m = mode[d]
                     val *= coeff[l][c][m]
                 end

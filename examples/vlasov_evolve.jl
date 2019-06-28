@@ -5,10 +5,13 @@
 using LinearAlgebra
 using GalerkinSparseGrids
 
+include("../src/basic_function_exact_coeffs.jl")
+
 # The spatial dimension is 2, meaning a 4D phase space 
 # We will use mode order 5 at 5th level resolution along each axis
 # Higher resolution at the moment requires a supercomputer 
-D = 2; k = 5; n = 5;
+# D = 2; k = 5; n = 5
+D = 2; k = 2; n = 2
 
 # We will evolve from an initial t = 0 to a final t1 = 0.54
 t0 = 0; t1 = 0.54
@@ -32,7 +35,7 @@ f0_modal = 2*pi*D2V(2*D,k,n,tensor_construct(2*D, k, n, f0_modal_array))
 m2n, n2p = make_modal2point_matrices(2*D, k, n)
 p2n, n2m = make_point2modal_matrices(2*D, k, n)
 
-# the force as a fucntion of r^2:
+# the force as a function of r^2:
 # (We use r^2) here because |r| is dicontinuous at the origin and gives
 # instabilities for interpolation
 F_radial = x -> x == 0 ? 10/9 : 10/3 * (sqrt(x) - atan(sqrt(x)))/(sqrt(x)^3)

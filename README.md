@@ -17,7 +17,7 @@ For more information, see [Sparse Grid Discretizations based on a Discontinuous 
 
 The sparse grid methods of this package apply well beyond numerical relativity to many areas in high-dimensional dynamics and data science. The user is invited to experiment.
 
-Authors: Alex Atanasov (alex.atanasov@yale.edu) & Erik Schnetter (eschnetter@perimeterinstitute.ca)
+Authors: Alex Atanasov (atanasov@g.harvard.edu) & Erik Schnetter (eschnetter@perimeterinstitute.ca)
 
 ## Installing
 

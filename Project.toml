@@ -1,8 +1,9 @@
 name = "GalerkinSparseGrids"
 uuid = "80c1f70c-0245-11e9-2eb4-cddde2415614"
 license = ["MIT"]
-authors = ["Alex Atanasov <atanasov@g.harvard.edu>"]
-version = "0.1.0"
+authors = ["Alex Atanasov <atanasov@g.harvard.edu>",
+           "Erik Schnetter <eschnetter@perimeterinstitute.ca>"]
+version = "1.0.0"
 
 [deps]
 HCubature = "19dc6840-f33b-545b-b366-655c7e3ffd49"
