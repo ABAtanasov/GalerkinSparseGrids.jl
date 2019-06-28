@@ -37,6 +37,8 @@ D2Vref,
 vcoeffs_DG,
 
 transform,
+make_modal2point_matrices,
+make_point2modal_matrices,
 
 D_matrix,
 grad_matrix,
