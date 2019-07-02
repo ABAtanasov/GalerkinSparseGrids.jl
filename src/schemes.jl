@@ -19,10 +19,18 @@
 # Bungartz and Griebel
 
 function get_cutoff(scheme::String, D::Int, n::Int)
+    get_cutoff(scheme, Val(D), n)
+end
+
+function get_cutoff(scheme::String, ::Val{D}, n::Int) where {D}
     if scheme == "sparse"
-        return x -> (sum(x.I) > n+D)
+        return function(x::CartesianIndex{D})
+            sum(x.I) > n+D
+        end
     elseif scheme == "full"
-        return x -> false
+        return function(x::CartesianIndex{D})
+            false
+        end
     else
         throw(ArgumentError)
     end

@@ -40,7 +40,7 @@ end
 function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
                     k::Int, l2::CartesianIndex{D}, 
                     l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
-                    js_1D::Array{Int, 1}, mat_1D::Array{T, 2}) where {D, T<:Real}
+                    js_1D::CartesianIndex{D}, mat_1D::Array{T, 2}) where {D, T<:Real}
     cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l2[i]-2), D)
     modes::NTuple{D, Int} = ntuple(i -> k, D)
     cellrange = CartesianIndices(cells)
@@ -69,7 +69,7 @@ end
 function make_column(j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
                      k::Int, n::Int, l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
                      mat_1D::Array{T, 2}; scheme="sparse") where {D, T<:Real}
-    js_1D = [get_index_1D(k, l1[d], c1[d], m1[d]) for d in 1:D]::Array{Int, 1}
+    js_1D = CartesianIndex(ntuple(d -> get_index_1D(k, l1[d], c1[d], m1[d]), D))
     levels::NTuple{D, Int} = ntuple(i -> (n+1),D)
     cutoff = get_cutoff(scheme, D, n)
     i = 1
@@ -81,6 +81,9 @@ end
 
 
 function transform(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", atol=1e-12) where {T<:Real}
+    transform(Val(D), k, n, mat_1D; scheme=scheme, atol=atol)
+end
+function transform(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", atol=1e-12) where {D, T<:Real}
     cutoff = get_cutoff(scheme, D, n)
     levels::NTuple{D, Int} = ntuple(i -> (n+1),D)
     modes ::NTuple{D, Int} = ntuple(i -> k, D)
@@ -106,7 +109,7 @@ function transform(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", 
 end
 
 function transform(D::Int, k::Int, n::Int, from::String, to::String; scheme="sparse", atol=1e-12)
-    # Its better not to multiply the matrices from modal -> nodal with nodal -> points 
+    # It's better not to multiply the matrices from modal -> nodal with nodal -> points 
     # or vice-versa. Instead, have both transform matrices in memory
     # and multiply a vector once by each of the two to get to the other basis - 
     # So this if-statement is not an efficient thing to do in general
