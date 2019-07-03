@@ -129,55 +129,57 @@ end
 # v_point (its a constant and simple vector for any potential) (good)
 # time0, time1, order, scheme (good)
 function vlasov_evolve(D::Int, k::Int, n::Int,
-                        m2n::SparseMatrixCSC{T, Int}, n2p::SparseMatrixCSC{T, Int},
-                        p2n::SparseMatrixCSC{T, Int}, n2m::SparseMatrixCSC{T, Int},
-                        f0_modal::Array{T,1}, F_point::Array{Array{T,1}, 1},
-                        time0::Real, time1::Real;
-                        order="45", scheme="sparse", kwargs...) where T <: Real
+            m2n::SparseMatrixCSC{T, Int}, n2p::SparseMatrixCSC{T, Int},
+            p2n::SparseMatrixCSC{T, Int}, n2m::SparseMatrixCSC{T, Int},
+            f0_modal::Array{T,1}, F_point::Array{Array{T,1}, 1},
+            time0::Real, time1::Real;
+            order="45", scheme="sparse", kwargs...) where T <: Real
 
-    # The grad matrix- using the same derivative operator as we did
-    # for the wave equation. 
-    # We may need to apply filtering intermittently in the evolution
-    Ds = grad_matrix(2*D, k, n; scheme=scheme)
-    
-    # Coeffs for the constant 1 in D-dim space
-    constant_one = [get_one(D, k, n) for i in 1:D]
-    # Coeffs for velocity in D-dim space
-    v_point = [get_xi_point(D, i, k, n, m2n, n2p) for i in 1:D]
-    # Coeffs for velocity in 2*D-dim phase space - the tensor product of the above
-    v_point = [tensor_construct(D, k, n, constant_one, v_point[i]) for i in 1:D]
-    
-    function steprule(t::Real, f_modal::Array{Float64, 1})
-        # We want this in a modal basis for differentiation to work fast
-        # Matrix multiplication is the bottle neck here. 
-        dfdxs_modal = [Ds[d] * f_modal for d in 1:D]
-        dfdps_modal = [Ds[d] * f_modal for d in (D+1):(2*D)]
+  # The grad matrix- using the same derivative operator as we did
+  # for the wave equation. 
+  # We may need to apply filtering intermittently in the evolution
+  Ds = grad_matrix(2*D, k, n; scheme=scheme)
+  
+  # Coeffs for the constant 1 in D-dim space
+  one_1D = get_one_modal(1, k, n)
+  # Coeffs for velocity in D-dim space
+  v_modal_1D = get_xi_modal(1, 1, k, n)
+  # Coeffs for velocity in 2*D-dim phase space - the tensor product of the above
+  v_modal = [tensor_construct(2*D, k, n, [j-D == i ? v_modal_1D : one_1D for j in 1:2*D])
+              for i in 1:D]
+  v_point = broadcast(x->n2p * (m2n * x), v_modal)
+  
+  function steprule(t::Real, f_modal::Array{Float64, 1})
+    # We want this in a modal basis for differentiation to work fast
+    # Matrix multiplication is the bottle neck here. 
+    dfdxs_modal = [Ds[d] * f_modal for d in 1:D]
+    dfdps_modal = [Ds[d] * f_modal for d in (D+1):(2*D)]
 
-        dfdxs_point = broadcast(x->n2p * (m2n * x), dfdxs_modal)
-        dfdps_point = broadcast(x->n2p * (m2n * x), dfdps_modal)
+    dfdxs_point = broadcast(x->n2p * (m2n * x), dfdxs_modal)
+    dfdps_point = broadcast(x->n2p * (m2n * x), dfdps_modal)
 
-        # dH/dp * df/dx 
-        contrib1 = sum([v_point[d] .* dfdxs_point[d] for d in 1:D])
-        # - dH/dx * df/dp
-        contrib2 = sum([F_point[d] .* dfdps_point[d] for d in 1:D])
+    # dH/dp * df/dx 
+    contrib1 = sum([v_point[d] .* dfdxs_point[d] for d in 1:D])
+    # - dH/dx * df/dp
+    contrib2 = sum([F_point[d] .* dfdps_point[d] for d in 1:D])
 
-        # df/dt = - (dH/dp * df/dx - dH/dx * df/dp)
-        return - n2m * (p2n * (contrib1 + contrib2))
-    end
-    
-    println("Beginning PDE evolution...")
-    flush(stdout)
+    # df/dt = - (dH/dp * df/dx - dH/dx * df/dp)
+    return - n2m * (p2n * (contrib1 + contrib2))
+  end
+  
+  println("Beginning PDE evolution...")
+  flush(stdout)
 
-    if order == "45"
-        soln = ode45(steprule, f0_modal, [time0,time1]; kwargs...)
-    elseif order == "78"
-        soln = ode78(steprule, f0_modal, [time0,time1]; kwargs...)
-    else
-        throw(ArgumentError(:order))
-    end
-    
-    println("Done.")
-    flush(stdout)
+  if order == "45"
+    soln = ode45(steprule, f0_modal, [time0,time1]; kwargs...)
+  elseif order == "78"
+    soln = ode78(steprule, f0_modal, [time0,time1]; kwargs...)
+  else
+    throw(ArgumentError(:order))
+  end
+  
+  println("Done.")
+  flush(stdout)
 end
 
 

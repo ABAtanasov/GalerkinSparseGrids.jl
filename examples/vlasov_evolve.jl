@@ -4,6 +4,8 @@
 # This is the Vlassov-Poisson or "Collisionless Boltzman" equation
 using LinearAlgebra
 using GalerkinSparseGrids
+using LinearAlgebra
+using ODE
 
 include("../src/basic_function_exact_coeffs.jl")
 
@@ -40,10 +42,10 @@ if false
 # (We use r^2) here because |r| is dicontinuous at the origin and gives
 # instabilities for interpolation
 F_radial = x -> x == 0 ? 10/9 : 10/3 * (sqrt(x) - atan(sqrt(x)))/(sqrt(x)^3)
-fr2 = broadcast(F_radial, get_r2_point(D, k, n, m2n, n2p))
+fr2 = broadcast(F_radial, get_r2_point(2*D, k, n, m2n, n2p))
 # I have defined F_radial so that multiplying it by x_i 
 # gives the ith component of the force vector 
-F_point = [get_xi_point(D, i, k, n, m2p) .* fr2 for i in 1:D]
+F_point = [get_xi_point(2*D, i, k, n, m2n, n2p) .* fr2 for i in 1:D]
 
 # Finally, we do the full evolution of the Vlasov equation:
 vlasov_evolve(D, k, n, 

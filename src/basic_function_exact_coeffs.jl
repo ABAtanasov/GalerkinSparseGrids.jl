@@ -48,6 +48,6 @@ function get_r2_point(D::Int, k::Int, n::Int,
                         m2n::SparseMatrixCSC{Float64, Int},
                         n2p::SparseMatrixCSC{Float64, Int})
     v = n2p * (m2n * get_r2_modal(D, k, n))
-    v[v .< 0] = 0
+    v[v .< 0] .= 0
     return v
 end
