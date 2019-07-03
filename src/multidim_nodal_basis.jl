@@ -65,26 +65,72 @@ function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array
     return i
 end
 
+# function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
+#                     k::Int, l2::CartesianIndex{D}, 
+#                     l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
+#                     js_1D::CartesianIndex{D}, mat_1D::Array{T, 2}) where {D, T<:Real}
+#     cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l2[i]-2), D)
+#     modes::NTuple{D, Int} = ntuple(i -> k, D)
+#     cellrange = CartesianIndices(cells)
+#     moderange = CartesianIndices(modes)
+#     newelems = 0
+#     for c2 in cellrange
+#         !relevant_cell(k, l2, c2, l1, c1) && continue
+#         newelems += length(moderange)
+#     end
+#     oldlength = length(I)
+#     @assert length(J) == oldlength
+#     @assert length(V) == oldlength
+#     resize!(I, oldlength + newelems)
+#     resize!(J, oldlength + newelems)
+#     resize!(V, oldlength + newelems)
+#     el = 0
+#     for c2 in cellrange
+#         !relevant_cell(k, l2, c2, l1, c1) && (i += prod(modes); continue)
+# 
+#         for m2 in moderange
+#             val = one(T)
+#             for d in 1:D
+#                 i_1D = get_index_1D(k, l2[d], c2[d], m2[d])
+#                 val *= mat_1D[i_1D, js_1D[d]]
+#                 val == 0 && break
+#             end
+#             (abs(val) < eps(T)) && (i += 1; continue)
+#             # push!(I, i)
+#             # push!(J, j)
+#             # push!(V, val)
+#             el += 1
+#             I[oldlength + el] = i
+#             J[oldlength + el] = j
+#             V[oldlength + el] = val
+#             i += 1
+#         end
+#     end
+#     @assert el <= newelems
+#     resize!(I, oldlength + el)
+#     resize!(J, oldlength + el)
+#     resize!(V, oldlength + el)
+#     return i
+# end
+
 
 function make_column(j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
                      k::Int, n::Int, l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
-                     mat_1D::Array{T, 2}; scheme="sparse") where {D, T<:Real}
+                     mat_1D::Array{T, 2}, scheme::Val{Scheme}) where {D, T<:Real, Scheme}
     js_1D = CartesianIndex(ntuple(d -> get_index_1D(k, l1[d], c1[d], m1[d]), D))
     levels::NTuple{D, Int} = ntuple(i -> (n+1),D)
-    cutoff = get_cutoff(scheme, D, n)
     i = 1
     for l2 in CartesianIndices(levels)
-        cutoff(l2) && continue
+        cutoff(scheme, l2, n) && continue
         i = inner_loop(i, j, I, J, V, k, l2, l1, c1, m1, js_1D, mat_1D)
     end
 end
 
 
 function transform(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", atol=1e-12) where {T<:Real}
-    transform(Val(D), k, n, mat_1D; scheme=scheme, atol=atol)
+    transform(Val(D), k, n, mat_1D, Val(Symbol(scheme)), atol)
 end
-function transform(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", atol=1e-12) where {D, T<:Real}
-    cutoff = get_cutoff(scheme, D, n)
+function transform(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Scheme}, atol) where {D, T<:Real, Scheme}
     levels::NTuple{D, Int} = ntuple(i -> (n+1),D)
     modes ::NTuple{D, Int} = ntuple(i -> k, D)
     I = Int[]
@@ -93,12 +139,12 @@ function transform(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse"
     
     j = 1
     for l1 in CartesianIndices(levels)
-        cutoff(l1) && continue
+        cutoff(scheme, l1, n) && continue
 
         cells1 = ntuple(i -> 1<<max(0, l1[i]-2), D)
         for c1 in CartesianIndices(cells1)
             for m1 in CartesianIndices(modes)
-                make_column(j, I, J, V, k, n, l1, c1, m1, mat_1D; scheme=scheme)
+                make_column(j, I, J, V, k, n, l1, c1, m1, mat_1D, scheme)
                 j += 1
             end
             # Run the garbage collector relatively frequently to prevent major memory usage
@@ -146,7 +192,9 @@ end
 # --------------------------------------------------
 
 function transform2(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", atol=1e-12) where {T<:Real}
-    cutoff = get_cutoff(scheme, D, n)
+    transform2(Val(D), k, n, mat_1D, Val(scheme), atol)
+end
+function transform2(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Scheme}, atol) where {D, T<:Real, Scheme}
     levels = ntuple(i->(n+1),D)
     modes  = ntuple(i -> k, D)
     hier_ref = D2Vref(1, k, n)
@@ -159,7 +207,7 @@ function transform2(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse",
     cells1::Array{Int,1} = zeros(Int, D); 
     cells2::Array{Int,1} = zeros(Int, D)
     for l1 in levelrange
-        cutoff(l1) && continue
+        cutoff(scheme, l1, n) && continue
 
         cells1 = [1<<max(0, l1[q]-2) for q in 1:D]
         for c1 in CartesianIndices((cells1...,))
@@ -169,7 +217,7 @@ function transform2(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse",
 
                 i = 1
                 for l2 in levelrange
-                    cutoff(l2) && continue
+                    cutoff(schemel, l2, n) && continue
 
                     cells2 = [1<<max(0, l2[q]-2) for q in 1:D]
                     for c2 in CartesianIndices((cells2...,))

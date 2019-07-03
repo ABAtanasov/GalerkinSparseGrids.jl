@@ -113,13 +113,18 @@ function coeffs_DG(D::Int, k::Int, n::Int, f::Function;
                                         rtol = REL_TOL, atol = ABS_TOL,
                                         maxevals=MAX_EVALS,
                                         scheme="sparse")
-    cutoff    = get_cutoff(scheme, D, n)
+    coeffs_DG(Val(D), k, n, f, rtol, atol, maxevals, Val(Symbol(scheme)))
+end
+function coeffs_DG(::Val{D}, k::Int, n::Int, f::Function,
+                                        rtol, atol,
+                                        maxevals,
+                                        scheme::Val{Scheme}) where {D, Scheme}
     coeffs    = Dict{CartesianIndex{D}, Array{Array{Float64,D},D}}()
     modes    = ntuple(i-> k, D)
     ls        = ntuple(i->(n+1),D)
 
     for level in CartesianIndices(ls) #This really goes from 0 to l_i for each i
-        cutoff(level) && continue
+        cutoff(scheme, level, n) && continue
 
         cells = ntuple(i -> 1<<max(0, level[i]-2), D)
         level_coeffs = Array{Array{Float64,D}}(undef, cells)

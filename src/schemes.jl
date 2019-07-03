@@ -18,20 +18,10 @@
 # and in the future possibly the energy basis of 
 # Bungartz and Griebel
 
-function get_cutoff(scheme::String, D::Int, n::Int)
-    get_cutoff(scheme, Val(D), n)
+function cutoff(::Val{:sparse}, x::CartesianIndex{D}, n::Int) where {D}
+    sum(x.I) > n+D
 end
 
-function get_cutoff(scheme::String, ::Val{D}, n::Int) where {D}
-    if scheme == "sparse"
-        return function(x::CartesianIndex{D})
-            sum(x.I) > n+D
-        end
-    elseif scheme == "full"
-        return function(x::CartesianIndex{D})
-            false
-        end
-    else
-        throw(ArgumentError)
-    end
+function cutoff(::Val{:full}, x::CartesianIndex{D}, n::Int) where {D}
+    false
 end

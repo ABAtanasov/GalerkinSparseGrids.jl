@@ -35,6 +35,7 @@ f0_modal = 2*pi*D2V(2*D,k,n,tensor_construct(2*D, k, n, f0_modal_array))
 m2n, n2p = make_modal2point_matrices(2*D, k, n)
 p2n, n2m = make_point2modal_matrices(2*D, k, n)
 
+if false
 # the force as a function of r^2:
 # (We use r^2) here because |r| is dicontinuous at the origin and gives
 # instabilities for interpolation
@@ -53,3 +54,4 @@ vlasov_evolve(D, k, n,
 # points=:specified only saves the first and last set of coefficients 
 # in the evolution. This is to save memory.
 # If one desires the full set of coefficients, simply remove this keyword arg
+end

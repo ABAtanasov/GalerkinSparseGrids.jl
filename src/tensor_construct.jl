@@ -18,14 +18,17 @@
 
 function tensor_construct(D::Int, k::Int, n::Int, coeff_array::Array{Dict{CartesianIndex{1},
     Array{Array{T, 1}, 1}}, 1}; scheme = "sparse") where T <: Real
+    tensor_construct(Val(D), k, n, coeff_array, Val(Symbol(scheme)))
+end
+function tensor_construct(::Val{D}, k::Int, n::Int, coeff_array::Array{Dict{CartesianIndex{1},
+    Array{Array{T, 1}, 1}}, 1}, scheme::Val{Scheme}) where {D, T <: Real, Scheme}
 
-    cutoff = get_cutoff(scheme, D, n)
     coeffs = Dict{CartesianIndex{D}, Array{Array{T,D},D}}()
     ls::NTuple{D, Int}    = ntuple(i-> (n+1), D)
     modes::NTuple{D, Int} = ntuple(i-> k, D)
 
     for level in CartesianIndices(ls)
-        cutoff(level) && continue
+        cutoff(scheme, level, n) && continue
 
         cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, level[i]-2), D)
         level_coeffs = Array{Array{T,D}}(undef, cells)
