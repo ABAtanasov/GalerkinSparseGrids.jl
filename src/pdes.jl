@@ -2,7 +2,7 @@
 #
 # Using boundary terms and integration (summation) by parts
 # to construct more accurate derivative matrices for time
-# evolution using Lax-Friedricks-type fluxes
+# evolution using Lax-Friedrichs-type fluxes
 #
 # All derivatives are computed here in pos basis first
 # Then conjugated into hier basis

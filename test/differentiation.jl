@@ -13,8 +13,8 @@ using SparseArrays
     @testset "1D DG Differentiation" begin
         k=3
         for l in 2:5
-            frefVD = V2Dref(1, k, l);
-            frefDV = D2Vref(1, k, l);
+            frefVD = V2Dref(Val(1), k, l, Val(:sparse))
+            frefDV = D2Vref(Val(1), k, l, Val(:sparse))
             D_op = D_matrix(1, k, l, frefVD, frefDV; scheme="full")
             vcoeffs = vcoeffs_DG(1, k, l, x->cos(2*pi*x[1]); scheme="full")
             dvcoeffs = *(D_op,vcoeffs)

@@ -1,5 +1,6 @@
 module GalerkinSparseGrids
 
+using MKLSparse
 using HCubature
 using StaticArrays
 using ODE

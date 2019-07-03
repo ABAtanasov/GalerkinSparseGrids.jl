@@ -73,7 +73,7 @@ function laplacian_matrix(D::Int, k::Int, n::Int; scheme="sparse")
     lap = spzeros(len, len)
     for i in 1:D
         D_op = D_matrix(D, i, k, n; scheme=scheme)
-        lap += *(D_op, D_op)
+        lap += D_op * D_op
     end
     return lap
 end
