@@ -2,12 +2,9 @@
 # by successfully evolving a 4+1-dimensional PDE corresponding
 # to the phase evolution of some matter distribution. 
 # This is the Vlassov-Poisson or "Collisionless Boltzman" equation
-using LinearAlgebra
 using GalerkinSparseGrids
 using LinearAlgebra
 using ODE
-
-include("../src/basic_function_exact_coeffs.jl")
 
 # The spatial dimension is 2, meaning a 4D phase space 
 # We will use mode order 5 at 5th level resolution along each axis
@@ -19,8 +16,8 @@ D = 2; k = 2; n = 2
 t0 = 0; t1 = 0.54
 
 # Initial distribution function in phase space:
-fx = x -> exp(-2 * pi^2 * norm(x.-1/2)^2)
-fv = v -> exp(-2 * pi^2 * norm(v)^2)
+@inline fx(x) = exp(-2 * pi^2 * norm(x.-1/2)^2)
+@inline fv(v) = exp(-2 * pi^2 * norm(v)^2)
 fx_modal = coeffs_DG(1, k, n, fx)
 fv_modal = coeffs_DG(1, k, n, fv)
 # We use the tensor_construct method as before because of its
@@ -37,7 +34,6 @@ f0_modal = 2*pi*D2V(2*D,k,n,tensor_construct(2*D, k, n, f0_modal_array))
 m2n, n2p = make_modal2point_matrices(2*D, k, n)
 p2n, n2m = make_point2modal_matrices(2*D, k, n)
 
-if false
 # the force as a function of r^2:
 # (We use r^2) here because |r| is dicontinuous at the origin and gives
 # instabilities for interpolation
@@ -56,4 +52,3 @@ vlasov_evolve(D, k, n,
 # points=:specified only saves the first and last set of coefficients 
 # in the evolution. This is to save memory.
 # If one desires the full set of coefficients, simply remove this keyword arg
-end

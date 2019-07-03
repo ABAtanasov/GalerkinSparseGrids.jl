@@ -32,7 +32,7 @@
 # basis functions in the full or sparse grid schemes
 # using the degree k-1 Galerkin polynomials
 # with multi-resolution up to n
-function get_size(::Val{D}, k::Int, n::Int, scheme::Val{Scheme}) where {D, Scheme}
+function get_size(::Val{D}, k::Int, n::Int, scheme::Val{Scheme}=Val(:sparse)) where {D, Scheme}
     ls      = ntuple(i->(n+1), D)
     size    = 0
     for level in CartesianIndices(ls)
@@ -73,8 +73,7 @@ function D2V(::Val{D}, k::Int, n::Int, coeffs::Dict{CartesianIndex{D}, <:Abstrac
 end
 
 
-function V2D(d::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse") where {D, T <: Real}
-    @assert d == D
+function V2D(D::Int, k::Int, n::Int, vect::Array{T}; scheme="sparse") where {T <: Real}
     V2D(Val{D}(), k, n, vect, Val(Symbol(scheme)))
 end
 function V2D(::Val{D}, k::Int, n::Int, vect::Array{T}, scheme::Val{Scheme}) where {D, T <: Real, Scheme}

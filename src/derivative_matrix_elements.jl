@@ -24,7 +24,7 @@ end
 
 function dh(k,mode,x)
     mode<=k || throw(DomainError())
-    return array2poly(symbolic_diff((dg_coeffs[k])[mode]),x)
+    return array2poly(symbolic_diff((@view dg_coeffs[k][:,mode])),x)
 end
 
 function dleg(mode::Int, x::T) where T <: Real
@@ -113,7 +113,8 @@ end
 
 # Matrix element of DG basis on [-1, 1]
 function hDh(k::Int, mode1::Int, mode2::Int)
-    return inner_product(dg_coeffs[k][mode1], symbolic_diff(dg_coeffs[k][mode2]))
+    return inner_product((@view dg_coeffs[k][:,mode1]),
+                         symbolic_diff((@view dg_coeffs[k][:,mode2])))
 end
 
 # Matrix element of hierarchical basis elements

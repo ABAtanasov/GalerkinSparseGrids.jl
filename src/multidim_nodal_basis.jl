@@ -40,7 +40,7 @@ end
 function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
                     k::Int, l2::CartesianIndex{D}, 
                     l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
-                    js_1D::CartesianIndex{D}, mat_1D::Array{T, 2}) where {D, T<:Real}
+                    js_1D::CartesianIndex{D}, mat_1D::Array{T, 2}, atol::T) where {D, T<:Real}
     cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l2[i]-2), D)
     modes::NTuple{D, Int} = ntuple(i -> k, D)
     cellrange = CartesianIndices(cells)
@@ -52,10 +52,11 @@ function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array
             val = one(T)
             for d in 1:D
                 i_1D = get_index_1D(k, l2[d], c2[d], m2[d])
-                val *= mat_1D[i_1D, js_1D[d]]
+                val *= @inbounds mat_1D[i_1D, js_1D[d]]
                 val == 0 && break
             end
-            (abs(val) < eps(T)) && (i += 1; continue)
+            # (abs(val) < eps(T)) && (i += 1; continue)
+            (abs(val) < atol) && (i += 1; continue)
             push!(I, i)
             push!(J, j)
             push!(V, val)
@@ -65,64 +66,16 @@ function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array
     return i
 end
 
-# function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
-#                     k::Int, l2::CartesianIndex{D}, 
-#                     l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
-#                     js_1D::CartesianIndex{D}, mat_1D::Array{T, 2}) where {D, T<:Real}
-#     cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l2[i]-2), D)
-#     modes::NTuple{D, Int} = ntuple(i -> k, D)
-#     cellrange = CartesianIndices(cells)
-#     moderange = CartesianIndices(modes)
-#     newelems = 0
-#     for c2 in cellrange
-#         !relevant_cell(k, l2, c2, l1, c1) && continue
-#         newelems += length(moderange)
-#     end
-#     oldlength = length(I)
-#     @assert length(J) == oldlength
-#     @assert length(V) == oldlength
-#     resize!(I, oldlength + newelems)
-#     resize!(J, oldlength + newelems)
-#     resize!(V, oldlength + newelems)
-#     el = 0
-#     for c2 in cellrange
-#         !relevant_cell(k, l2, c2, l1, c1) && (i += prod(modes); continue)
-# 
-#         for m2 in moderange
-#             val = one(T)
-#             for d in 1:D
-#                 i_1D = get_index_1D(k, l2[d], c2[d], m2[d])
-#                 val *= mat_1D[i_1D, js_1D[d]]
-#                 val == 0 && break
-#             end
-#             (abs(val) < eps(T)) && (i += 1; continue)
-#             # push!(I, i)
-#             # push!(J, j)
-#             # push!(V, val)
-#             el += 1
-#             I[oldlength + el] = i
-#             J[oldlength + el] = j
-#             V[oldlength + el] = val
-#             i += 1
-#         end
-#     end
-#     @assert el <= newelems
-#     resize!(I, oldlength + el)
-#     resize!(J, oldlength + el)
-#     resize!(V, oldlength + el)
-#     return i
-# end
 
-
-function make_column(j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
+function make_column(j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{T, 1},
                      k::Int, n::Int, l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
-                     mat_1D::Array{T, 2}, scheme::Val{Scheme}) where {D, T<:Real, Scheme}
+                     mat_1D::Array{T, 2}, scheme::Val{Scheme}, atol::T) where {D, T<:Real, Scheme}
     js_1D = CartesianIndex(ntuple(d -> get_index_1D(k, l1[d], c1[d], m1[d]), D))
     levels::NTuple{D, Int} = ntuple(i -> (n+1),D)
     i = 1
     for l2 in CartesianIndices(levels)
         cutoff(scheme, l2, n) && continue
-        i = inner_loop(i, j, I, J, V, k, l2, l1, c1, m1, js_1D, mat_1D)
+        i = inner_loop(i, j, I, J, V, k, l2, l1, c1, m1, js_1D, mat_1D, atol)
     end
 end
 
@@ -135,7 +88,7 @@ function transform(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Sch
     modes ::NTuple{D, Int} = ntuple(i -> k, D)
     I = Int[]
     J = Int[]
-    V = Float64[]
+    V = T[]
     
     j = 1
     for l1 in CartesianIndices(levels)
@@ -144,14 +97,15 @@ function transform(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Sch
         cells1 = ntuple(i -> 1<<max(0, l1[i]-2), D)
         for c1 in CartesianIndices(cells1)
             for m1 in CartesianIndices(modes)
-                make_column(j, I, J, V, k, n, l1, c1, m1, mat_1D, scheme)
+                make_column(j, I, J, V, k, n, l1, c1, m1, mat_1D, scheme, atol)
                 j += 1
             end
             # Run the garbage collector relatively frequently to prevent major memory usage
             # sum(c1.I) - D % 3 == 0 && GC.gc() 
         end
     end
-    return threshold(sparse(I, J, V), atol)
+    # return threshold(sparse(I, J, V), atol)
+    return sparse(I, J, V)
 end
 
 function transform(D::Int, k::Int, n::Int, from::String, to::String; scheme="sparse", atol=1e-12)
@@ -159,7 +113,7 @@ function transform(D::Int, k::Int, n::Int, from::String, to::String; scheme="spa
     # or vice-versa. Instead, have both transform matrices in memory
     # and multiply a vector once by each of the two to get to the other basis - 
     # So this if-statement is not an efficient thing to do in general
-    if Set{String}([from, to]) == Set{String}(["modal", "points"])
+    if sort([from, to]) == ["modal", "points"]
         T1 = transform(D, k, n, from, "nodal"; scheme=scheme, atol=atol)
         T2 = transform(D, k, n, "nodal", to; scheme=scheme, atol=atol)
         return threshold(T2 * T1, atol)
@@ -230,7 +184,8 @@ function transform2(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Sc
                                 val *= mat_1D[i_1D, js_1D[d]]
                                 val == 0 && break
                             end
-                            (abs(val) < eps(T)) && (i += 1; continue)
+                            # (abs(val) < eps(T)) && (i += 1; continue)
+                            (abs(val) < atol) && (i += 1; continue)
                             push!(I, i)
                             push!(J, j)
                             push!(V, val)
@@ -242,7 +197,8 @@ function transform2(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Sc
             end
         end
     end
-    return threshold(sparse(I, J, V), atol)
+    # return threshold(sparse(I, J, V), atol)
+    return sparse(I, J, V)
 end
 
 function transform2(D::Int, k::Int, n::Int, from::String, to::String; scheme="sparse", atol=1e-12)

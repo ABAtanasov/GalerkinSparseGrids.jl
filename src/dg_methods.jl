@@ -57,7 +57,8 @@ end
 # Returns a function
 function V(k, level::NTuple{D, Int}, cell::CartesianIndex{D},
     mode::CartesianIndex{D}) where D
-    return (xs-> V(k, level, cell, mode, xs))
+    # return (xs-> V(k, level, cell, mode, xs))
+    return function(xs) V(k, level, cell, mode, xs) end
 end
 
 # -----------------------------------------------------
@@ -84,7 +85,7 @@ end
 function inner_product(f::Function, g::Function, lvl::NTuple{D, Int},
     cell::CartesianIndex{D}; rtol = REL_TOL, atol = ABS_TOL, maxevals = MAX_EVALS) where D
 
-    _h = (x-> f(x)*g(x))
+    _h(x) = f(x)*g(x)
     xmin = ntuple(i-> (cell[i]-1)/(1<<max(0,lvl[i]-1)), D)
     xmax = ntuple(i-> (cell[i])/(1<<max(0,lvl[i]-1)), D)
     val = hcubature(_h, xmin, xmax; rtol=rtol, atol=atol, maxevals=maxevals)[1]

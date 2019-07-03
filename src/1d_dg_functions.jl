@@ -4,7 +4,7 @@
 #
 # -----------------------------------------------------------
 
-const K_max = 10;
+const K_max = 10
 
 # Efficiency criticality: HIGH
 # Central to the efficiency of the package
@@ -19,8 +19,6 @@ const K_max = 10;
     n = length(v)
     k = div(n,2)
     s = zero(T)
-    xi = one(T)
-    sgn = sign(x)
     @inbounds for i in k:-1:1
         # Using Horner's method
         s *= x
@@ -48,24 +46,31 @@ function LegendreP(k)
 end
 
 # precomputing the DG functions
-# TODO Make this a 2D array:
-#dg_coeffs = Array{Array{Array{Float64,1},1}}(K_max)
-dg_coeffs = Vector{Vector{Vector{Float64}}}(undef, K_max) # Thanks to Alex Arslan for this
+# (Thanks to Alex Arslan for this.)
+# Meaning: [baisis size k][coefficient, mode]
+# Lengths: [K_max][2*k, k]
+const dg_coeffs = Vector{Matrix{Float64}}(undef, K_max)
 
-for i in 1:K_max
-    dg_coeffs[i] = dg_basis(i)
+for k in 1:K_max
+    Q = dg_basis(k)
+    @assert length(Q) == k
+    @assert all(length(Q[mode]) == 2*k for mode in 1:k)
+    dg_coeffs[k] = Matrix{Float64}(undef, 2*k, k)
+    for mode in 1:k
+        dg_coeffs[k][:,mode] = Q[mode][:]
+    end
 end
 
 # This is the dg basis function corresponding a given mode
 # supported on [-1, 1]
 function h(k, mode, x)
     mode<=k || throw(DomainError())
-    return array2poly((dg_coeffs[k])[mode],x)
+    return array2poly((@view dg_coeffs[k][:,mode]), x)
 end
 
 function h(k, mode)
     mode<=k || throw(DomainError())
-    return array2poly((dg_coeffs[k])[mode])
+    return array2poly((@view dg_coeffs[k][:,mode]))
 end
 
 # ----------------------------------------------
@@ -188,14 +193,14 @@ function hier2pos(k::Int, max_level::Int, level::Int, cell::Int, mode::Int)
         h = 1//(1<<max(0, level-1))
         vl = shift_polyarray(
                 scale_polyarray(
-                    convert_polyarray(dg_coeffs[k][mode], "left"),
+                    convert_polyarray((@view dg_coeffs[k][:,mode]), "left"),
                                 1//2),
                             1//2)
         vl = shift_polyarray(scale_polyarray(vl, h), (cell-1)*h)*sqrt(1<<(level))
 
         vr = shift_polyarray(
                 scale_polyarray(
-                    convert_polyarray(dg_coeffs[k][mode], "right"),
+                    convert_polyarray((@view dg_coeffs[k][:,mode]), "right"),
                                  1//2),
                             1//2)
         vr = shift_polyarray(scale_polyarray(vr, h), (cell-1)*h)*sqrt(1<<(level))

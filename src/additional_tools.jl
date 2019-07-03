@@ -15,8 +15,8 @@ end
 
 # Get the vector index for a 1D (level, cell, mode)
 # Here l starts at 1
-function get_index_1D(k::Int, l::Int, c::Int, m::Int)
-    return k * (1<<(l-2) + (c-1)) + m
+@inline function get_index_1D(k::Int, l::Int, c::Int, m::Int)
+    return k * (1<<((l-2)%UInt) + (c-1)) + m
 end
 
 # Threshold method for full matrices, producing a sparse one

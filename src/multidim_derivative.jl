@@ -14,11 +14,16 @@
 
 function D_matrix(d::Int, k::Int, n::Int, srefVD::Array{NTuple{3, CartesianIndex{D}}, 1},
         srefDV::Dict{NTuple{3, CartesianIndex{D}}, Int}; scheme = "sparse") where D
+    D_matrix(Val(d), k, n, srefVD, srefDV, Val(Symbol(scheme)))
+end
+function D_matrix(::Val{d}, k::Int, n::Int, srefVD::Array{NTuple{3, CartesianIndex{D}}, 1},
+        srefDV::Dict{NTuple{3, CartesianIndex{D}}, Int}, scheme::Val{Scheme}) where {d, D, Scheme}
 
-    cutoff = get_cutoff(scheme, D, n)
-    len = length(srefVD[:,1])
-    V2D_1D = V2Dref(1,k,n)
-    D2V_1D = D2Vref(1,k,n)
+    # len = length(srefVD[:,1])
+    len = length(srefVD)
+    @assert length(srefVD[:,1]) == length(srefVD)
+    V2D_1D = V2Dref(Val(1),k,n,Val(:sparse)) # Why not 'scheme'?
+    D2V_1D = D2Vref(Val(1),k,n,Val(:sparse))
     I = Int[]; J = Int[]; V = Float64[]
 
     # 1-dimensional derivative matrix - this will give all coefficient info
@@ -30,7 +35,7 @@ function D_matrix(d::Int, k::Int, n::Int, srefVD::Array{NTuple{3, CartesianIndex
         c = lcm[2][d]
         m = lcm[3][d]
         j_1D = D2V_1D[(CartesianIndex(l),CartesianIndex(c),CartesianIndex(m))]
-        derivs = Dmat_1D[:, j_1D]::SparseVector{Float64,Int64} where T<:Real
+        derivs = Dmat_1D[:, j_1D]::SparseVector{Float64,Int64}
 
         for i_1D in derivs.nzind
             lcm_1D = V2D_1D[i_1D]
@@ -38,7 +43,8 @@ function D_matrix(d::Int, k::Int, n::Int, srefVD::Array{NTuple{3, CartesianIndex
             # make_cartesian_index(d, arr1, arr2) takes arr::CartesianIndex{1} 
             # and makes a new CartesianIndex{D} using arr2::CartesianIndex{D}
             # with the dth value replaced by arr1[1]
-            level2 = make_cartesian_index(d, lcm_1D[1], lcm[1]); cutoff(level2) && continue
+            level2 = make_cartesian_index(d, lcm_1D[1], lcm[1])
+            cutoff(scheme, level2, n) && continue
             cell2 = make_cartesian_index(d, lcm_1D[2], lcm[2])
             mode2 = make_cartesian_index(d, lcm_1D[3], lcm[3])
             i = srefDV[(level2, cell2, mode2)]
@@ -56,8 +62,8 @@ function D_matrix(D::Int, d::Int, k::Int, n::Int; scheme="sparse")
     # Precompute the 1D derivatve matrix elements as global variables
     # if they are not yet formed
     precompute_diffs()
-    VD = V2Dref(D, k, n; scheme=scheme)
-    DV = D2Vref(D, k, n; scheme=scheme)
+    VD = V2Dref(Val(D), k, n, Val(Symbol(scheme)))
+    DV = D2Vref(Val(D), k, n, Val(Symbol(scheme)))
     return D_matrix(d, k, n, VD, DV; scheme=scheme)
 end
 
