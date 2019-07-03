@@ -3,11 +3,13 @@
 # to the phase evolution of some matter distribution. 
 # This is the Vlassov-Poisson or "Collisionless Boltzman" equation
 using GalerkinSparseGrids
+using LinearAlgebra
+using ODE
 
 # The spatial dimension is 2, meaning a 4D phase space 
 # We will use mode order 5 at 5th level resolution along each axis
 # Higher resolution at the moment requires a supercomputer 
-D = 2; k = 5; n = 5;
+D = 2; k = 5; n = 2;
 
 # We will evolve from an initial t = 0 to a final t1 = 0.54
 t0 = 0; t1 = 0.54
@@ -35,10 +37,10 @@ p2n, n2m = make_point2modal_matrices(2*D, k, n)
 # (We use r^2) here because |r| is dicontinuous at the origin and gives
 # instabilities for interpolation
 F_radial = x -> x == 0 ? 10/9 : 10/3 * (sqrt(x) - atan(sqrt(x)))/(sqrt(x)^3)
-fr2 = broadcast(F_radial, get_r2_point(D, k, n, m2n, n2p))
+fr2 = broadcast(F_radial, get_r2_point(2*D, k, n, m2n, n2p))
 # I have defined F_radial so that multiplying it by x_i 
 # gives the ith component of the force vector 
-F_point = [get_xi_point(D, i, k, n, m2p) .* fr2 for i in 1:D]
+F_point = [get_xi_point(2*D, i, k, n, m2n, n2p) .* fr2 for i in 1:D]
 
 # Finally, we do the full evolution of the Vlasov equation:
 vlasov_evolve(D, k, n, 

@@ -141,11 +141,13 @@ function vlasov_evolve(D::Int, k::Int, n::Int,
 	Ds = grad_matrix(2*D, k, n; scheme=scheme)
 	
 	# Coeffs for the constant 1 in D-dim space
-	constant_one = [get_one(D, k, n) for i in 1:D]
+	one_1D = get_one_modal(1, k, n)
 	# Coeffs for velocity in D-dim space
-	v_point = [get_xi_point(D, i, k, n, m2n, n2p) for i in 1:D]
+	v_modal_1D = get_xi_modal(1, 1, k, n)
 	# Coeffs for velocity in 2*D-dim phase space - the tensor product of the above
-	v_point = [tensor_construct(D, k, n, constant_one, v_point[i]) for i in 1:D]
+	v_modal = [tensor_construct(2*D, k, n, [j-D == i ? v_modal_1D : one_1D for j in 1:2*D])
+							for i in 1:D]
+	v_point = broadcast(x->n2p * (m2n * x), v_modal)
 	
 	function steprule(t::Real, f_modal::Array{Float64, 1})
 		# We want this in a modal basis for differentiation to work fast

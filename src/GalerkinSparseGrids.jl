@@ -21,6 +21,7 @@ include("pdes.jl")						# Solving the n-D wave equation with periodic boundary
 include("1d_nodal_basis.jl")			# Construct 1D nodal basis for multiplication
 include("multidim_nodal_basis.jl")		# Construct Multidimensional nodal basis for multiplication
 
+include("basic_function_exact_coeffs.jl") # Exact coefficients for certain easy functions
 include("error_measure.jl")				# Monte Carlo Methods to measure error
 include("tensor_construct.jl")			# Quickly calculates coeffs of simple tensors of functions
 
@@ -49,6 +50,11 @@ points2nodal_1D,
 nodal2heir_1D,
 hier2points_1D,
 points2hier_1D,
+
+get_xi_modal,
+get_r2_modal,
+get_xi_point,
+get_r2_point,
 
 mcerr,
 mcerr2,

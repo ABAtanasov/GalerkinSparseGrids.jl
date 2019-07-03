@@ -123,17 +123,17 @@ end
 
 function make_modal2point_matrices(D::Int, k::Int, n::Int)
 	println("making modal -> nodal transform (may take a while)")
-	m2n = transform(2*D, k, n, "modal", "nodal")
+	m2n = transform(D, k, n, "modal", "nodal")
 	println("making nodal -> points transform")
-	n2p = transform(2*D, k, n, "nodal", "points")
+	n2p = transform(D, k, n, "nodal", "points")
 	return m2n, n2p
 end
 
 function make_point2modal_matrices(D::Int, k::Int, n::Int)
 	println("making points -> nodal transform")
-	p2n = transform(2*D, k, n, "points", "nodal")
+	p2n = transform(D, k, n, "points", "nodal")
 	println("making nodal -> modal transform (may take a while)")
-	n2m = transform(2*D, k, n, "nodal", "modal")
+	n2m = transform(D, k, n, "nodal", "modal")
 	return p2n, n2m
 end
 
