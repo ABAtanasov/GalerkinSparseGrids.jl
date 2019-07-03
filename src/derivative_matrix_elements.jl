@@ -149,13 +149,13 @@ end
 # -----------------------------------------------------
 
 function diff_basis_DG(k::Int, level::Int, cell::Int, mode::Int)
-    dcoeffs = Array{Real}(undef, (level+1, k))
+    dcoeffs = Array{Float64}(undef, level+1, k)
     p = cell
     for l in level:-1:0
         for f_n in 1:k
-            dcoeffs[l+1,f_n]=vDv(k, l, p, f_n, level, cell, mode)
+            dcoeffs[l+1,f_n] = vDv(k, l, p, f_n, level, cell, mode)
         end
-        p = Int(ceil(p/2))
+        p = ceil(Int, p/2)
     end
     return dcoeffs
 end

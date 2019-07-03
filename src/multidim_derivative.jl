@@ -1,7 +1,7 @@
 # -----------------------------------------------------------
 #
 # Construction of multidimensional DG derivative matrices
-# based on the (precomputed) 1-D derivative matrix
+# based on the 1-D derivative matrix
 #
 # -----------------------------------------------------------
 
@@ -59,9 +59,6 @@ end
 
 
 function D_matrix(D::Int, d::Int, k::Int, n::Int; scheme="sparse")
-    # Precompute the 1D derivatve matrix elements as global variables
-    # if they are not yet formed
-    precompute_diffs()
     VD = V2Dref(Val(D), k, n, Val(Symbol(scheme)))
     DV = D2Vref(Val(D), k, n, Val(Symbol(scheme)))
     return D_matrix(d, k, n, VD, DV; scheme=scheme)
@@ -72,7 +69,7 @@ function grad_matrix(D::Int, k::Int, n::Int; scheme="sparse")
 end
 
 function laplacian_matrix(D::Int, k::Int, n::Int; scheme="sparse")
-    len = get_size(D, k, n; scheme=scheme)
+    len = get_size(Val(D), k, n, Val(Symbol(scheme)))
     lap = spzeros(len, len)
     for i in 1:D
         D_op = D_matrix(D, i, k, n; scheme=scheme)

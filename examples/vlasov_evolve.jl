@@ -10,10 +10,12 @@ using ODE
 # We will use mode order 5 at 5th level resolution along each axis
 # Higher resolution at the moment requires a supercomputer 
 # D = 2; k = 5; n = 5
-D = 2; k = 2; n = 2
+D = 2; k = 5; n = 4
+# D = 2; k = 2; n = 2
 
 # We will evolve from an initial t = 0 to a final t1 = 0.54
-t0 = 0; t1 = 0.54
+# t0 = 0.0; t1 = 0.54
+t0 = 0.0; t1 = 0.0054
 
 # Initial distribution function in phase space:
 @inline fx(x) = exp(-2 * pi^2 * norm(x.-1/2)^2)

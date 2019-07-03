@@ -4,8 +4,8 @@
 #
 # -----------------------------------------------------------
 
-using LinearAlgebra
 using GalerkinSparseGrids
+using LinearAlgebra
 
 D = 1
 # Random function to interpolate:

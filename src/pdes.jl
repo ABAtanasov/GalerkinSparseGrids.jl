@@ -132,7 +132,7 @@ function vlasov_evolve(D::Int, k::Int, n::Int,
             m2n::SparseMatrixCSC{T, Int}, n2p::SparseMatrixCSC{T, Int},
             p2n::SparseMatrixCSC{T, Int}, n2m::SparseMatrixCSC{T, Int},
             f0_modal::Array{T,1}, F_point::Array{Array{T,1}, 1},
-            time0::Real, time1::Real;
+            time0::T, time1::T;
             order="45", scheme="sparse", kwargs...) where T <: Real
 
   # The grad matrix- using the same derivative operator as we did
@@ -147,26 +147,37 @@ function vlasov_evolve(D::Int, k::Int, n::Int,
   # Coeffs for velocity in 2*D-dim phase space - the tensor product of the above
   v_modal = [tensor_construct(2*D, k, n, [j-D == i ? v_modal_1D : one_1D for j in 1:2*D])
               for i in 1:D]
-  v_point = broadcast(x->n2p * (m2n * x), v_modal)
+  v_point = [n2p * (m2n * v) for v in v_modal]
   
-  function steprule(t::Real, f_modal::Array{Float64, 1})
+  function steprule(t::T, f_modal::Array{T, 1})
+    println("    evaluating RHS at t=$t...")
+    flush(stdout)
     # We want this in a modal basis for differentiation to work fast
     # Matrix multiplication is the bottle neck here. 
     dfdxs_modal = [Ds[d] * f_modal for d in 1:D]
     dfdps_modal = [Ds[d] * f_modal for d in (D+1):(2*D)]
 
-    dfdxs_point = broadcast(x->n2p * (m2n * x), dfdxs_modal)
-    dfdps_point = broadcast(x->n2p * (m2n * x), dfdps_modal)
+    dfdxs_point = [n2p * (m2n * x) for x in dfdxs_modal]
+    dfdps_point = [n2p * (m2n * x) for x in dfdps_modal]
 
     # dH/dp * df/dx 
-    contrib1 = sum([v_point[d] .* dfdxs_point[d] for d in 1:D])
-    # - dH/dx * df/dp
-    contrib2 = sum([F_point[d] .* dfdps_point[d] for d in 1:D])
+    contrib1 = sum(v_point[d] .* dfdxs_point[d] for d in 1:D)
+    # dH/dx * df/dp
+    contrib2 = sum(F_point[d] .* dfdps_point[d] for d in 1:D)
 
     # df/dt = - (dH/dp * df/dx - dH/dx * df/dp)
-    return - n2m * (p2n * (contrib1 + contrib2))
+    return n2m * (p2n * (- contrib1 + contrib2))
   end
   
+  println("State vector size: $(length(f0_modal))")
+  println("Operator sizes:")
+  for d in 1:D
+      println("    Ds[$d]: $(nnz(Ds[d]))")
+  end
+  println("    m2n:   $(nnz(m2n))")
+  println("    n2p:   $(nnz(n2p))")
+  println("    p2n:   $(nnz(p2n))")
+  println("    n2m:   $(nnz(n2m))")
   println("Beginning PDE evolution...")
   flush(stdout)
 
@@ -202,8 +213,8 @@ function energy_func_1D(k, level, soln::Tuple{Array{T, 1}, Array{Array{T, 1}, 1}
     D_op        = periodic_DLF_matrix(k, level; basis=basis)
 
     for i in 1:len
-        ux   = *(D_op, soln[2][i][1:num_coeffs])
-        udot = soln[2][i][num_coeffs+1:end]
+        ux   = D_op *  (@view soln[2][i][1:num_coeffs])
+        udot = @view soln[2][i][num_coeffs+1:end]
         energies[i] = norm_squared(ux) + norm_squared(udot)
 
     end
@@ -215,15 +226,15 @@ function energy_func(D::Int, k::Int, n::Int, soln::Tuple{Array{T, 1}, Array{Arra
         scheme = "sparse") where T <: Real
 
     len         = length(soln[1])
-    num_coeffs    = Int(round(length(soln[2][1])/2))
+    num_coeffs    = div(length(soln[2][1]), 2)
     times         = copy(soln[1])
     energies    = Array{T}(undef, len)
     D_ops        = grad_matrix(D, k, n; scheme=scheme)
 
     for i in 1:len
-        ux   = [*(D_ops[j], soln[2][i][1:num_coeffs]) for j in 1:D]
-        udot = soln[2][i][num_coeffs+1:end]
-        energies[i] = sum([norm_squared(ux[j]) for j in 1:D])+norm_squared(udot)
+        ux   = [D_ops[j] * (@view soln[2][i][1:num_coeffs]) for j in 1:D]
+        udot = @view soln[2][i][num_coeffs+1:end]
+        energies[i] = sum(norm_squared(ux[d]) for d in 1:D) + norm_squared(udot)
     end
     return (times, energies)
 end

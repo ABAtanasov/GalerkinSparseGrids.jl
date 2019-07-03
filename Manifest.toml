@@ -61,9 +61,9 @@ uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DiffEqBase]]
 deps = ["Compat", "Distributed", "DocStringExtensions", "FunctionWrappers", "IterativeSolvers", "IteratorInterfaceExtensions", "LinearAlgebra", "MuladdMacro", "Parameters", "RecipesBase", "RecursiveArrayTools", "RecursiveFactorization", "Requires", "Roots", "SparseArrays", "StaticArrays", "Statistics", "SuiteSparse", "TableTraits", "TreeViews"]
-git-tree-sha1 = "ca30d4e41c6591183812ebd29498e32b0dd3a327"
+git-tree-sha1 = "3c08441014d2e1bad515df5443dd2d0ba379888c"
 uuid = "2b5f629d-d688-5b77-993f-72d75c75574e"
-version = "5.11.1"
+version = "5.12.0"
 
 [[Distributed]]
 deps = ["Random", "Serialization", "Sockets"]

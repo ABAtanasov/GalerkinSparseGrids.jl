@@ -14,7 +14,6 @@ include("1d_dg_functions.jl")             # Explicitly building the 1-D Galerkin
 include("dg_methods.jl")                # Multidimensional hierarchical & sparse coefficients
 include("dg_vmethods.jl")                # Going between a dictionary & a vector of coeffs
 include("derivative_matrix_elements.jl")# 1-D symbolic piecewise derivative
-include("derivative_precompute.jl")        # Precomputing derivative matrix for coeff vect
 include("1d_derivative.jl")                # Constructing ideal 1D derivative matrix using boundary terms
 include("multidim_derivative.jl")        # Multidimensional DG Derivatives in full & sparse bases
 include("pdes.jl")                        # Solving the n-D wave equation with periodic boundary

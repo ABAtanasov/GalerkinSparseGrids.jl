@@ -7,6 +7,7 @@
 # -----------------------------------------------------------
 
 using GalerkinSparseGrids
+using LinearAlgebra
 
 # -----------------------------------------------------
 # Generates the coefficients for a waveform
@@ -27,7 +28,7 @@ function cos_coeffs(k::Int, n::Int, m::AbstractArray{T,1};
     sine_dicts   = [coeffs_DG(1, k, n, sines[i]) for i in 1:D]
     cosine_dicts = [coeffs_DG(1, k, n, cosines[i]) for i in 1:D]
 
-    ansVect = zeros(get_size(D, k, n; scheme=scheme))
+    ansVect = zeros(get_size(Val(D), k, n, Val(Symbol(scheme))))
 
     for SCs in CartesianIndices(ntuple(q->2, D))
         num_sines = sum([SCs[i]-1 for i in 1:D])
