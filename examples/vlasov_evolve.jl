@@ -9,7 +9,7 @@ using ODE
 # The spatial dimension is 2, meaning a 4D phase space 
 # We will use mode order 5 at 5th level resolution along each axis
 # Higher resolution at the moment requires a supercomputer 
-D = 2; k = 5; n = 2;
+D = 2; k = 5; n = 5;
 
 # We will evolve from an initial t = 0 to a final t1 = 0.54
 t0 = 0; t1 = 0.54

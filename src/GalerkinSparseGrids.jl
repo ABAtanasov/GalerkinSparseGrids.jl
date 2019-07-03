@@ -51,6 +51,7 @@ nodal2heir_1D,
 hier2points_1D,
 points2hier_1D,
 
+get_one_modal,
 get_xi_modal,
 get_r2_modal,
 get_xi_point,
