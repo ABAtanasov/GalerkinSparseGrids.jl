@@ -20,7 +20,7 @@
 # Construct the time evolution matrix for the wave equation
 # given a Kaplacian and the initial position and velocity f0, v0
 function wave_data(laplac::A, f0coeffs::AbstractArray{T, 1},
-    v0coeffs::AbstractArray{T, 1}) where {A <: AbstractArray, T <: Real}
+        v0coeffs::AbstractArray{T, 1}) where {A <: AbstractArray, T <: Real}
 
     len = length(f0coeffs)
     rows = rowvals(laplac)
@@ -48,8 +48,8 @@ function wave_data(laplac::A, f0coeffs::AbstractArray{T, 1},
     return RHS, y0
 end
 
-# Evolves the wave equation from time t0 to t1 
-# given coefficients for an initial position profile of f0 
+# Evolves the wave equation from time t0 to t1
+# given coefficients for an initial position profile of f0
 # and an initial velocity profile of v0
 function wave_evolve(D::Int, k::Int, n::Int,
                               f0coeffs::Array{T, 1}, v0coeffs::Array{T, 1},
@@ -69,7 +69,7 @@ function wave_evolve(D::Int, k::Int, n::Int,
     return soln
 end
 
-# Evolves the wave equation from time t0 to t1 
+# Evolves the wave equation from time t0 to t1
 # given initial position profile f0 and velocity profile v0
 function wave_evolve(D::Int, k::Int, n::Int,
                               f0::Function, v0::Function,
@@ -78,7 +78,7 @@ function wave_evolve(D::Int, k::Int, n::Int,
 
     f0coeffs = vcoeffs_DG(D, k, n, f0; scheme=scheme)
     v0coeffs = vcoeffs_DG(D, k, n, v0; scheme=scheme)
-    return wave_evolve(D, k, n, f0coeffs, v0coeffs, time0, time1; 
+    return wave_evolve(D, k, n, f0coeffs, v0coeffs, time0, time1;
                         order=order, scheme=scheme, kwargs...)
 end
 
@@ -132,65 +132,79 @@ function vlasov_evolve(D::Int, k::Int, n::Int,
             m2n::SparseMatrixCSC{T, Int}, n2p::SparseMatrixCSC{T, Int},
             p2n::SparseMatrixCSC{T, Int}, n2m::SparseMatrixCSC{T, Int},
             f0_modal::Array{T,1}, F_point::Array{Array{T,1}, 1},
-            time0::T, time1::T;
+            time0::T, time1::T, nout::Int=2;
             order="45", scheme="sparse", kwargs...) where T <: Real
 
-  # The grad matrix- using the same derivative operator as we did
-  # for the wave equation. 
-  # We may need to apply filtering intermittently in the evolution
-  Ds = grad_matrix(2*D, k, n; scheme=scheme)
-  
-  # Coeffs for the constant 1 in D-dim space
-  one_1D = get_one_modal(1, k, n)
-  # Coeffs for velocity in D-dim space
-  v_modal_1D = get_xi_modal(1, 1, k, n)
-  # Coeffs for velocity in 2*D-dim phase space - the tensor product of the above
-  v_modal = [tensor_construct(2*D, k, n, [j-D == i ? v_modal_1D : one_1D for j in 1:2*D])
+    # The grad matrix- using the same derivative operator as we did
+    # for the wave equation.
+    # We may need to apply filtering intermittently in the evolution
+    Ds = grad_matrix(2*D, k, n; scheme=scheme)
+
+    # Coeffs for the constant 1 in D-dim space
+    one_1D = get_one_modal(1, k, n)
+    # Coeffs for velocity in D-dim space
+    v_modal_1D = get_xi_modal(1, 1, k, n)
+    # Coeffs for velocity in 2*D-dim phase space - the tensor product of the above
+    v_modal = [tensor_construct(2*D, k, n, [j-D == i ? v_modal_1D : one_1D for j in 1:2*D])
               for i in 1:D]
-  v_point = [n2p * (m2n * v) for v in v_modal]
-  
-  function steprule(t::T, f_modal::Array{T, 1})
-    println("    evaluating RHS at t=$t...")
+    v_point = [n2p * (m2n * v) for v in v_modal]
+
+    function steprule(t::T, f_modal::Array{T, 1})
+        println("    evaluating RHS at t=$t...")
+        flush(stdout)
+        # We want this in a modal basis for differentiation to work fast
+        # Matrix multiplication is the bottle neck here.
+        dfdxs_modal = [Ds[d] * f_modal for d in 1:D]
+        dfdps_modal = [Ds[d] * f_modal for d in (D+1):(2*D)]
+
+        dfdxs_point = [n2p * (m2n * x) for x in dfdxs_modal]
+        dfdps_point = [n2p * (m2n * x) for x in dfdps_modal]
+
+        # dH/dp * df/dx
+        contrib1 = sum(v_point[d] .* dfdxs_point[d] for d in 1:D)
+        # dH/dx * df/dp
+        contrib2 = sum(F_point[d] .* dfdps_point[d] for d in 1:D)
+
+        # df/dt = - (dH/dp * df/dx - dH/dx * df/dp)
+        return n2m * (p2n * (- contrib1 + contrib2))
+    end
+
+    println("State vector size: $(length(f0_modal))")
+    println("Operator sizes:")
+    for d in 1:D
+        println("    Ds[$d]: $(nnz(Ds[d]))")
+    end
+    println("    m2n:   $(nnz(m2n))")
+    println("    n2p:   $(nnz(n2p))")
+    println("    p2n:   $(nnz(p2n))")
+    println("    n2m:   $(nnz(n2m))")
+    println("Beginning PDE evolution...")
     flush(stdout)
-    # We want this in a modal basis for differentiation to work fast
-    # Matrix multiplication is the bottle neck here. 
-    dfdxs_modal = [Ds[d] * f_modal for d in 1:D]
-    dfdps_modal = [Ds[d] * f_modal for d in (D+1):(2*D)]
 
-    dfdxs_point = [n2p * (m2n * x) for x in dfdxs_modal]
-    dfdps_point = [n2p * (m2n * x) for x in dfdps_modal]
+    if order == "45"
+        solver = ode45
+    elseif order == "78"
+        solver = ode78
+    else
+        throw(ArgumentError(:order))
+    end
+    soln = solver(steprule, f0_modal, range(time0, time1, length=nout); kwargs...)
 
-    # dH/dp * df/dx 
-    contrib1 = sum(v_point[d] .* dfdxs_point[d] for d in 1:D)
-    # dH/dx * df/dp
-    contrib2 = sum(F_point[d] .* dfdps_point[d] for d in 1:D)
+    println("Writing solution...")
+    flush(stdout)
+    jldopen("vlasov.h5", "w") do f
+        f["dimensions"] = D
+        f["order"] = k
+        f["levels"] = n
+        f["times"] = soln[1]
+        for (i,sol) in enumerate(soln[2])
+            ifmt = @sprintf "%06d" i
+            f["f_modal.$ifmt"] = sol
+        end
+    end
 
-    # df/dt = - (dH/dp * df/dx - dH/dx * df/dp)
-    return n2m * (p2n * (- contrib1 + contrib2))
-  end
-  
-  println("State vector size: $(length(f0_modal))")
-  println("Operator sizes:")
-  for d in 1:D
-      println("    Ds[$d]: $(nnz(Ds[d]))")
-  end
-  println("    m2n:   $(nnz(m2n))")
-  println("    n2p:   $(nnz(n2p))")
-  println("    p2n:   $(nnz(p2n))")
-  println("    n2m:   $(nnz(n2m))")
-  println("Beginning PDE evolution...")
-  flush(stdout)
-
-  if order == "45"
-    soln = ode45(steprule, f0_modal, [time0,time1]; kwargs...)
-  elseif order == "78"
-    soln = ode78(steprule, f0_modal, [time0,time1]; kwargs...)
-  else
-    throw(ArgumentError(:order))
-  end
-  
-  println("Done.")
-  flush(stdout)
+    println("Done.")
+    flush(stdout)
 end
 
 

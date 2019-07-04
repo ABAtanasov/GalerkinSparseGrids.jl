@@ -40,7 +40,7 @@ function D_matrix(::Val{d}, k::Int, n::Int, srefVD::Array{NTuple{3, CartesianInd
         for i_1D in derivs.nzind
             lcm_1D = V2D_1D[i_1D]
             # using tuple constructor independent of Julia's metaprogramming:
-            # make_cartesian_index(d, arr1, arr2) takes arr::CartesianIndex{1} 
+            # make_cartesian_index(d, arr1, arr2) takes arr::CartesianIndex{1}
             # and makes a new CartesianIndex{D} using arr2::CartesianIndex{D}
             # with the dth value replaced by arr1[1]
             level2 = make_cartesian_index(d, lcm_1D[1], lcm[1])

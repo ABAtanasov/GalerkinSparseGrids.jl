@@ -6,3 +6,4 @@
 *old.jl
 /src/animation.jl
 profile.out
+*.h5

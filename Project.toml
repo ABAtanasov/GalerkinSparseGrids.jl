@@ -6,9 +6,11 @@ version = "1.0.0"
 
 [deps]
 HCubature = "19dc6840-f33b-545b-b366-655c7e3ffd49"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MKLSparse = "0c723cd3-b8cd-5d40-b370-ba682dde9aae"
 ODE = "c030b06c-0b6d-57c2-b091-7029874bd033"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"

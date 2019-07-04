@@ -25,9 +25,9 @@ function relevant_cell_1D(k::Int, level1::Int, cell1::Int, level2::Int, cell2::I
 end
 
 # Multidimensional version of the above
-function relevant_cell(k::Int, level1::CartesianIndex{D}, 
-                               cell1 ::CartesianIndex{D}, 
-                               level2::CartesianIndex{D}, 
+function relevant_cell(k::Int, level1::CartesianIndex{D},
+                               cell1 ::CartesianIndex{D},
+                               level2::CartesianIndex{D},
                                cell2 ::CartesianIndex{D}) where D
     bool = true
     for d in 1:D
@@ -38,7 +38,7 @@ end
 
 
 function inner_loop(i::Int, j::Int, I::Array{Int, 1}, J::Array{Int, 1}, V::Array{Float64, 1},
-                    k::Int, l2::CartesianIndex{D}, 
+                    k::Int, l2::CartesianIndex{D},
                     l1::CartesianIndex{D}, c1::CartesianIndex{D}, m1::CartesianIndex{D},
                     js_1D::CartesianIndex{D}, mat_1D::Array{T, 2}, atol::T) where {D, T<:Real}
     cells::NTuple{D, Int} = ntuple(i -> 1<<max(0, l2[i]-2), D)
@@ -89,7 +89,7 @@ function transform(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Sch
     I = Int[]
     J = Int[]
     V = T[]
-    
+
     j = 1
     for l1 in CartesianIndices(levels)
         cutoff(scheme, l1, n) && continue
@@ -101,7 +101,7 @@ function transform(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Sch
                 j += 1
             end
             # Run the garbage collector relatively frequently to prevent major memory usage
-            # sum(c1.I) - D % 3 == 0 && GC.gc() 
+            # sum(c1.I) - D % 3 == 0 && GC.gc()
         end
     end
     # return threshold(sparse(I, J, V), atol)
@@ -109,9 +109,9 @@ function transform(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Sch
 end
 
 function transform(D::Int, k::Int, n::Int, from::String, to::String; scheme="sparse", atol=1e-12)
-    # It's better not to multiply the matrices from modal -> nodal with nodal -> points 
+    # It's better not to multiply the matrices from modal -> nodal with nodal -> points
     # or vice-versa. Instead, have both transform matrices in memory
-    # and multiply a vector once by each of the two to get to the other basis - 
+    # and multiply a vector once by each of the two to get to the other basis -
     # So this if-statement is not an efficient thing to do in general
     if sort([from, to]) == ["modal", "points"]
         T1 = transform(D, k, n, from, "nodal"; scheme=scheme, atol=atol)
@@ -142,7 +142,7 @@ end
 
 # --------------------------------------------------
 # Below this line is for comparison testing only -
-# Not for use 
+# Not for use
 # --------------------------------------------------
 
 function transform2(D::Int, k::Int, n::Int, mat_1D::Array{T,2}; scheme="sparse", atol=1e-12) where {T<:Real}
@@ -155,10 +155,10 @@ function transform2(::Val{D}, k::Int, n::Int, mat_1D::Array{T,2}, scheme::Val{Sc
     I = Int[]; J = Int[]; V = Float64[]
     i::Int = 1; j::Int = 1; val::Float64 = one(Float64)
     index::Int = 1
-    
+
     levelrange = CartesianIndices(levels); moderange = CartesianIndices(modes)
     js_1D::Array{Int,1} = zeros(Int, D)
-    cells1::Array{Int,1} = zeros(Int, D); 
+    cells1::Array{Int,1} = zeros(Int, D);
     cells2::Array{Int,1} = zeros(Int, D)
     for l1 in levelrange
         cutoff(scheme, l1, n) && continue

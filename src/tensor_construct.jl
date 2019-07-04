@@ -54,10 +54,10 @@ function tensor_construct(::Val{D}, k::Int, n::Int, coeff_array::Array{Dict{Cart
 end
 
 
-function tensor_construct(D::Int, k::Int, n::Int, vcoeff_array::Array{Array{T, 1}}; 
+function tensor_construct(D::Int, k::Int, n::Int, vcoeff_array::Array{Array{T, 1}};
 							scheme = "sparse") where T <: Real
 
-	coeff_array = [V2D(1, k, n, vcoeff_array[i]) for i in 1:length(vcoeff_array)] 
+	coeff_array = [V2D(1, k, n, vcoeff_array[i]) for i in 1:length(vcoeff_array)]
 	return D2V(D, k, n, tensor_construct(D, k, n, coeff_array); scheme=scheme)
 	
 end

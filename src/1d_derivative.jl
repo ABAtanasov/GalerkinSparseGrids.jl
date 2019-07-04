@@ -10,13 +10,13 @@
 # -----------------------------------------------------------
 
 # Efficiency criticality: MEDIUM
-# Computations performed once, 
+# Computations performed once,
 # but take very long in multidimensional setting
 
 # Accuracy criticality: HIGH
 # Critical for accurate PDE evolution
 
-# After the integration by parts, this corresponds to 
+# After the integration by parts, this corresponds to
 # the remaining integral, ignoring the boundary term
 function D_matrix(k::Int, level::Int)
     i = 1
@@ -100,7 +100,7 @@ function periodic_LF_matrix(k::Int, level::Int; alpha::Real = 0)
 end
 
 # ---------------------------------------------------------
-# We can now build the full derivative matrix  
+# We can now build the full derivative matrix
 # in both the position and hierarchical basis
 # with some help from the hier2pos change of basis matrix
 # ---------------------------------------------------------
@@ -123,7 +123,7 @@ function periodic_nodal_DLF_matrix(k::Int, max_level::Int; alpha::Real = 0)
     pos2n = m2n * pos2m
     A = periodic_pos_DLF_matrix(k, max_level; alpha = alpha)
     return pos2n * A * n2pos
-end 
+end
 
 function periodic_point_DLF_matrix(k::Int, max_level::Int; alpha::Real = 0)
 
@@ -131,7 +131,7 @@ function periodic_point_DLF_matrix(k::Int, max_level::Int; alpha::Real = 0)
     pos2p = modal2points_1D(k, max_level) * pos2hier(k, max_level)
     A = periodic_pos_DLF_matrix(k, max_level; alpha = alpha)
     return pos2p * A * p2pos
-end 
+end
 
 function periodic_DLF_matrix(k::Int, max_level::Int; alpha::Real = 0, basis = "hier")
     if basis == "hier"

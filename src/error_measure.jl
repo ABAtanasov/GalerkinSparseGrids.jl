@@ -19,7 +19,7 @@ function monte_carlo(f::Function, D::Int; count = 1000)
 end
 
 function monte_carlo2(f::Function, D::Int; batch = 50, Z = 1.0)
-    
+
     means = Real[]
 
     while true

@@ -15,7 +15,7 @@
 
 # Gives the appropriate boolean cutoff corresponding
 # to a given scheme, e.g. sparse basis, full basis,
-# and in the future possibly the energy basis of 
+# and in the future possibly the energy basis of
 # Bungartz and Griebel
 
 function cutoff(::Val{:sparse}, x::CartesianIndex{D}, n::Int) where {D}

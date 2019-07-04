@@ -16,5 +16,5 @@ using SparseArrays
             Q = dg_basis(k)
             @test typeof(Q) == Array{Array{Float64,1},1}
         end
-    end    
+    end
 end

@@ -33,7 +33,7 @@ global const ε = eps(Float64)
         @test inner_product(x->x[1]^2, x->x[1]^3, (0,),CartesianIndex((1,))) ≈ (1/6) atol=2*ε
         @test inner_product(x->sin(pi*x[1]), x->cos(pi*x[1]), (0,),CartesianIndex((1,))) ≈ 0 atol=2*ε
     end
-    
+
     @info "Testing 2D inner product..."
     @testset "2D Inner Product" begin
         @test inner_product(x->(x[1]^2+x[2]^2), x->x[1]^3, (0,0),CartesianIndex((1,1))) ≈ .25 atol=2*ε

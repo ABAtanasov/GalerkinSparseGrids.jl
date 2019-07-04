@@ -63,7 +63,7 @@ function traveling_wave(k::Int, n::Int, m::Array{Int,1};
                         scheme="sparse", phase=0.0, A=1.0)
     wavenumber = 2*pi*m
     frequency = sqrt(dot(wavenumber,wavenumber))
-    
+
     # u(x) = A * cos(dot(wavenumber,x) + phase)
     # v(v) = A * frequency * sin(dot(k,x) + phase)
     u0_coeffs = cos_coeffs(k, n, m; scheme=scheme, phase=phase, A=A)
@@ -94,7 +94,7 @@ for k_used in 1:k_max
         f0coeffs, v0coeffs = traveling_wave(k_used, n_used, m)
         soln = wave_evolve(D, k_used, n_used, f0coeffs, v0coeffs, t0, t1)
         dict = V2D(D, k_used, n_used, soln[2][end])
-        
+
         err = mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D)
         println("(k = ", k_used, ", n = ", n_used, ") : err = ", err)
     end

@@ -55,7 +55,7 @@ function lag_nodal(k::Int, mode::Int, x::Real)
         mode == 1 && return 2 * (x - 1//2) * (x - 1)
         mode == 2 && return -4 * x * (x - 1)
         mode == 3 && return 2 * x * (x - 1//2)
-    elseif k == 4 
+    elseif k == 4
         throw(ArgumentError("k = 4 not implemented"))
     elseif k == 5
         mode == 1 && return 32//3 * (x - 1//4) * (x - 1//2) * (x - 3//4) * (x - 1)
@@ -177,8 +177,8 @@ end
 # the heirarchical, nodal, and point bases
 # -----------------------------------------------------------
 
-# Huge TODO: 
-#     Replace all of these for loops and multiple function calls 
+# Huge TODO:
+#     Replace all of these for loops and multiple function calls
 #     by cleverly using the iterable interface in julia
 
 # Evaluation of a given nodal function along all relevant gridpoints
@@ -187,17 +187,17 @@ function eval_points_1D(k::Int, max_level::Int, level::Int, cell::Int, mode::Int
     I = Int[]
     V = Float64[]
     for l in 0:max_level
-        l == 0 ? (node_range = 0:(1//(k-1)):(1 - 1//(k-1))) : 
+        l == 0 ? (node_range = 0:(1//(k-1)):(1 - 1//(k-1))) :
                  (node_range = 1//(2*(k-1)):1//(k-1):(1-1//(2*(k-1))))
-        
+
         for c in 1:1<<max(0, l-1)
             for node in node_range
                 x = (c - 1 + node)//(1<<max(0, l-1))
                 val = eval_v_nodal_right(k, level, cell, mode, x)
                 (val != zero(x)) && (push!(I, i); push!(V, val))
                 i += 1
-            end    
-            
+            end
+
             if l == 0
                 x = 1
                 val = eval_v_nodal_left(k, level, cell, mode, x)
@@ -222,7 +222,7 @@ function nodal2points_1D(k::Int, max_level::Int; atol=1e-15)
 
     for level in 0:max_level
         mode_range = 1:k
-        
+
         for cell in 1:1<<max(0, level-1)
             for mode in mode_range
                 coeffs = eval_points_1D(k, max_level, level, cell, mode)
@@ -253,7 +253,7 @@ function nodal2modal_1D(k::Int, level::Int, cell::Int, mode::Int; rtol=1e-10, at
     I = Int[]
     V = Float64[]
     i = 1
-    
+
     for hier_level in 0:level
         hier_cells = 1<<max(0, hier_level-1)
         for hier_cell in 1:hier_cells
@@ -277,7 +277,7 @@ function nodal2modal_1D(k::Int, max_level::Int; rtol=1e-10, atol=1e-15, max_eval
     J = Int[]
     V = Float64[]
     j = 1
-    
+
     for nodal_level in 0:max_level
         num_nodes = k
         nodal_cells = 1<<max(0, nodal_level-1)
@@ -309,7 +309,7 @@ function eval_v(k, level, cell, mode, x)
     return 0.5 * (v(k, level, cell, mode, xl) + v(k, level, cell, mode, xr))
 end
 
-function nodal2pos_1D(k, max_level, nodal_level, nodal_cell, nodal_mode; 
+function nodal2pos_1D(k, max_level, nodal_level, nodal_cell, nodal_mode;
                    rtol=1e-10, atol=1e-15, max_evals=1500)
     I = Int[]
     V = Float64[]
@@ -330,11 +330,11 @@ function nodal2pos_1D(k, max_level, nodal_level, nodal_cell, nodal_mode;
             continue
         end
         for m in 1:k
-            val1  = hquadrature(x->v_nodal(k, nodal_level, nodal_cell, nodal_mode, x)*basis(max_level, c, m, x), 
+            val1  = hquadrature(x->v_nodal(k, nodal_level, nodal_cell, nodal_mode, x)*basis(max_level, c, m, x),
                               pos_min + sm, pos_med - sm,
                               rtol=rtol, atol=atol, maxevals=max_evals)[1]
 
-            val2 = hquadrature(x->v_nodal(k, nodal_level, nodal_cell, nodal_mode, x)*basis(max_level, c, m, x), 
+            val2 = hquadrature(x->v_nodal(k, nodal_level, nodal_cell, nodal_mode, x)*basis(max_level, c, m, x),
                               pos_med + sm, pos_max - sm,
                               rtol=rtol, atol=atol, maxevals=max_evals)[1]
 
@@ -385,9 +385,9 @@ function transform_1D(k::Int, n::Int, from::String, to::String; atol=1e-12)
         return nodal2pos_1D(k, n; atol=atol)
     elseif from == "pos" && to == "nodal"
         return pos2nodal_1D(k, n; atol=atol)
-    elseif from == "nodal" && to == "points" 
+    elseif from == "nodal" && to == "points"
         return nodal2points_1D(k, n; atol=atol)
-    elseif from == "points" && to == "nodal" 
+    elseif from == "points" && to == "nodal"
         return points2nodal_1D(k, n; atol=atol)
     elseif from == "nodal" && to == "modal"
         return threshold(pos2hier(k, n) * nodal2pos_1D(k, n), atol)
