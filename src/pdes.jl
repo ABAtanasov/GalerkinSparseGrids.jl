@@ -135,6 +135,25 @@ function vlasov_evolve(D::Int, k::Int, n::Int,
             time0::T, time1::T, nout::Int=2;
             order="45", scheme="sparse", kwargs...) where T <: Real
 
+    println("Writing operators...")
+    flush(stdout)
+    jldopen("vlasov.h5", "w") do f
+        f["dimensions"] = D
+        f["order"] = k
+        f["levels"] = n
+        function w(n::AbstractString, A::SparseMatrixCSC)
+            f["$n.ni"] = A.m
+            f["$n.nj"] = A.n
+            f["$n.J"] = A.colptr
+            f["$n.I"] = A.rowval
+            f["$n.A"] = A.nzval
+        end
+        w("m2n", m2n)
+        w("n2p", n2p)
+        w("p2n", p2n)
+        w("n2m", n2m)
+    end
+
     # The grad matrix- using the same derivative operator as we did
     # for the wave equation.
     # We may need to apply filtering intermittently in the evolution
@@ -192,10 +211,7 @@ function vlasov_evolve(D::Int, k::Int, n::Int,
 
     println("Writing solution...")
     flush(stdout)
-    jldopen("vlasov.h5", "w") do f
-        f["dimensions"] = D
-        f["order"] = k
-        f["levels"] = n
+    jldopen("vlasov.h5", "r+") do f
         f["times"] = soln[1]
         for (i,sol) in enumerate(soln[2])
             ifmt = @sprintf "%06d" i
