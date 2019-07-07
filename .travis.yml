@@ -26,9 +26,11 @@ install:
         tar xzf MKL.v2019.0.117.x86_64-apple-darwin14.tar.gz -C MKL &&
         export MKLROOT=$(pwd)/MKL;
     fi
+  - echo MKLROOT="$MKLROOT"
 script:
+  - echo MKLROOT="$MKLROOT"
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'using Pkg; Pkg.build("GalerkinSparseGrids");'
+  - julia -e 'using Pkg; Pkg.build("GalerkinSparseGrids")'
   - julia -e 'using Pkg; Pkg.test("GalerkinSparseGrids"; coverage=true)';
 after_success:
   - julia -e 'using Pkg; cd(Pkg.dir("GalerkinSparseGrids")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
