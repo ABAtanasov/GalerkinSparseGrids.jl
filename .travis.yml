@@ -18,17 +18,21 @@ install:
         wget https://github.com/JuliaPackaging/Yggdrasil/releases/download/MKL-v2019.0.117/MKL.v2019.0.117.x86_64-linux-gnu.tar.gz &&
         mkdir -p MKL &&
         tar xzf MKL.v2019.0.117.x86_64-linux-gnu.tar.gz -C MKL &&
-        export MKLROOT=$(pwd)/MKL;
+        export MKLROOT=$(pwd)/MKL &&
+        export LD_LIBRARY_PATH="$MKL/lib:$LD_LIBRARY_PATH";
     fi
   - if [ $TRAVIS_OS_NAME = "osx" ]; then
         wget https://github.com/JuliaPackaging/Yggdrasil/releases/download/MKL-v2019.0.117/MKL.v2019.0.117.x86_64-apple-darwin14.tar.gz &&
         mkdir -p MKL &&
         tar xzf MKL.v2019.0.117.x86_64-apple-darwin14.tar.gz -C MKL &&
-        export MKLROOT=$(pwd)/MKL;
+        export MKLROOT=$(pwd)/MKL &&
+        export LD_LIBRARY_PATH="$MKL/lib:$LD_LIBRARY_PATH";
     fi
   - echo MKLROOT="$MKLROOT"
+  - echo LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 script:
   - echo MKLROOT="$MKLROOT"
+  - echo LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia -e 'using Pkg; Pkg.build("GalerkinSparseGrids")'
   - julia -e 'using Pkg; Pkg.test("GalerkinSparseGrids"; coverage=true)';
