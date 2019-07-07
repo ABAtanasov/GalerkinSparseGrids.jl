@@ -35,7 +35,7 @@ function D_matrix(::Val{d}, k::Int, n::Int, srefVD::Array{NTuple{3, CartesianInd
         c = lcm[2][d]
         m = lcm[3][d]
         j_1D = D2V_1D[(CartesianIndex(l),CartesianIndex(c),CartesianIndex(m))]
-        derivs = Dmat_1D[:, j_1D]::SparseVector{Float64,Int64}
+        derivs = Dmat_1D[:, j_1D]::SparseVector{Float64,Int}
 
         for i_1D in derivs.nzind
             lcm_1D = V2D_1D[i_1D]
