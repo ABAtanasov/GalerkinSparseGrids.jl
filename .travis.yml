@@ -16,7 +16,7 @@ install:
   # Obtain MKL from JuliaPackaging
   - if [ $TRAVIS_OS_NAME = "linux" ]; then
         wget https://github.com/JuliaPackaging/Yggdrasil/releases/download/MKL-v2019.0.117/MKL.v2019.0.117.x86_64-linux-gnu.tar.gz &&
-        mkdir -p xMKL &&
+        mkdir -p MKL &&
         tar xzf MKL.v2019.0.117.x86_64-linux-gnu.tar.gz -C MKL &&
         export MKLROOT=$(pwd)/MKL/lib;
     fi
