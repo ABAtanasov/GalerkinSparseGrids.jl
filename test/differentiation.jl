@@ -17,7 +17,7 @@ using SparseArrays
             frefDV = D2Vref(Val(1), k, l, Val(:sparse))
             D_op = D_matrix(1, k, l, frefVD, frefDV; scheme="full")
             vcoeffs = vcoeffs_DG(1, k, l, x->cos(2*pi*x[1]); scheme="full")
-            dvcoeffs = *(D_op,vcoeffs)
+            dvcoeffs = D_op * vcoeffs
             dict= V2D(1, k, l, vcoeffs; scheme="full")
             ddict = V2D(1, k, l, dvcoeffs; scheme="full")
             err = x->(reconstruct_DG(ddict,[x[1]])+2*pi*sin(2*pi*x[1]))^2
@@ -32,7 +32,7 @@ using SparseArrays
         for l in 2:5
             D_op = D_matrix(D, 1, k, l; scheme="full")
             vcoeffs = vcoeffs_DG(D, k, l, x->cos(2*pi*x[1])*cos(2*pi*x[2]); scheme="full")
-            dvcoeffs = *(D_op, vcoeffs)
+            dvcoeffs = D_op * vcoeffs
             dict= V2D(D, k, l, vcoeffs; scheme="full")
             ddict = V2D(D, k, l, dvcoeffs; scheme="full")
             err = x->(reconstruct_DG(ddict,[x[1],x[2]])+2*pi*sin(2*pi*x[1])*cos(2*pi*x[2]))^2
