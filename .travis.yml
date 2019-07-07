@@ -17,13 +17,13 @@ install:
   - if [ $TRAVIS_OS_NAME = "linux" ]; then
         wget https://github.com/JuliaPackaging/Yggdrasil/releases/download/MKL-v2019.0.117/MKL.v2019.0.117.x86_64-linux-gnu.tar.gz &&
         mkdir -p xMKL &&
-        tar xz -C MKL -f MKL.v2019.0.117.x86_64-linux-gnu.tar.gz &&
+        tar xzf MKL.v2019.0.117.x86_64-linux-gnu.tar.gz -C MKL - &&
         export MKLROOT=$(pwd)/MKL/lib;
     fi
   - if [ $TRAVIS_OS_NAME = "osx" ]; then
         wget https://github.com/JuliaPackaging/Yggdrasil/releases/download/MKL-v2019.0.117/MKL.v2019.0.117.x86_64-apple-darwin14.tar.gz &&
         mkdir -p MKL &&
-        tar xz -C MKL -f MKL.v2019.0.117.x86_64-apple-darwin14.tar.gz &&
+        tar xzf MKL.v2019.0.117.x86_64-apple-darwin14.tar.gz -C MKL - &&
         export MKLROOT=$(pwd)/MKL/lib;
     fi
 script:
