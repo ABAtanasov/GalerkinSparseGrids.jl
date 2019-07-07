@@ -2,9 +2,9 @@ module GalerkinSparseGrids
 
 using HCubature
 using JLD2
-if haskey(ENV, "MKLROOT")
-    using MKLSparse
-end
+#TODO if haskey(ENV, "MKLROOT")
+#TODO     using MKLSparse
+#TODO end
 using ODE
 using Printf
 using SparseArrays
