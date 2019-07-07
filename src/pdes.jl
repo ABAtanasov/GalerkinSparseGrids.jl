@@ -135,6 +135,11 @@ function vlasov_evolve(D::Int, k::Int, n::Int,
             time0::T, time1::T, nout::Int=2;
             order="45", scheme="sparse", kwargs...) where T <: Real
 
+    # The grad matrix- using the same derivative operator as we did
+    # for the wave equation.
+    # We may need to apply filtering intermittently in the evolution
+    Ds = grad_matrix(2*D, k, n; scheme=scheme)
+
     println("Writing operators...")
     flush(stdout)
     jldopen("vlasov.h5", "w") do f
@@ -142,22 +147,20 @@ function vlasov_evolve(D::Int, k::Int, n::Int,
         f["order"] = k
         f["levels"] = n
         function w(n::AbstractString, A::SparseMatrixCSC)
-            f["$n.ni"] = A.m
-            f["$n.nj"] = A.n
-            f["$n.J"] = A.colptr
-            f["$n.I"] = A.rowval
-            f["$n.A"] = A.nzval
+            f["$n.m"] = A.m
+            f["$n.n"] = A.n
+            f["$n.colptr"] = A.colptr
+            f["$n.rowval"] = A.rowval
+            f["$n.nzval"] = A.nzval
         end
         w("m2n", m2n)
         w("n2p", n2p)
         w("p2n", p2n)
         w("n2m", n2m)
+        for (d, ds) in enumerate(Ds)
+            w("Ds[$d]", ds)
+        end
     end
-
-    # The grad matrix- using the same derivative operator as we did
-    # for the wave equation.
-    # We may need to apply filtering intermittently in the evolution
-    Ds = grad_matrix(2*D, k, n; scheme=scheme)
 
     # Coeffs for the constant 1 in D-dim space
     one_1D = get_one_modal(1, k, n)
