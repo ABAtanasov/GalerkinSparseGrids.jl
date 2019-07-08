@@ -15,15 +15,13 @@
 
 # Gives the appropriate boolean cutoff corresponding
 # to a given scheme, e.g. sparse basis, full basis,
-# and in the future possibly the energy basis of 
+# and in the future possibly the energy basis of
 # Bungartz and Griebel
 
-function get_cutoff(scheme::String, D::Int, n::Int)
-	if scheme == "sparse"
-		return x -> (sum(x.I) > n+D)
-	elseif scheme == "full"
-		return x -> false
-	else
-		throw(ArgumentError)
-	end
+function cutoff(::Val{:sparse}, x::CartesianIndex{D}, n::Int) where {D}
+    sum(x.I) > n+D
+end
+
+function cutoff(::Val{:full}, x::CartesianIndex{D}, n::Int) where {D}
+    false
 end

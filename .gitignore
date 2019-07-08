@@ -5,3 +5,5 @@
 *.DS_STORE
 *old.jl
 /src/animation.jl
+profile.out
+*.h5

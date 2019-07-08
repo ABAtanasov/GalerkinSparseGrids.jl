@@ -1,28 +1,33 @@
 module GalerkinSparseGrids
 
 using HCubature
-using StaticArrays
+using JLD2
+if haskey(ENV, "MKLROOT")
+    using MKLSparse
+end
 using ODE
+using Printf
 using SparseArrays
+using StaticArrays
 
 # The following script files are used:
 
-include("schemes.jl")					# CartesianIndex Manipulation Methods
-include("additional_tools.jl")			# Helper functions not specific to any part of the package
-include("dg_basis.jl")					# Gram-Schmidt procedure for DG basis functions in 1-D
-include("1d_dg_functions.jl") 			# Explicitly building the 1-D Galerkin Basis
-include("dg_methods.jl")				# Multidimensional hierarchical & sparse coefficients
-include("dg_vmethods.jl")				# Going between a dictionary & a vector of coeffs
+include("schemes.jl")                    # CartesianIndex Manipulation Methods
+include("additional_tools.jl")            # Helper functions not specific to any part of the package
+include("dg_basis.jl")                    # Gram-Schmidt procedure for DG basis functions in 1-D
+include("1d_dg_functions.jl")             # Explicitly building the 1-D Galerkin Basis
+include("dg_methods.jl")                # Multidimensional hierarchical & sparse coefficients
+include("dg_vmethods.jl")                # Going between a dictionary & a vector of coeffs
 include("derivative_matrix_elements.jl")# 1-D symbolic piecewise derivative
-include("1d_derivative.jl")				# Constructing ideal 1D derivative matrix using boundary terms
-include("multidim_derivative.jl")		# Multidimensional DG Derivatives in full & sparse bases
-include("pdes.jl")						# Solving the n-D wave equation with periodic boundary
-include("1d_nodal_basis.jl")			# Construct 1D nodal basis for multiplication
-include("multidim_nodal_basis.jl")		# Construct Multidimensional nodal basis for multiplication
+include("1d_derivative.jl")                # Constructing ideal 1D derivative matrix using boundary terms
+include("multidim_derivative.jl")        # Multidimensional DG Derivatives in full & sparse bases
+include("pdes.jl")                        # Solving the n-D wave equation with periodic boundary
+include("1d_nodal_basis.jl")            # Construct 1D nodal basis for multiplication
+include("multidim_nodal_basis.jl")        # Construct Multidimensional nodal basis for multiplication
 
 include("basic_function_exact_coeffs.jl") # Exact coefficients for certain easy functions
-include("error_measure.jl")				# Monte Carlo Methods to measure error
-include("tensor_construct.jl")			# Quickly calculates coeffs of simple tensors of functions
+include("error_measure.jl")                # Monte Carlo Methods to measure error
+include("tensor_construct.jl")            # Quickly calculates coeffs of simple tensors of functions
 
 export
 

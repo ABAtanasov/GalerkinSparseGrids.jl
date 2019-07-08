@@ -1,10 +1,11 @@
 # -----------------------------------------------------------
 #
-# An example of interpolating a given function in 1D and 2D 
+# An example of interpolating a given function in 1D and 2D
 #
 # -----------------------------------------------------------
 
 using GalerkinSparseGrids
+using LinearAlgebra
 
 D = 1
 # Random function to interpolate:
@@ -16,14 +17,14 @@ println("Interpolation in ", D, "D.")
 println("Going to k_max = ", k_max, ", n_max = ", n_max, ":")
 
 for k_used in 1:k_max
-	for n_used in 1:n_max
-		# By default, sparse grids are used. Change scheme to "full"  
-		# to compare the different accuraces and costs of the 
-		# interpolations
-		dict = coeffs_DG(D, k_used, n_used, truesoln)
-		err = mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D)
-		println("(k = ", k_used, ", n = ", n_used, ") : err = ", err)
-	end
+    for n_used in 1:n_max
+        # By default, sparse grids are used. Change scheme to "full"
+        # to compare the different accuraces and costs of the
+        # interpolations
+        dict = coeffs_DG(D, k_used, n_used, truesoln)
+        err = mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D)
+        println("(k = ", k_used, ", n = ", n_used, ") : err = ", err)
+    end
 end
 
 D = 2
@@ -36,12 +37,12 @@ println("Interpolation in ", D, "D.")
 println("Going to k_max = ", k_max, ", n_max = ", n_max, ":")
 
 for k_used in 1:k_max
-	for n_used in 1:n_max
-		# By default, sparse grids are used. Change scheme to "full"  
-		# to compare the different accuraces and costs of the 
-		# interpolations
-		dict = coeffs_DG(D, k_used, n_used, truesoln)
-		err = mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D)
-		println("(k = ", k_used, ", n = ", n_used, ") : err = ", err)
-	end
+    for n_used in 1:n_max
+        # By default, sparse grids are used. Change scheme to "full"
+        # to compare the different accuraces and costs of the
+        # interpolations
+        dict = coeffs_DG(D, k_used, n_used, truesoln)
+        err = mcerr(x->reconstruct_DG(dict, [x...]), truesoln, D)
+        println("(k = ", k_used, ", n = ", n_used, ") : err = ", err)
+    end
 end

@@ -9,15 +9,15 @@ using SparseArrays
 #--------------------------------------
 
 @testset "differentiation.jl" begin
-	@info "Testing differentiation 1-D DG basis... "
+    @info "Testing differentiation 1-D DG basis... "
     @testset "1D DG Differentiation" begin
         k=3
         for l in 2:5
-            frefVD = V2Dref(1, k, l);
-            frefDV = D2Vref(1, k, l);
+            frefVD = V2Dref(Val(1), k, l, Val(:sparse))
+            frefDV = D2Vref(Val(1), k, l, Val(:sparse))
             D_op = D_matrix(1, k, l, frefVD, frefDV; scheme="full")
             vcoeffs = vcoeffs_DG(1, k, l, x->cos(2*pi*x[1]); scheme="full")
-            dvcoeffs = *(D_op,vcoeffs)
+            dvcoeffs = D_op * vcoeffs
             dict= V2D(1, k, l, vcoeffs; scheme="full")
             ddict = V2D(1, k, l, dvcoeffs; scheme="full")
             err = x->(reconstruct_DG(ddict,[x[1]])+2*pi*sin(2*pi*x[1]))^2
@@ -25,14 +25,14 @@ using SparseArrays
         end
     end
 
-	@info "Testing differentiation 2-D full DG basis... "
+    @info "Testing differentiation 2-D full DG basis... "
     @testset "2D Full DG Differentiation" begin
         D = 2
         k = 3
         for l in 2:5
             D_op = D_matrix(D, 1, k, l; scheme="full")
             vcoeffs = vcoeffs_DG(D, k, l, x->cos(2*pi*x[1])*cos(2*pi*x[2]); scheme="full")
-            dvcoeffs = *(D_op, vcoeffs)
+            dvcoeffs = D_op * vcoeffs
             dict= V2D(D, k, l, vcoeffs; scheme="full")
             ddict = V2D(D, k, l, dvcoeffs; scheme="full")
             err = x->(reconstruct_DG(ddict,[x[1],x[2]])+2*pi*sin(2*pi*x[1])*cos(2*pi*x[2]))^2
