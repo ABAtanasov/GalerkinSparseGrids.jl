@@ -38,7 +38,7 @@ p2n, n2m = make_point2modal_matrices(2*D, k, n)
 # the force as a function of r^2:
 # (We use r^2) here because |r| is dicontinuous at the origin and gives
 # instabilities for interpolation
-F_radial = x -> x == 0 ? 10/9 : 10/3 * (sqrt(x) - atan(sqrt(x)))/(sqrt(x)^3)
+F_radial = x -> x == 0 ? 10/9 : 10/3 * (sqrt(x) - atan(sqrt(x)))/(sqrt(x)^2)
 fr2 = broadcast(F_radial, get_r2_point(2*D, k, n, m2n, n2p))
 # I have defined F_radial so that multiplying it by x_i
 # gives the ith component of the force vector
